@@ -622,6 +622,15 @@
   .stage-col#col-dormant .stage-label{letter-spacing:.5px}
   /* Detail panel dormant option greyed when blocked */
   #dp-stage option[value="dormant"].locked-opt{color:var(--text-dim)}
+
+  /* ── TEAM PILL REMOVE BUTTON ─── */
+  .team-pill-wrap{display:inline-flex;align-items:center;gap:0;position:relative}
+  .team-pill-remove{display:none;font-size:9px;font-weight:700;padding:0 4px;height:18px;line-height:18px;border-radius:50%;border:1px solid rgba(220,38,38,0.4);background:var(--red-dim);color:var(--red);cursor:pointer;margin-left:2px;transition:all .12s;font-family:'DM Sans',sans-serif}
+  .team-pill-wrap:hover .team-pill-remove{display:inline-flex;align-items:center}
+  .team-pill-remove:hover{background:var(--red);color:#fff}
+  /* ── ADD SPORT INPUT ─── */
+  #f-sport-wrap{display:none;align-items:center;gap:4px;margin-top:6px}
+  #f-sport-new-input{font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--accent);border-radius:var(--radius);padding:6px 10px;color:var(--text);outline:none;width:160px}
 </style>
 </head>
 <body>
@@ -725,11 +734,13 @@
           <div class="field"><label>Phone</label><input type="tel" id="f-phone" placeholder="+1 (555) 000-0000"></div>
           <div class="field form-full"><label>Address</label><input type="text" id="f-address" placeholder="Street, City, State, ZIP"></div>
           <div class="field form-full">
-            <label>Inquiry Source <span style="font-size:10px;color:var(--teal);font-weight:400;text-transform:none;letter-spacing:0">→ feeds How Did They Find Us analytics</span></label>
+            <label>Inquiry Source</label>
             <div class="source-pills">
               <button class="pill selected" data-source="websearch">🔍 Web Search</button>
               <button class="pill" data-source="ai">🤖 AI Search</button>
               <button class="pill" data-source="referral">🤝 Referral</button>
+              <button class="pill" data-source="email-campaign">📧 Email Campaign</button>
+              <button class="pill" data-source="facebook-ad">📱 Facebook Ad</button>
             </div>
           </div>
           <div class="field form-full"><label>Inquiry Notes</label><textarea id="f-notes" placeholder="Describe what the client is looking for..."></textarea></div>
@@ -741,12 +752,38 @@
               <option>Tennis</option><option>Golf</option><option>Hockey</option>
               <option>Batting Cage</option><option>Multi-Sport</option><option>Custom / Other</option>
             </select>
+            <span id="f-sport-wrap" style="display:none;align-items:center;gap:4px;margin-top:6px">
+              <input type="text" id="f-sport-new-input" placeholder="New sport type…" maxlength="40" style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--accent);border-radius:var(--radius);padding:6px 10px;color:var(--text);outline:none;width:160px">
+              <button onclick="confirmAddSport()" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;padding:5px 10px;border-radius:var(--radius);border:1px solid var(--green);background:var(--green-dim);color:var(--green);cursor:pointer">✓</button>
+              <button onclick="cancelAddSport()" style="font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">✕</button>
+            </span>
           </div>
           <div class="field">
             <label>Priority</label>
             <select id="f-priority">
               <option value="normal">Normal</option><option value="hot">Hot Lead 🔥</option><option value="low">Low Priority</option>
             </select>
+          </div>
+          <div class="field">
+            <label>Net Mesh Type</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select id="f-net-mesh" style="font-family:'DM Sans',sans-serif;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);outline:none;flex:1" onchange="syncNetMeshCustom(this.value)">
+                <option value="">-- Select or type below --</option>
+                <option value="#36 Mesh">#36 Mesh</option>
+                <option value="#42 Mesh">#42 Mesh</option>
+                <option value="#60 Mesh">#60 Mesh</option>
+                <option value="#84 Mesh">#84 Mesh</option>
+                <option value="#96 Mesh">#96 Mesh</option>
+                <option value="1/4 Mesh">1/4&quot; Mesh</option>
+                <option value="1/2 Mesh">1/2&quot; Mesh</option>
+                <option value="3/4 Mesh">3/4&quot; Mesh</option>
+                <option value="1 Mesh">1&quot; Mesh</option>
+                <option value="1-3/4 Mesh">1-3/4&quot; Mesh</option>
+                <option value="2 Mesh">2&quot; Mesh</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+            <input type="text" id="f-net-mesh-custom" placeholder="Type custom mesh type…" style="margin-top:6px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);outline:none;width:100%;display:none">
           </div>
           <div class="field"><label>Pole Dimensions</label><input type="text" id="f-pole-dims" placeholder="e.g. 20ft × 4in OD, Qty 6"></div>
           <div class="field">
@@ -767,10 +804,10 @@
           <div class="field form-full">
             <label>Assign To <span style="font-size:10px;color:var(--purple);font-weight:400;text-transform:none;letter-spacing:0">→ auto-carries to Pipeline & all tabs</span></label>
             <div class="team-pills" id="f-assign-pills">
-              <button class="team-pill" data-assign="Mary">Mary</button>
-              <button class="team-pill" data-assign="JM">JM</button>
-              <button class="team-pill" data-assign="Janry">Janry</button>
-              <button class="team-pill" data-assign="Tom">Tom</button>
+              <span class="team-pill-wrap"><button class="team-pill" data-assign="Mary">Mary</button><button class="team-pill-remove" title="Remove Mary" onclick="removePersonPill(this,'Mary')">×</button></span>
+              <span class="team-pill-wrap"><button class="team-pill" data-assign="JM">JM</button><button class="team-pill-remove" title="Remove JM" onclick="removePersonPill(this,'JM')">×</button></span>
+              <span class="team-pill-wrap"><button class="team-pill" data-assign="Janry">Janry</button><button class="team-pill-remove" title="Remove Janry" onclick="removePersonPill(this,'Janry')">×</button></span>
+              <span class="team-pill-wrap"><button class="team-pill" data-assign="Tom">Tom</button><button class="team-pill-remove" title="Remove Tom" onclick="removePersonPill(this,'Tom')">×</button></span>
               <button class="team-pill" id="f-add-person-pill" onclick="showAddPersonInput()" style="border-style:dashed;color:var(--accent);border-color:var(--accent)">+ Add Person</button>
               <span id="f-add-person-wrap" style="display:none;align-items:center;gap:4px">
                 <input type="text" id="f-add-person-input" placeholder="Name..." maxlength="30" style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--accent);border-radius:20px;padding:4px 12px;color:var(--text);outline:none;width:110px">
@@ -798,7 +835,7 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-weight:500;text-transform:uppercase;letter-spacing:1px">Recent Leads</div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Source</th><th>Sport</th><th>Pole Dims</th><th>Coating</th><th>Pole Only</th><th>Priority</th><th>Assigned To</th><th>Due Date</th><th>Date Added</th><th>Sheets</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Source</th><th>Sport</th><th>Net Mesh</th><th>Pole Dims</th><th>Coating</th><th>Pole Only</th><th>Priority</th><th>Assigned To</th><th>Due Date</th><th>Date Added</th><th>Sheets</th></tr></thead>
           <tbody id="recent-leads-table"><tr><td colspan="13"><div class="empty-state"><div class="empty-icon">○</div><div class="empty-title">No leads yet</div><div class="empty-sub">Add your first lead above</div></div></td></tr></tbody>
         </table>
       </div>
@@ -838,7 +875,7 @@
           <table>
             <thead><tr>
               <th>First Name</th><th>Last Name</th><th>Phone</th><th>Email</th>
-              <th>Address</th><th>Net Type</th><th>Dimension</th><th>Assigned To</th><th>Due Date</th>
+              <th>Address</th><th>Net Type</th><th>Net Mesh</th><th>Dimension</th><th>Assigned To</th><th>Due Date</th>
             </tr></thead>
             <tbody id="pipeline-list-table"><tr><td colspan="9"><div class="empty-state"><div class="empty-icon">○</div><div class="empty-title">No leads yet</div></div></td></tr></tbody>
           </table>
@@ -906,6 +943,27 @@
             <hr class="divider">
             <div class="dp-section">
               <div class="dp-section-title">Net Specifications <span class="auto-badge">→ Net Info Tab</span></div>
+              <div class="dp-field">
+                <label>Net Mesh Type</label>
+                <div style="display:flex;gap:6px">
+                  <select id="dp-net-mesh" style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);outline:none;flex:1" onchange="dpSyncNetMesh(this.value);markUnsaved()">
+                    <option value="">-- Select --</option>
+                    <option value="#36 Mesh">#36 Mesh</option>
+                    <option value="#42 Mesh">#42 Mesh</option>
+                    <option value="#60 Mesh">#60 Mesh</option>
+                    <option value="#84 Mesh">#84 Mesh</option>
+                    <option value="#96 Mesh">#96 Mesh</option>
+                    <option value="1/4 Mesh">1/4" Mesh</option>
+                    <option value="1/2 Mesh">1/2" Mesh</option>
+                    <option value="3/4 Mesh">3/4" Mesh</option>
+                    <option value="1 Mesh">1" Mesh</option>
+                    <option value="1-3/4 Mesh">1-3/4" Mesh</option>
+                    <option value="2 Mesh">2" Mesh</option>
+                    <option value="custom">Custom…</option>
+                  </select>
+                </div>
+                <input type="text" id="dp-net-mesh-custom" placeholder="Type custom mesh…" style="margin-top:4px;display:none;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);outline:none;width:100%" oninput="markUnsaved()">
+              </div>
               <div class="dp-field"><label>Net Dimensions</label><input type="text" id="dp-net-dim" placeholder="40ft W x 20ft H x 60ft L" oninput="markUnsaved()"></div>
               <div class="dp-field"><label>Pole Dimensions</label><input type="text" id="dp-pole-dims" placeholder="e.g. 20ft × 4in OD, Qty 6" oninput="markUnsaved()"></div>
               <div class="dp-field">
@@ -1066,7 +1124,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Client Name</th><th>Sport</th><th>Net Type</th><th>Net Dimensions</th><th>Pole Dimensions</th><th>Coating</th><th>Install Notes</th><th>Estimate Status</th><th>Stage</th><th>Date</th></tr></thead>
+          <thead><tr><th>#</th><th>Client Name</th><th>Sport</th><th>Net Type</th><th>Net Mesh</th><th>Net Dimensions</th><th>Pole Dimensions</th><th>Coating</th><th>Install Notes</th><th>Estimate Status</th><th>Stage</th><th>Date</th></tr></thead>
           <tbody id="net-info-table"><tr><td colspan="11"><div class="empty-state"><div class="empty-icon">⊞</div><div class="empty-title">No net specs yet</div><div class="empty-sub">Fill in net details in the Pipeline tab</div></div></td></tr></tbody>
         </table>
       </div>
@@ -1121,7 +1179,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Customer</th><th>Net Dim</th><th>Net Type</th><th>Sport</th>
+              <th>Customer</th><th>Net Mesh</th><th>Net Dim</th><th>Net Type</th><th>Sport</th>
               <th>Sent Date</th><th>Net Price</th><th>Poles Price</th><th>Total</th>
               <th>Outcome</th><th>Actions</th>
             </tr></thead>
@@ -1181,7 +1239,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Customer</th><th>Net Dim</th><th>Net Type</th><th>Sport</th>
+              <th>Customer</th><th>Net Mesh</th><th>Net Dim</th><th>Net Type</th><th>Sport</th>
               <th>Created</th><th>Net Price</th><th>Poles Price</th><th>Total</th>
               <th>Status</th><th>Actions</th>
             </tr></thead>
@@ -1799,6 +1857,27 @@
         <select id="em-priority">
           <option value="normal">Normal</option><option value="hot">Hot Lead 🔥</option><option value="low">Low Priority</option>
         </select>
+      </div>
+      <div class="field">
+        <label>Net Mesh Type</label>
+        <div style="display:flex;gap:6px">
+          <select id="em-net-mesh" style="font-family:'DM Sans',sans-serif;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);outline:none;flex:1" onchange="emSyncNetMesh(this.value)">
+            <option value="">-- Select --</option>
+            <option value="#36 Mesh">#36 Mesh</option>
+            <option value="#42 Mesh">#42 Mesh</option>
+            <option value="#60 Mesh">#60 Mesh</option>
+            <option value="#84 Mesh">#84 Mesh</option>
+            <option value="#96 Mesh">#96 Mesh</option>
+            <option value="1/4 Mesh">1/4" Mesh</option>
+            <option value="1/2 Mesh">1/2" Mesh</option>
+            <option value="3/4 Mesh">3/4" Mesh</option>
+            <option value="1 Mesh">1" Mesh</option>
+            <option value="1-3/4 Mesh">1-3/4" Mesh</option>
+            <option value="2 Mesh">2" Mesh</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </div>
+        <input type="text" id="em-net-mesh-custom" placeholder="Type custom mesh…" style="margin-top:6px;display:none;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);outline:none;width:100%">
       </div>
       <div class="field"><label>Pole Dimensions</label><input type="text" id="em-pole-dims" placeholder="e.g. 20ft × 4in OD, Qty 6"></div>
       <div class="field">
@@ -3126,6 +3205,7 @@ async function submitLead(){
     source:selectedSource,
     notes:document.getElementById('f-notes').value.trim(),
     sport:document.getElementById('f-sport').value,
+    netMeshType:(document.getElementById('f-net-mesh')?.value==='custom'?document.getElementById('f-net-mesh-custom')?.value:document.getElementById('f-net-mesh')?.value)||'',
     priority:document.getElementById('f-priority').value,
     poleDimensions:document.getElementById('f-pole-dims').value.trim(),
     coatingType:document.getElementById('f-coating').value,
@@ -3163,6 +3243,8 @@ async function submitLead(){
 function clearLeadForm(){
   ['f-first','f-last','f-email','f-phone','f-address','f-notes','f-pole-dims','f-due-date'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-sport').selectedIndex=0;
+  const fmesh=document.getElementById('f-net-mesh');if(fmesh)fmesh.value='';
+  const fmeshC=document.getElementById('f-net-mesh-custom');if(fmeshC){fmeshC.value='';fmeshC.style.display='none';}
   document.getElementById('f-coating').selectedIndex=0;
   document.getElementById('f-pole-only').checked=false;
   document.getElementById('f-priority').selectedIndex=0;
@@ -3236,6 +3318,7 @@ function renderRecentLeads(){
       <td class="td-muted">${l.phone||'—'}</td>
       <td><span class="tag ${srcTag[l.source]||'tag-web'}">${l.source}</span></td>
       <td class="td-muted">${l.sport||'—'}</td>
+      <td class="td-muted" style="font-size:11px">${l.netMeshType||'—'}</td>
       <td class="td-mono" style="color:var(--accent);font-size:11px">${l.poleDimensions||'—'}</td>
       <td>${coatingBadge}</td>
       <td style="text-align:center">${l.poleOnly?'<span class="tag tag-green" style="font-size:10px">✓ Pole Only</span>':'<span class="td-muted" style="font-size:11px">—</span>'}</td>
@@ -3301,6 +3384,7 @@ function buildCard(l,srcTagMap){
       ${howLabel?`<div style="font-size:10px;margin-bottom:5px;color:${howColor};font-weight:500">◎ ${howLabel}</div>`:''}
       <div class="lc-tags">
         <span class="tag ${srcTagMap[l.source]||'tag-web'}" style="font-size:9px">${l.source}</span>
+        ${l.netMeshType?`<span class="tag" style="font-size:9px;background:rgba(13,148,136,0.12);color:var(--teal)">${l.netMeshType}</span>`:''}
         ${l.sport?`<span class="tag tag-sport" style="font-size:9px">${l.sport.split('/')[0].trim()}</span>`:''}
         ${l.jobType?`<span class="tag" style="font-size:9px;background:${l.jobType==='Facility'?'rgba(20,184,166,0.15)':'rgba(167,139,250,0.15)'};color:${l.jobType==='Facility'?'var(--teal)':'var(--purple)'}">${l.jobType==='Facility'?'🏢':'🏠'} ${l.jobType}</span>`:''}
         ${l.state?`<span class="tag" style="font-size:9px;background:rgba(45,126,247,0.12);color:var(--accent)">📍 ${l.state}</span>`:''}
@@ -3408,6 +3492,7 @@ function renderPipelineList(){
       <td class="td-muted">${l.email||'—'}</td>
       <td class="td-muted" style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.address||'—'}</td>
       <td>${l.netType?`<span class="tag tag-sport" style="font-size:10px">${l.netType}</span>`:'<span class="td-muted">—</span>'}</td>
+      <td class="td-muted" style="font-size:11px">${l.netMeshType||'—'}</td>
       <td class="td-mono" style="color:var(--accent);font-size:11px">${l.netDimensions||'—'}</td>
       <td><span class="assign-badge">${l.assignedTo||'Unassigned'}</span></td>
       <td>${dueHtml}</td>
@@ -3689,6 +3774,17 @@ function openEditModal(id){
   document.getElementById('em-address').value=l.address||'';
   document.getElementById('em-notes').value=l.notes||'';
   document.getElementById('em-sport').value=l.sport||'';
+  // Populate net mesh
+  (function(){
+    const meshSel=document.getElementById('em-net-mesh');
+    const meshCustom=document.getElementById('em-net-mesh-custom');
+    if(!meshSel)return;
+    const val=l.netMeshType||'';
+    const known=['#36 Mesh','#42 Mesh','#60 Mesh','#84 Mesh','#96 Mesh','1/4 Mesh','1/2 Mesh','3/4 Mesh','1 Mesh','1-3/4 Mesh','2 Mesh'];
+    if(!val){meshSel.value='';if(meshCustom){meshCustom.value='';meshCustom.style.display='none';}}
+    else if(known.includes(val)){meshSel.value=val;if(meshCustom){meshCustom.value='';meshCustom.style.display='none';}}
+    else{meshSel.value='custom';if(meshCustom){meshCustom.value=val;meshCustom.style.display='';}}
+  })();
   document.getElementById('em-priority').value=l.priority||'normal';
   document.getElementById('em-pole-dims').value=l.poleDimensions||'';
   document.getElementById('em-coating').value=l.coatingType||'';
@@ -3737,6 +3833,7 @@ function saveEditModal(){
   l.address=document.getElementById('em-address').value.trim();
   l.notes=document.getElementById('em-notes').value.trim();
   l.sport=document.getElementById('em-sport').value;
+  l.netMeshType=(document.getElementById('em-net-mesh')?.value==='custom'?document.getElementById('em-net-mesh-custom')?.value:document.getElementById('em-net-mesh')?.value)||'';
   l.priority=document.getElementById('em-priority').value;
   l.poleDimensions=document.getElementById('em-pole-dims').value.trim();
   l.coatingType=document.getElementById('em-coating').value;
@@ -3779,6 +3876,17 @@ function selectLead(id){
   document.getElementById('dp-assigned-to').value=l.assignedTo||'Unassigned';
   document.getElementById('dp-due-date').value=l.dueDate||'';
   document.getElementById('dp-net-dim').value=l.netDimensions||'';
+  // Populate net mesh in detail panel
+  (function(){
+    const meshSel=document.getElementById('dp-net-mesh');
+    const meshCustom=document.getElementById('dp-net-mesh-custom');
+    if(!meshSel)return;
+    const val=l.netMeshType||'';
+    const known=['#36 Mesh','#42 Mesh','#60 Mesh','#84 Mesh','#96 Mesh','1/4 Mesh','1/2 Mesh','3/4 Mesh','1 Mesh','1-3/4 Mesh','2 Mesh'];
+    if(!val){meshSel.value='';if(meshCustom){meshCustom.value='';meshCustom.style.display='none';}}
+    else if(known.includes(val)){meshSel.value=val;if(meshCustom){meshCustom.value='';meshCustom.style.display='none';}}
+    else{meshSel.value='custom';if(meshCustom){meshCustom.value=val;meshCustom.style.display='';}}
+  })();
   document.getElementById('dp-pole-dims').value=l.poleDimensions||'';
   document.getElementById('dp-coating').value=l.coatingType||'';
   document.getElementById('dp-net-type').value=l.netType||'';
@@ -3861,6 +3969,9 @@ function saveNetInfo(){
   if(!selectedLeadId)return;
   const l=leads.find(x=>x.id===selectedLeadId);if(!l)return;
   l.netDimensions=document.getElementById('dp-net-dim').value;
+  const _meshSel=document.getElementById('dp-net-mesh');
+  const _meshCustom=document.getElementById('dp-net-mesh-custom');
+  if(_meshSel) l.netMeshType=_meshSel.value==='custom'?(_meshCustom?.value||''):_meshSel.value;
   l.poleDimensions=document.getElementById('dp-pole-dims').value;
   l.coatingType=document.getElementById('dp-coating').value;
   l.netType=document.getElementById('dp-net-type').value;
@@ -3908,6 +4019,7 @@ function renderNetInfo(){
       <td style="font-weight:500">${l.first} ${l.last}</td>
       <td><span class="tag tag-sport">${l.netSport||l.sport||'—'}</span></td>
       <td class="td-muted">${l.netType||'—'}</td>
+      <td><input type="text" class="inline-edit" value="${(l.netMeshType||'').replace(/"/g,'&quot;')}" placeholder="Mesh type" style="min-width:100px;font-size:11px" onchange="updateLeadField('${l.id}','netMeshType',this.value)"></td>
       <td><input type="text" class="inline-edit" value="${(l.netDimensions||'').replace(/"/g,'&quot;')}" placeholder="Net dims" style="min-width:130px;color:var(--accent);font-family:'DM Mono',monospace;font-size:11px" onchange="updateLeadField('${l.id}','netDimensions',this.value)"></td>
       <td><input type="text" class="inline-edit" value="${(l.poleDimensions||'').replace(/"/g,'&quot;')}" placeholder="Pole dims" style="min-width:120px;font-family:'DM Mono',monospace;font-size:11px" onchange="updateLeadField('${l.id}','poleDimensions',this.value)"></td>
       <td>
@@ -6925,6 +7037,7 @@ function renderEFListTable(filtered){
   const outcomeLabels={accepted:'<span class="tag tag-green">✓ Accepted</span>',revision:'<span class="tag tag-amber">↩ Revision</span>',declined:'<span class="tag tag-red">✗ Declined</span>'};
   tbody.innerHTML=filtered.map(e=>`<tr>
     <td><strong>${e.customerName||'—'}</strong><div style="font-size:10px;color:var(--text-muted)">${e.email||''}</div></td>
+    <td class="td-muted">${e.netMeshType||'—'}</td>
     <td class="td-muted">${e.netDimensions||'—'}</td>
     <td class="td-muted">${e.netType||'—'}</td>
     <td class="td-muted">${e.netSport||'—'}</td>
@@ -6947,6 +7060,7 @@ function renderINVListTable(filtered){
   const statusLabels={sent:'<span class="tag tag-blue">📤 Sent</span>',paid:'<span class="tag tag-green">✅ Paid</span>','needs-followup':'<span class="tag tag-amber">⚠ Follow-Up</span>',declined:'<span class="tag tag-red">✗ Declined</span>'};
   tbody.innerHTML=filtered.map(i=>`<tr>
     <td><strong>${i.customerName||'—'}</strong><div style="font-size:10px;color:var(--text-muted)">${i.email||''}</div></td>
+    <td class="td-muted">${i.netMeshType||'—'}</td>
     <td class="td-muted">${i.netDimensions||'—'}</td>
     <td class="td-muted">${i.netType||'—'}</td>
     <td class="td-muted">${i.netSport||'—'}</td>
@@ -8691,6 +8805,107 @@ setTimeout(() => {
   overlay.addEventListener('click', e => { if (e.target === overlay) closeAddColModal(); });
   document.body.appendChild(overlay);
 })();
+// ═══════════════════════════════════════════════
+// NET MESH TYPE HELPERS
+// ═══════════════════════════════════════════════
+function syncNetMeshCustom(val) {
+  const custom = document.getElementById('f-net-mesh-custom');
+  if (!custom) return;
+  if (val === 'custom') {
+    custom.style.display = '';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+  }
+}
+function dpSyncNetMesh(val) {
+  const custom = document.getElementById('dp-net-mesh-custom');
+  if (!custom) return;
+  if (val === 'custom') { custom.style.display = ''; custom.focus(); }
+  else { custom.style.display = 'none'; custom.value = ''; }
+}
+function emSyncNetMesh(val) {
+  const custom = document.getElementById('em-net-mesh-custom');
+  if (!custom) return;
+  if (val === 'custom') { custom.style.display = ''; custom.focus(); }
+  else { custom.style.display = 'none'; custom.value = ''; }
+}
+
+// ═══════════════════════════════════════════════
+// REMOVE PERSON PILL
+// ═══════════════════════════════════════════════
+function removePersonPill(btn, name) {
+  const wrap = btn.closest('.team-pill-wrap');
+  if (!wrap) return;
+  // Deselect if currently selected
+  const pill = wrap.querySelector('.team-pill');
+  if (pill && pill.classList.contains('selected')) {
+    selectedAssign = null;
+  }
+  wrap.remove();
+  // Remove from dp/em assigned-to selects
+  ['dp-assigned-to','em-assigned-to'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) {
+      Array.from(sel.options).forEach(opt => {
+        if (opt.value === name) opt.remove();
+      });
+    }
+  });
+  toast(`"${name}" removed from team`, 'info', 1600);
+}
+
+// ═══════════════════════════════════════════════
+// ADD SPORT TYPE
+// ═══════════════════════════════════════════════
+function showAddSportInput() {
+  const wrap = document.getElementById('f-sport-wrap');
+  if (wrap) { wrap.style.display = 'inline-flex'; document.getElementById('f-sport-new-input')?.focus(); }
+}
+function cancelAddSport() {
+  const wrap = document.getElementById('f-sport-wrap');
+  if (wrap) wrap.style.display = 'none';
+  const inp = document.getElementById('f-sport-new-input');
+  if (inp) inp.value = '';
+}
+function confirmAddSport() {
+  const inp = document.getElementById('f-sport-new-input');
+  const name = inp?.value.trim();
+  if (!name) { toast('Please enter a sport type','error'); return; }
+  // Add to all sport selects across the page
+  ['f-sport','em-sport','dp-net-sport','ef-em-sport','inv-em-sport'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const exists = Array.from(sel.options).some(o => o.value.toLowerCase() === name.toLowerCase());
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      // Insert before last option or at end
+      const customOpt = Array.from(sel.options).find(o => o.value === 'Custom / Other' || o.value === 'custom');
+      if (customOpt) sel.insertBefore(opt, customOpt);
+      else sel.appendChild(opt);
+    }
+  });
+  // Select it in f-sport immediately
+  const fSport = document.getElementById('f-sport');
+  if (fSport) fSport.value = name;
+  cancelAddSport();
+  toast(`"${name}" added to sport types ✓`, 'success', 1800);
+}
+
+// keyboard shortcut for sport input
+setTimeout(() => {
+  const inp = document.getElementById('f-sport-new-input');
+  if (inp) {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') confirmAddSport();
+      if (e.key === 'Escape') cancelAddSport();
+    });
+  }
+}, 600);
+
 </script>
 </body>
 </html>
