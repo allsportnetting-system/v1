@@ -894,6 +894,7 @@
   <div class="sidebar-footer">
     <div style="margin-bottom:6px;font-size:11px;color:var(--text-dim)">Integrations</div>
     <div class="integration-dots">
+      <div class="int-dot connected">Method CRM</div>
       <div class="int-dot" id="sheets-int-dot" onclick="toggleSheetsConfig()" style="cursor:pointer">Sheets</div>
       <div class="int-dot">Dropbox</div>
       <div class="int-dot connected">Outlook</div>
@@ -915,7 +916,17 @@
         3. Deploy → Web App → Copy URL here
       </div>
     </div>
-
+    <button class="crm-settings-btn" id="crm-settings-toggle" onclick="toggleCrmConfig()">
+      <span id="crm-key-icon">⚙</span> <span id="crm-key-label">Configure Method API Key</span>
+    </button>
+    <div class="crm-config-panel" id="crm-config-panel">
+      <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4">Paste your Method CRM API key — used for live duplicate detection on every lead submit.</div>
+      <div class="api-key-row">
+        <input type="password" id="method-api-key-input" placeholder="method_xxxxxxxxxxxx" value="">
+        <button class="btn btn-sm btn-primary" onclick="saveMethodApiKey()">Save</button>
+      </div>
+      <div style="margin-top:6px;font-size:10px;color:var(--text-dim)">Key is stored locally in your browser only.</div>
+    </div>
   </div>
 </aside>
 
@@ -923,7 +934,7 @@
   <div class="topbar">
     <div>
       <div class="page-title" id="topbar-title">Base Leads Inquiry</div>
-      <div class="page-sub" id="topbar-sub">Add new inquiry leads</div>
+      <div class="page-sub" id="topbar-sub">Add new inquiry leads — auto-syncs to Method CRM</div>
     </div>
     <div class="topbar-actions">
       <div class="sync-indicator">
@@ -942,7 +953,7 @@
     <!-- BASE LEADS -->
     <div class="tab-panel active" id="tab-base-leads">
       <div class="card">
-        <div class="card-title">Base Leads Inquiry</div>
+        <div class="card-title">Base Leads Inquiry <span class="ct-badge">Auto → Method CRM</span></div>
         <div class="form-grid">
           <div class="field"><label>First Name *</label><input type="text" id="f-first" placeholder="John"></div>
           <div class="field"><label>Last Name *</label><input type="text" id="f-last" placeholder="Smith"></div>
@@ -2477,7 +2488,7 @@
 // ===== CLOUD STORAGE CONFIG =====
 const _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
 const JSONBIN_BIN_ID    = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
-const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';
+const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || 'y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';
 const JSONBIN_MASTER_KEY= localStorage.getItem('asn_master_key')|| '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC';
 const JSONBIN_URL = () => `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
@@ -2922,7 +2933,7 @@ let leads = [];
 let estimates = [];
 let invoices = [];
 let baseSales = [];
-let methodApiKey = '';
+let methodApiKey = localStorage.getItem('asn_method_api_key')||'';
 let selectedLeadId=null, selectedSource='websearch', selectedHow=null, unsaved=false;
 
 const STAGES=['new','contacted','qualified','proposal','followup','closed','declined','dormant'];
@@ -3772,6 +3783,33 @@ function renderPipelineHealth(){
 function markUnsaved(){unsaved=true}
 
 // ===== METHOD CRM API KEY =====
+function toggleCrmConfig(){
+  const panel=document.getElementById('crm-config-panel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')&&methodApiKey){
+    document.getElementById('method-api-key-input').value=methodApiKey;
+  }
+}
+function saveMethodApiKey(){
+  const val=document.getElementById('method-api-key-input').value.trim();
+  if(!val){toast('Please enter an API key','error');return;}
+  methodApiKey=val;
+  localStorage.setItem('asn_method_api_key',val);
+  document.getElementById('crm-config-panel').classList.remove('open');
+  const btn=document.getElementById('crm-settings-toggle');
+  btn.classList.add('configured');
+  document.getElementById('crm-key-icon').textContent='✓';
+  document.getElementById('crm-key-label').textContent='Method API Key Saved';
+  toast('Method CRM API key saved ✓','success');
+}
+function initCrmKeyState(){
+  if(methodApiKey){
+    const btn=document.getElementById('crm-settings-toggle');
+    btn.classList.add('configured');
+    document.getElementById('crm-key-icon').textContent='✓';
+    document.getElementById('crm-key-label').textContent='Method API Key Saved';
+  }
+}
 
 // ===== DUPLICATE DETECTION =====
 let _pendingLead=null; // holds lead object while modal is open
@@ -3885,19 +3923,97 @@ function dupProceedUpdateCRM(){
   if(!_pendingLead)return;
   _pendingLead.crmSynced=true;
   _pendingLead.crmNote='CRM contact updated (duplicate resolved)';
-  _commitLead(_pendingLead,true);
+  _commitLead(_pendingLead,false); // save locally first without re-creating
+  // Now patch the existing Method CRM contact if we have an API key
+  updateMethodContact(_pendingLead);
   closeDupModal();
+}
+
+async function updateMethodContact(lead){
+  if(!methodApiKey) return;
+  simulateSync('Updating Method CRM contact…');
+  try{
+    // First find the contact ID by email
+    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(lead.email)}'`,{
+      headers:{'Authorization':'Bearer '+methodApiKey}
+    });
+    if(!res.ok){toast('Could not find Method contact to update','error',3000);return;}
+    const data=await res.json();
+    const items=data.value||data.items||data.contacts||[];
+    if(!items.length){toast('Method contact not found for update','error',3000);return;}
+    const contactId=items[0].RecordID||items[0].id;
+    const patch={
+      FirstName:lead.first, LastName:lead.last,
+      Email:lead.email, Phone:lead.phone||'',
+      BillingAddressLine1:lead.address||''
+    };
+    const patchRes=await fetch(`https://app.method.me/api/v1/contacts/${contactId}`,{
+      method:'PATCH',
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
+      body:JSON.stringify(patch)
+    });
+    if(patchRes.ok){
+      toast(`Method CRM contact updated ✓`,'success');
+      showCloudStatus('ok','☁ Synced ✓');
+    } else {
+      toast('Method CRM update failed — lead saved locally','error',3000);
+    }
+  }catch(e){
+    toast('Method CRM update error: '+e.message,'error',3000);
+  }
 }
 function _commitLead(lead,syncToCRM){
   leads.unshift(lead);save();renderRecentLeads();updateBadges();renderPipelineList();
   pushLeadToSheets(lead);
   if(syncToCRM){
-    
+    createMethodContact(lead);
   } else {
     document.getElementById('sync-label').textContent='Synced';
     setTimeout(()=>toast(`"${lead.first} ${lead.last}" recorded (CRM skipped)`,'info'),100);
   }
   clearLeadForm();
+}
+
+async function createMethodContact(lead){
+  if(!methodApiKey){
+    document.getElementById('sync-label').textContent='Synced';
+    return;
+  }
+  simulateSync('Creating Method CRM contact…');
+  try{
+    const payload={
+      FirstName: lead.first,
+      LastName:  lead.last,
+      Email:     lead.email,
+      Phone:     lead.phone||'',
+      BillingAddressLine1: lead.address||'',
+      IsActive: true,
+      LeadSource: lead.source||'',
+      Notes: lead.notes||''
+    };
+    const res=await fetch('https://app.method.me/api/v1/contacts',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    if(res.ok){
+      const data=await res.json();
+      // Store Method contact ID on lead for future updates
+      const idx=leads.findIndex(l=>l.id===lead.id);
+      if(idx>=0){leads[idx].methodContactId=data.RecordID||data.id||'';save();}
+      showCloudStatus('ok','☁ Synced ✓');
+      toast(`"${lead.first} ${lead.last}" created in Method CRM ✓`,'success');
+    } else {
+      const errText=await res.text();
+      console.warn('Method CRM create failed:',errText);
+      toast(`Lead saved — Method CRM sync failed (${res.status})`,'error',4000);
+      document.getElementById('sync-label').textContent='Synced';
+    }
+  }catch(e){
+    console.warn('Method CRM error:',e.message);
+    toast('Lead saved — Method CRM unreachable (CORS? Check API key)','error',4000);
+    document.getElementById('sync-label').textContent='Synced';
+  }
 }
 function renderRecentLeads(){
   const tbody=document.getElementById('recent-leads-table');
