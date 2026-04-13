@@ -769,6 +769,25 @@
   /* Detail panel dormant option greyed when blocked */
   #dp-stage option[value="dormant"].locked-opt{color:var(--text-dim)}
 
+  /* ── COLD LEADS ─────────────────────────────────────── */
+  .cl-filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:12px}
+  .cl-converted-row{background:rgba(22,163,74,0.05)!important}
+  .cl-converted-row td{color:var(--text)!important}
+  .cl-badge-conv{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:rgba(22,163,74,0.15);color:var(--green);white-space:nowrap}
+  .cl-badge-none{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;background:var(--navy-light);color:var(--text-dim);white-space:nowrap}
+  .cl-campaign-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;min-width:150px;cursor:pointer;transition:all 0.15s;flex-shrink:0}
+  .cl-campaign-card:hover{border-color:var(--accent);background:var(--accent-glow)}
+  .cl-campaign-card.active{border-color:var(--teal);background:rgba(13,148,136,0.08)}
+  .cl-campaign-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+  .cl-campaign-rate{font-size:20px;font-weight:300;color:var(--teal);line-height:1}
+  .cl-campaign-meta{font-size:10px;color:var(--text-muted);margin-top:3px}
+  .cl-import-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px;backdrop-filter:blur(2px)}
+  .cl-import-modal-overlay.hidden{display:none}
+  .cl-import-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;max-width:620px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.5);margin:auto}
+  .cl-map-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  .cl-progress{height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+  .cl-progress-bar{height:100%;background:var(--teal);border-radius:2px;transition:width 0.3s}
+
   /* ── WS ORDER FILTER / COLUMN VIEWS ──────────────────── */
   .ws-filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:12px}
   .ws-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -871,6 +890,7 @@
     <div class="nav-item" data-tab="ar-tracking"><span class="icon">📥</span> Accounts Receivable<span class="badge badge-green" id="ar-badge" style="display:none">0</span></div>
     <div class="nav-label" style="margin-top:8px">Analytics</div>
     <div class="nav-item" data-tab="how-found"><span class="icon">◎</span> How Did They Find Us</div>
+    <div class="nav-item" data-tab="cold-leads"><span class="icon">❄</span> Cold Leads<span class="badge" id="cl-badge" style="display:none;background:var(--teal)">0</span></div>
   </nav>
   <div class="sidebar-footer">
     <div style="margin-bottom:6px;font-size:11px;color:var(--text-dim)">Integrations</div>
@@ -1707,6 +1727,93 @@
         <div class="tab-footer-right">
           <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
           <button class="btn-save-manual" onclick="save();toast('Data saved ✓','success',1800)">💾 Save Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLD LEADS TAB -->
+    <div class="tab-panel" id="tab-cold-leads">
+
+      <!-- Summary stats row -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px">
+        <div class="stat-card"><div class="stat-label">Total Contacts</div><div class="stat-value" id="cl-stat-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value" id="cl-stat-converted" style="color:var(--green)">0</div></div>
+        <div class="stat-card"><div class="stat-label">Conversion Rate</div><div class="stat-value" id="cl-stat-rate" style="font-size:20px;color:var(--teal)">0%</div></div>
+        <div class="stat-card"><div class="stat-label">Campaigns</div><div class="stat-value" id="cl-stat-campaigns">0</div></div>
+        <div class="stat-card"><div class="stat-label">Revenue Tracked</div><div class="stat-value" id="cl-stat-revenue" style="font-size:18px;color:var(--accent)">$0</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="section-header" style="margin-bottom:14px">
+        <div>
+          <div class="section-title">Cold Leads — Email Campaign Tracker</div>
+          <div class="section-sub">Import contacts · auto-match purchases in WS Orders &amp; Base Sales · track conversion per campaign</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-sm btn-primary" onclick="openCLImportModal()">↓ Import CSV / Excel</button>
+          <button class="btn btn-sm" onclick="openCLAddModal()" style="border-color:var(--teal);color:var(--teal)">+ Add Contact</button>
+          <button class="btn-export-tab" onclick="exportCLExcel()">📊 Export</button>
+          <button class="btn-export-tab" style="background:rgba(13,148,136,0.1);border-color:rgba(13,148,136,0.35);color:var(--teal)" onclick="clRunMatchAll()">🔄 Re-Match All</button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="cl-filter-bar">
+        <div class="ws-filter-row" style="flex-wrap:wrap;gap:8px">
+          <span class="ws-filter-label">Status</span>
+          <button class="ws-status-pill active" data-cl-s="all" onclick="clSetFilter('all')">All</button>
+          <button class="ws-status-pill" data-cl-s="converted" onclick="clSetFilter('converted')" style="--pill-color:var(--green)">✅ Converted</button>
+          <button class="ws-status-pill" data-cl-s="not_converted" onclick="clSetFilter('not_converted')">○ Not Converted</button>
+          <div style="width:1px;background:var(--border);height:20px;margin:0 4px"></div>
+          <span class="ws-filter-label">Campaign</span>
+          <select id="cl-campaign-filter" class="est-status-select" style="min-width:140px" onchange="clSetCampaignFilter(this.value)">
+            <option value="">All Campaigns</option>
+          </select>
+          <div style="flex:1"></div>
+          <div style="position:relative">
+            <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:12px;pointer-events:none">🔍</span>
+            <input type="text" id="cl-search" placeholder="Name, email, phone…" oninput="clSetSearch(this.value)"
+              style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px 7px 28px;color:var(--text);outline:none;min-width:200px;transition:border-color 0.15s"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <span class="ws-result-count" id="cl-result-count">0 contacts</span>
+        </div>
+      </div>
+
+      <!-- Campaign breakdown cards -->
+      <div id="cl-campaign-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+      <!-- Main table -->
+      <div class="table-wrap" id="cl-table-wrap">
+        <table id="cl-main-table">
+          <thead><tr>
+            <th style="min-width:32px"></th>
+            <th style="min-width:44px">#</th>
+            <th style="min-width:160px">Name</th>
+            <th style="min-width:190px">Email</th>
+            <th style="min-width:120px">Phone</th>
+            <th style="min-width:130px">Campaign</th>
+            <th style="min-width:100px">Date Added</th>
+            <th style="min-width:110px">Conversion</th>
+            <th style="min-width:130px">Matched Order</th>
+            <th style="min-width:100px">Order Date</th>
+            <th style="min-width:100px">Order Value</th>
+            <th style="min-width:110px">Source</th>
+            <th style="min-width:160px">Notes</th>
+          </tr></thead>
+          <tbody id="cl-table-body">
+            <tr><td colspan="13"><div class="empty-state"><div class="empty-icon">❄</div><div class="empty-title">No cold leads yet</div><div class="empty-sub">Import a CSV/Excel with your contact list to get started</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-footer">
+        <div class="tab-footer-left">
+          <button class="btn-clear" onclick="confirmClear('cold-leads','asn_cold_leads','all Cold Lead contacts')">🗑 Clear All Contacts</button>
+        </div>
+        <div class="tab-footer-right">
+          <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
+          <button class="btn-save-manual" onclick="saveCL();toast('Saved ✓','success',1800)">💾 Save Now</button>
         </div>
       </div>
     </div>
@@ -3455,7 +3562,8 @@ const PAGE_TITLES={
   'ws-order':['WS Order','Website orders — paste from sheet, auto-extract name & due date'],
   'inventory':['Inventory / Install / Ship Poles','Poles stock management and pole orders to ship'],
   'ap-tracking':['Accounts Payable','Track vendor bills, aging, payments and outstanding balances'],
-  'ar-tracking':['Accounts Receivable','Track customer payments, sub contractor payables, and job balances']
+  'ar-tracking':['Accounts Receivable','Track customer payments, sub contractor payables, and job balances'],
+  'cold-leads':['Cold Leads — Email Campaign Tracker','Import contacts · auto-match against WS Orders & Base Sales · track conversions']
 };
 
 document.querySelectorAll('.nav-item').forEach(item=>{
@@ -3484,6 +3592,7 @@ function switchTab(tab){
   if(tab==='inventory'){renderPolesInventory();renderPolesToShip();renderExtPoles();renderInstallRows();scanOrdersForInstall();renderInstallRows();updateInvStats();}
   if(tab==='ap-tracking'){loadAP();renderAP();}
   if(tab==='ar-tracking'){renderAR();}
+  if(tab==='cold-leads'){renderColdLeads();}
 }
 
 // Source pills — now dynamically rendered via renderSourcePills()
@@ -11883,6 +11992,671 @@ window.executeClear = function() {
   overlay.addEventListener('click', e => { if (e.target === overlay) closeAddColModal(); });
   document.body.appendChild(overlay);
 })();
+// ══════════════════════════════════════════════════════════
+//  COLD LEADS — EMAIL CAMPAIGN CONVERSION TRACKER
+// ══════════════════════════════════════════════════════════
+
+let coldLeads = JSON.parse(localStorage.getItem('asn_cold_leads') || '[]');
+let clFilter = 'all';
+let clCampaignFilter = '';
+let clSearch = '';
+let _clImportRaw = []; // raw parsed rows during import
+
+function saveCL() {
+  localStorage.setItem('asn_cold_leads', JSON.stringify(coldLeads));
+  updateCLBadge();
+}
+
+function updateCLBadge() {
+  const b = document.getElementById('cl-badge');
+  if (!b) return;
+  b.textContent = coldLeads.length;
+  b.style.display = coldLeads.length ? '' : 'none';
+}
+
+// ── MATCHING ENGINE ──────────────────────────────────────
+// Normalise strings for fuzzy matching
+function clNorm(s) {
+  return (s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+function clNormEmail(e) {
+  return (e||'').toLowerCase().trim();
+}
+function clNormPhone(p) {
+  return (p||'').replace(/\D/g,'').slice(-10);
+}
+
+// Score a match between a cold lead and an order/sale record
+// Returns { score, orderId, orderType, orderDate, orderValue, orderName }
+function clMatchScore(cl, record, type) {
+  let score = 0;
+  const clEmail  = clNormEmail(cl.email);
+  const clPhone  = clNormPhone(cl.phone);
+  const clName   = clNorm(cl.name);
+
+  // Email exact match — strongest signal
+  const recEmail = clNormEmail(type==='ws' ? record.email : (record.email||''));
+  if (clEmail && recEmail && clEmail === recEmail) score += 100;
+
+  // Phone match
+  const recPhone = clNormPhone(type==='ws' ? record.phone : (record.phone||''));
+  if (clPhone && recPhone && clPhone.length >= 7 && clPhone === recPhone) score += 80;
+
+  // Name fuzzy match (both normalised, length-compensated)
+  const recName  = clNorm(type==='ws' ? record.fullName : record.customerName);
+  if (clName && recName) {
+    if (clName === recName) score += 60;
+    else if (clName.length > 4 && recName.includes(clName)) score += 35;
+    else if (recName.length > 4 && clName.includes(recName)) score += 35;
+    else {
+      // Partial: check first + last name tokens
+      const clToks = cl.name.toLowerCase().split(/\s+/).filter(t=>t.length>1);
+      const recToks = (type==='ws' ? record.fullName : record.customerName||'').toLowerCase().split(/\s+/).filter(t=>t.length>1);
+      const shared  = clToks.filter(t => recToks.some(r => r.startsWith(t) || t.startsWith(r)));
+      if (shared.length >= 2) score += 45;
+      else if (shared.length === 1 && (clToks.length===1||recToks.length===1)) score += 20;
+    }
+  }
+  return score;
+}
+
+function clFindBestMatch(cl) {
+  let best = { score: 0 };
+
+  // Search WS Orders
+  (wsOrders||[]).forEach(o => {
+    const s = clMatchScore(cl, o, 'ws');
+    if (s > best.score) best = {
+      score: s, orderId: o.id, type: 'WS Order',
+      orderName: o.fullName || o.orderNumber,
+      orderDate: o.dateOrdered || '',
+      orderValue: '', // WS orders don't store price
+      orderNum: o.orderNumber || ''
+    };
+  });
+
+  // Search Base Sales
+  (baseSales||[]).forEach(bs => {
+    const s = clMatchScore(cl, bs, 'bs');
+    if (s > best.score) best = {
+      score: s, orderId: bs.id, type: 'Base Sale',
+      orderName: bs.customerName,
+      orderDate: bs.dateOrdered || bs.datePaidText || '',
+      orderValue: bs.amount || bs.totalSale || '',
+      orderNum: bs.jobNumber || bs.salesOrderPO || ''
+    };
+  });
+
+  // Threshold: score >= 60 = match (email or 2-factor match)
+  return best.score >= 60 ? best : null;
+}
+
+function clRunMatchAll() {
+  let changed = 0;
+  coldLeads.forEach(cl => {
+    const match = clFindBestMatch(cl);
+    if (match) {
+      cl.converted      = true;
+      cl.matchedOrderId = match.orderId;
+      cl.matchedType    = match.type;
+      cl.matchedName    = match.orderName;
+      cl.matchedDate    = match.orderDate;
+      cl.matchedValue   = match.orderValue;
+      cl.matchedNum     = match.orderNum;
+      cl.matchScore     = match.score;
+      changed++;
+    } else if (cl.converted && !cl.manualConvert) {
+      // Only clear auto-matches, never touch manually set conversions
+      cl.converted = false;
+      cl.matchedOrderId = '';
+    }
+  });
+  saveCL();
+  renderColdLeads();
+  toast(`Re-matched ${changed} conversion${changed!==1?'s':''}`, 'success', 2200);
+}
+
+// ── FILTERS & RENDER ─────────────────────────────────────
+function clSetFilter(f) {
+  clFilter = f;
+  document.querySelectorAll('[data-cl-s]').forEach(b =>
+    b.classList.toggle('active', b.dataset.clS === f)
+  );
+  renderColdLeads();
+}
+
+function clSetCampaignFilter(v) {
+  clCampaignFilter = v;
+  renderColdLeads();
+}
+
+function clSetSearch(v) {
+  clSearch = v.toLowerCase().trim();
+  renderColdLeads();
+}
+
+function clFilteredLeads() {
+  return coldLeads.filter(cl => {
+    if (clFilter === 'converted'     && !cl.converted) return false;
+    if (clFilter === 'not_converted' &&  cl.converted) return false;
+    if (clCampaignFilter && cl.campaign !== clCampaignFilter) return false;
+    if (clSearch) {
+      const hay = [cl.name, cl.email, cl.phone, cl.campaign, cl.notes, cl.matchedName].join(' ').toLowerCase();
+      if (!hay.includes(clSearch)) return false;
+    }
+    return true;
+  });
+}
+
+function clGetCampaigns() {
+  const map = {};
+  coldLeads.forEach(cl => {
+    const c = cl.campaign || '(no campaign)';
+    if (!map[c]) map[c] = { name:c, total:0, converted:0, revenue:0 };
+    map[c].total++;
+    if (cl.converted) {
+      map[c].converted++;
+      const v = parseFloat((cl.matchedValue||'').replace(/[^0-9.]/g,''))||0;
+      map[c].revenue += v;
+    }
+  });
+  return Object.values(map).sort((a,b) => b.total - a.total);
+}
+
+function renderColdLeads() {
+  updateCLBadge();
+  const campaigns = clGetCampaigns();
+
+  // Stats
+  const total     = coldLeads.length;
+  const converted = coldLeads.filter(c=>c.converted).length;
+  const rate      = total ? ((converted/total)*100).toFixed(1) : '0';
+  const revenue   = coldLeads.reduce((s,c)=>{
+    if(!c.converted) return s;
+    return s + (parseFloat((c.matchedValue||'').replace(/[^0-9.]/g,''))||0);
+  },0);
+
+  const se = id => document.getElementById(id);
+  if(se('cl-stat-total'))    se('cl-stat-total').textContent    = total.toLocaleString();
+  if(se('cl-stat-converted'))se('cl-stat-converted').textContent= converted.toLocaleString();
+  if(se('cl-stat-rate'))     se('cl-stat-rate').textContent     = rate+'%';
+  if(se('cl-stat-campaigns'))se('cl-stat-campaigns').textContent= campaigns.length;
+  if(se('cl-stat-revenue'))  se('cl-stat-revenue').textContent  =
+    '$'+revenue.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+  // Campaign filter dropdown
+  const cfSel = se('cl-campaign-filter');
+  if (cfSel) {
+    const prev = cfSel.value;
+    cfSel.innerHTML = '<option value="">All Campaigns</option>' +
+      campaigns.map(c=>`<option value="${c.name}" ${c.name===prev?'selected':''}>${c.name} (${c.converted}/${c.total})</option>`).join('');
+  }
+
+  // Campaign cards
+  const cardsEl = se('cl-campaign-cards');
+  if (cardsEl) {
+    cardsEl.innerHTML = campaigns.slice(0,8).map(c => {
+      const r = c.total ? ((c.converted/c.total)*100).toFixed(0) : '0';
+      const active = clCampaignFilter === c.name ? ' active' : '';
+      return `<div class="cl-campaign-card${active}" onclick="clToggleCampaignCard('${c.name.replace(/'/g,"\\'")}')">
+        <div class="cl-campaign-name" title="${c.name}">${c.name}</div>
+        <div class="cl-campaign-rate">${r}%</div>
+        <div class="cl-campaign-meta">${c.converted} / ${c.total} converted${c.revenue?'<br>$'+c.revenue.toLocaleString('en-US',{maximumFractionDigits:0}):''}  </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Result count
+  const filtered = clFilteredLeads();
+  const cntEl = se('cl-result-count');
+  if (cntEl) cntEl.textContent = `${filtered.length.toLocaleString()} of ${total.toLocaleString()} contacts`;
+
+  // Table
+  const tbody = se('cl-table-body');
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state"><div class="empty-icon">${total?'🔍':'❄'}</div>
+      <div class="empty-title">${total?'No results for current filter':'No cold leads yet'}</div>
+      <div class="empty-sub">${total?'Try a different filter or search':'Import a CSV/Excel with your contact list to get started'}</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((cl, i) => {
+    const conv = cl.converted;
+    const rowCls = conv ? ' class="cl-converted-row"' : '';
+    const convBadge = conv
+      ? `<span class="cl-badge-conv">✓ ${cl.matchedType||'Matched'}</span>`
+      : `<span class="cl-badge-none">○ None</span>`;
+    const ordCell = conv
+      ? `<div style="font-size:11px;color:var(--text);font-weight:500">${cl.matchedNum||cl.matchedName||'—'}</div>
+         <div style="font-size:10px;color:var(--text-muted)">${cl.matchedType||''}</div>`
+      : '<span style="color:var(--text-dim);font-size:11px">—</span>';
+
+    return `<tr${rowCls} data-cl-id="${cl.id}">
+      <td style="text-align:center;padding:6px 4px">
+        <button class="row-del-btn" onclick="deleteCL('${cl.id}')" title="Delete">✕</button>
+      </td>
+      <td class="td-muted td-mono" style="font-size:10px">${coldLeads.indexOf(cl)+1}</td>
+      <td>
+        <input class="inline-edit" value="${(cl.name||'').replace(/"/g,'&quot;')}" placeholder="Full name"
+          style="width:100%;font-weight:500" onchange="updateCL('${cl.id}','name',this.value)">
+      </td>
+      <td>
+        <input class="inline-edit" value="${(cl.email||'').replace(/"/g,'&quot;')}" placeholder="email@example.com"
+          style="width:100%;font-size:12px;color:var(--accent)" onchange="updateCL('${cl.id}','email',this.value)">
+      </td>
+      <td>
+        <input class="inline-edit" value="${(cl.phone||'').replace(/"/g,'&quot;')}" placeholder="Phone"
+          style="width:100%;font-size:12px" onchange="updateCL('${cl.id}','phone',this.value)">
+      </td>
+      <td>
+        <input class="inline-edit" value="${(cl.campaign||'').replace(/"/g,'&quot;')}" placeholder="Campaign name"
+          style="width:100%;font-size:12px;color:var(--teal)" onchange="updateCL('${cl.id}','campaign',this.value);renderColdLeads()">
+      </td>
+      <td style="font-size:11px;color:var(--text-muted);white-space:nowrap">${cl.dateAdded||'—'}</td>
+      <td>${convBadge}
+        <div style="margin-top:4px">
+          <label style="font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" ${conv?'checked':''} onchange="clToggleManualConvert('${cl.id}',this.checked)"
+              style="accent-color:var(--green);cursor:pointer"> Manual
+          </label>
+        </div>
+      </td>
+      <td>${ordCell}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${cl.matchedDate||'—'}</td>
+      <td style="font-size:11px;font-weight:600;color:var(--green)">${cl.matchedValue||'—'}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${cl.source||'—'}</td>
+      <td>
+        <input class="inline-edit" value="${(cl.notes||'').replace(/"/g,'&quot;')}" placeholder="Notes…"
+          style="min-width:140px" onchange="updateCL('${cl.id}','notes',this.value)">
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function clToggleCampaignCard(name) {
+  clCampaignFilter = clCampaignFilter === name ? '' : name;
+  const cfSel = document.getElementById('cl-campaign-filter');
+  if (cfSel) cfSel.value = clCampaignFilter;
+  renderColdLeads();
+}
+
+function updateCL(id, field, value) {
+  const cl = coldLeads.find(c=>c.id===id);
+  if (!cl) return;
+  cl[field] = value;
+  saveCL();
+}
+
+function deleteCL(id) {
+  if (!confirm('Remove this contact?')) return;
+  coldLeads = coldLeads.filter(c=>c.id!==id);
+  saveCL(); renderColdLeads();
+}
+
+function clToggleManualConvert(id, checked) {
+  const cl = coldLeads.find(c=>c.id===id);
+  if (!cl) return;
+  cl.converted     = checked;
+  cl.manualConvert = checked;
+  if (!checked) { cl.matchedOrderId=''; cl.matchedType=''; cl.matchedName=''; cl.matchedDate=''; cl.matchedValue=''; }
+  saveCL(); renderColdLeads();
+}
+
+// ── ADD SINGLE CONTACT ───────────────────────────────────
+function openCLAddModal() {
+  if (document.getElementById('cl-add-overlay')) document.getElementById('cl-add-overlay').remove();
+  const ov = document.createElement('div');
+  ov.id = 'cl-add-overlay';
+  ov.className = 'cl-import-modal-overlay';
+  ov.innerHTML = `<div class="cl-import-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <span style="font-size:15px;font-weight:600">+ Add Cold Lead Contact</span>
+      <button class="btn btn-sm" onclick="document.getElementById('cl-add-overlay').remove()">✕</button>
+    </div>
+    <div class="cl-map-grid">
+      <div class="field"><label>Full Name *</label><input class="inline-edit" id="cl-add-name" placeholder="Jane Smith" style="width:100%"></div>
+      <div class="field"><label>Email</label><input class="inline-edit" id="cl-add-email" placeholder="jane@example.com" style="width:100%"></div>
+      <div class="field"><label>Phone</label><input class="inline-edit" id="cl-add-phone" placeholder="+1 555 000 0000" style="width:100%"></div>
+      <div class="field"><label>Campaign</label><input class="inline-edit" id="cl-add-campaign" placeholder="e.g. Spring2025" style="width:100%"></div>
+      <div class="field"><label>Source</label><input class="inline-edit" id="cl-add-source" placeholder="e.g. Email list, Cold outreach" style="width:100%"></div>
+      <div class="field"><label>Notes</label><input class="inline-edit" id="cl-add-notes" placeholder="Optional notes" style="width:100%"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-sm" onclick="document.getElementById('cl-add-overlay').remove()">Cancel</button>
+      <button class="btn btn-sm btn-success" onclick="clAddSingleContact()">+ Add & Match</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); });
+}
+
+function clAddSingleContact() {
+  const g = id => document.getElementById(id)?.value?.trim()||'';
+  const name = g('cl-add-name');
+  if (!name) { toast('Name is required','error'); return; }
+  const cl = {
+    id: 'cl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    name, email:g('cl-add-email'), phone:g('cl-add-phone'),
+    campaign:g('cl-add-campaign'), source:g('cl-add-source'), notes:g('cl-add-notes'),
+    dateAdded: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    converted:false, matchedOrderId:'', matchedType:'', matchedName:'', matchedDate:'', matchedValue:''
+  };
+  // Auto-match
+  const match = clFindBestMatch(cl);
+  if (match) {
+    cl.converted=true; cl.matchedOrderId=match.orderId; cl.matchedType=match.type;
+    cl.matchedName=match.orderName; cl.matchedDate=match.orderDate; cl.matchedValue=match.orderValue;
+    cl.matchedNum=match.orderNum; cl.matchScore=match.score;
+  }
+  coldLeads.unshift(cl);
+  saveCL();
+  document.getElementById('cl-add-overlay')?.remove();
+  renderColdLeads();
+  toast(`Contact added${match?' — matched to '+match.type:''}`, 'success', 2000);
+}
+
+// ── IMPORT CSV / EXCEL ───────────────────────────────────
+function openCLImportModal() {
+  if (document.getElementById('cl-import-overlay')) document.getElementById('cl-import-overlay').remove();
+  const ov = document.createElement('div');
+  ov.id = 'cl-import-overlay';
+  ov.className = 'cl-import-modal-overlay';
+  ov.innerHTML = `<div class="cl-import-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600">↓ Import Cold Leads — CSV / Excel</span>
+      <button class="btn btn-sm" onclick="document.getElementById('cl-import-overlay').remove()">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">
+      Drop your file — handles <strong>8,000+ rows</strong>. Required: <span style="color:var(--red)">Name</span> or <span style="color:var(--red)">Email</span>.
+      After upload, map columns and set a campaign tag before importing.
+    </div>
+    <!-- Drop zone -->
+    <label id="cl-drop-zone" style="display:flex;flex-direction:column;align-items:center;gap:8px;border:2px dashed var(--border);border-radius:var(--radius-lg);padding:24px;cursor:pointer;transition:all 0.2s;text-align:center;margin-bottom:14px"
+      ondragover="event.preventDefault();this.style.borderColor='var(--teal)'"
+      ondragleave="this.style.borderColor=''"
+      ondrop="event.preventDefault();clHandleFile(event.dataTransfer.files[0])">
+      <input type="file" id="cl-file-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="clHandleFile(this.files[0])">
+      <div style="font-size:28px">📂</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text)">Drop CSV / Excel here</div>
+      <div style="font-size:11px;color:var(--text-muted)">.csv · .xlsx · .xls · up to 50k rows</div>
+      <button class="btn btn-primary btn-sm" onclick="event.preventDefault();document.getElementById('cl-file-input').click()">Browse File</button>
+    </label>
+    <!-- Progress bar -->
+    <div id="cl-import-progress" style="display:none">
+      <div class="cl-progress"><div class="cl-progress-bar" id="cl-progress-bar" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--text-muted);text-align:center" id="cl-progress-label">Parsing…</div>
+    </div>
+    <!-- Column mapping (shown after upload) -->
+    <div id="cl-map-section" style="display:none">
+      <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px">
+        Detected <span id="cl-col-count" style="color:var(--accent)">0</span> columns · <span id="cl-row-count" style="color:var(--accent)">0</span> rows
+      </div>
+      <div class="cl-map-grid">
+        <div class="field"><label>Name column *</label>
+          <select id="clmap-name" class="map-select"><option value="">-- Skip --</option></select></div>
+        <div class="field"><label>Email column</label>
+          <select id="clmap-email" class="map-select"><option value="">-- Skip --</option></select></div>
+        <div class="field"><label>Phone column</label>
+          <select id="clmap-phone" class="map-select"><option value="">-- Skip --</option></select></div>
+        <div class="field"><label>Campaign / List column</label>
+          <select id="clmap-campaign" class="map-select"><option value="">-- Skip --</option></select></div>
+        <div class="field"><label>Source column</label>
+          <select id="clmap-source" class="map-select"><option value="">-- Skip --</option></select></div>
+        <div class="field"><label>Campaign tag (override / add)</label>
+          <input class="inline-edit" id="clmap-campaign-tag" placeholder="e.g. SpringEmail2025" style="width:100%"></div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
+        <input type="checkbox" id="cl-dedup" checked style="accent-color:var(--teal)">
+        <label for="cl-dedup" style="font-size:12px;color:var(--text-muted);cursor:pointer">Skip duplicate emails (recommended)</label>
+        <input type="checkbox" id="cl-auto-match" checked style="accent-color:var(--teal);margin-left:12px">
+        <label for="cl-auto-match" style="font-size:12px;color:var(--text-muted);cursor:pointer">Auto-match against orders after import</label>
+      </div>
+      <!-- Preview -->
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);max-height:160px;overflow-y:auto;margin-bottom:14px">
+        <table style="font-size:11px;width:100%;border-collapse:collapse" id="cl-preview-table">
+          <thead id="cl-preview-head"></thead>
+          <tbody id="cl-preview-body"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-sm" onclick="document.getElementById('cl-import-overlay').remove()">Cancel</button>
+        <button class="btn btn-sm btn-success" id="cl-import-btn" onclick="clRunImport()">⚡ Import All</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); });
+}
+
+function clHandleFile(file) {
+  if (!file) return;
+  const prog = document.getElementById('cl-import-progress');
+  const bar  = document.getElementById('cl-progress-bar');
+  const lbl  = document.getElementById('cl-progress-label');
+  if (prog) { prog.style.display=''; bar.style.width='20%'; lbl.textContent='Reading file…'; }
+
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    if (bar) bar.style.width = '60%';
+    if (lbl) lbl.textContent = 'Parsing rows…';
+    try {
+      let rows = [];
+      if (ext === 'csv') {
+        const text = e.target.result;
+        rows = clParseCSV(text);
+      } else {
+        const data = new Uint8Array(e.target.result);
+        const wb   = XLSX.read(data, { type:'array' });
+        const ws   = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      }
+      if (bar) bar.style.width = '90%';
+      if (lbl) lbl.textContent = `Found ${rows.length-1} rows`;
+      _clImportRaw = rows;
+      clShowMapSection(rows);
+    } catch(err) {
+      toast('Could not parse file: '+err.message, 'error');
+    }
+    if (prog) setTimeout(()=>prog.style.display='none', 600);
+  };
+
+  if (ext === 'csv') reader.readAsText(file);
+  else reader.readAsArrayBuffer(file);
+}
+
+function clParseCSV(text) {
+  const lines = text.split(/\r?\n/);
+  return lines.map(line => {
+    const cols = []; let cur = ''; let inQ = false;
+    for (let i=0; i<line.length; i++) {
+      const c = line[i];
+      if (c==='"') { inQ=!inQ; }
+      else if (c===',' && !inQ) { cols.push(cur.trim()); cur=''; }
+      else cur+=c;
+    }
+    cols.push(cur.trim());
+    return cols;
+  }).filter(r => r.some(c=>c!==''));
+}
+
+function clShowMapSection(rows) {
+  if (!rows.length) return;
+  const headers = rows[0].map(h=>String(h));
+  const mapSec  = document.getElementById('cl-map-section');
+  if (!mapSec) return;
+  mapSec.style.display = '';
+
+  document.getElementById('cl-col-count').textContent = headers.length;
+  document.getElementById('cl-row-count').textContent  = rows.length - 1;
+
+  // Auto-guess column mapping
+  const autoMap = {name:'',email:'',phone:'',campaign:'',source:''};
+  headers.forEach((h,i) => {
+    const hl = h.toLowerCase();
+    if (!autoMap.name    && /(name|full.?name|customer|contact)/i.test(hl)) autoMap.name = i;
+    if (!autoMap.email   && /(email|e.mail)/i.test(hl))                     autoMap.email = i;
+    if (!autoMap.phone   && /(phone|mobile|cell|tel)/i.test(hl))            autoMap.phone = i;
+    if (!autoMap.campaign&& /(campaign|list|group|segment)/i.test(hl))      autoMap.campaign = i;
+    if (!autoMap.source  && /(source|origin|channel)/i.test(hl))            autoMap.source = i;
+  });
+
+  const optHtml = ['<option value="">-- Skip --</option>',
+    ...headers.map((h,i)=>`<option value="${i}">${h||'Col '+(i+1)}</option>`)].join('');
+  ['name','email','phone','campaign','source'].forEach(k => {
+    const sel = document.getElementById(`clmap-${k}`);
+    if (sel) {
+      sel.innerHTML = optHtml;
+      if (autoMap[k]!=='') sel.value = String(autoMap[k]);
+    }
+  });
+
+  // Preview (first 5 data rows)
+  const thead = document.getElementById('cl-preview-head');
+  const tbody = document.getElementById('cl-preview-body');
+  if (thead) thead.innerHTML = '<tr>'+headers.map(h=>`<th style="padding:4px 8px;border:1px solid var(--border);background:var(--navy-light);white-space:nowrap">${h}</th>`).join('')+'</tr>';
+  if (tbody) tbody.innerHTML = rows.slice(1,6).map(r=>'<tr>'+headers.map((_,i)=>`<td style="padding:3px 8px;border:1px solid var(--border-light);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r[i]||''}</td>`).join('')+'</tr>').join('');
+}
+
+function clRunImport() {
+  const rows = _clImportRaw;
+  if (!rows.length) { toast('No data to import', 'error'); return; }
+
+  const gi = id => { const v=document.getElementById(id)?.value; return v===''||v===undefined ? null : parseInt(v); };
+  const iName     = gi('clmap-name');
+  const iEmail    = gi('clmap-email');
+  const iPhone    = gi('clmap-phone');
+  const iCampaign = gi('clmap-campaign');
+  const iSource   = gi('clmap-source');
+  const tagOverride = (document.getElementById('clmap-campaign-tag')?.value||'').trim();
+  const dedup     = document.getElementById('cl-dedup')?.checked ?? true;
+  const autoMatch = document.getElementById('cl-auto-match')?.checked ?? true;
+
+  if (iName===null && iEmail===null) { toast('Map at least Name or Email column', 'error'); return; }
+
+  // Existing emails for dedup
+  const existingEmails = new Set(coldLeads.map(c=>clNormEmail(c.email)).filter(Boolean));
+
+  const btn = document.getElementById('cl-import-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Importing…'; }
+
+  const dataRows = rows.slice(1);
+  const BATCH = 500;
+  let added = 0, skipped = 0, idx = 0;
+
+  function processBatch() {
+    const end = Math.min(idx + BATCH, dataRows.length);
+    for (; idx < end; idx++) {
+      const row = dataRows[idx];
+      const name     = iName     !== null ? String(row[iName]||'').trim()     : '';
+      const email    = iEmail    !== null ? String(row[iEmail]||'').trim()    : '';
+      const phone    = iPhone    !== null ? String(row[iPhone]||'').trim()    : '';
+      const campaign = tagOverride || (iCampaign!==null ? String(row[iCampaign]||'').trim() : '');
+      const source   = iSource   !== null ? String(row[iSource]||'').trim()   : '';
+
+      if (!name && !email) continue;
+
+      // Dedup by email
+      if (dedup && email && existingEmails.has(clNormEmail(email))) { skipped++; continue; }
+
+      const cl = {
+        id: 'cl_'+Date.now()+'_'+idx+'_'+Math.random().toString(36).slice(2,5),
+        name, email, phone, campaign, source, notes:'',
+        dateAdded: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+        converted:false, matchedOrderId:'', matchedType:'', matchedName:'', matchedDate:'', matchedValue:'', matchedNum:''
+      };
+
+      // Auto-match inline for small imports; deferred for large
+      if (autoMatch && dataRows.length <= 2000) {
+        const match = clFindBestMatch(cl);
+        if (match) {
+          cl.converted=true; cl.matchedOrderId=match.orderId; cl.matchedType=match.type;
+          cl.matchedName=match.orderName; cl.matchedDate=match.orderDate;
+          cl.matchedValue=match.orderValue; cl.matchedNum=match.orderNum; cl.matchScore=match.score;
+        }
+      }
+
+      coldLeads.push(cl);
+      if (email) existingEmails.add(clNormEmail(email));
+      added++;
+    }
+
+    if (idx < dataRows.length) {
+      // Update progress label
+      const pct = Math.round(idx/dataRows.length*100);
+      const lbl = document.getElementById('cl-progress-label');
+      if (lbl) lbl.textContent = `Importing… ${pct}%`;
+      setTimeout(processBatch, 10);
+    } else {
+      // Done
+      saveCL();
+      document.getElementById('cl-import-overlay')?.remove();
+
+      // For large imports, run match in background
+      if (autoMatch && dataRows.length > 2000) {
+        toast(`Imported ${added.toLocaleString()} contacts — matching in background…`, 'info', 3000);
+        setTimeout(() => { clRunMatchAll(); }, 200);
+      } else {
+        toast(`✓ Imported ${added.toLocaleString()} contacts${skipped?' · '+skipped+' duplicates skipped':''}`, 'success', 3500);
+      }
+      renderColdLeads();
+    }
+  }
+  processBatch();
+}
+
+// ── EXPORT ───────────────────────────────────────────────
+function exportCLExcel() {
+  if (!window.XLSX) { toast('XLSX library not loaded', 'error'); return; }
+  const headers = ['#','Name','Email','Phone','Campaign','Source','Date Added','Converted','Matched Order','Matched Type','Order Date','Order Value','Notes'];
+  const rows = coldLeads.map((cl,i) => [
+    i+1, cl.name||'', cl.email||'', cl.phone||'', cl.campaign||'', cl.source||'',
+    cl.dateAdded||'', cl.converted?'Yes':'No',
+    cl.matchedNum||cl.matchedName||'', cl.matchedType||'',
+    cl.matchedDate||'', cl.matchedValue||'', cl.notes||''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [4,20,25,14,18,16,12,10,18,12,12,12,22].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Cold Leads');
+
+  // Summary sheet
+  const camps = clGetCampaigns();
+  const sumHeaders = ['Campaign','Total','Converted','Conversion Rate','Revenue Tracked'];
+  const sumRows = camps.map(c=>[c.name,c.total,c.converted,
+    c.total?((c.converted/c.total)*100).toFixed(1)+'%':'0%',
+    c.revenue?'$'+c.revenue.toLocaleString('en-US',{maximumFractionDigits:0}):''
+  ]);
+  const ws2 = XLSX.utils.aoa_to_sheet([sumHeaders,...sumRows]);
+  ws2['!cols'] = [{wch:22},{wch:8},{wch:10},{wch:16},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Campaign Summary');
+
+  XLSX.writeFile(wb, 'asn_cold_leads.xlsx');
+  toast('Exported ✓', 'success');
+}
+
+// Wire up confirmClear for cold-leads
+const _origExecClearCL = window.executeClear;
+window.executeClear = function() {
+  if (typeof _clearPending !== 'undefined' && _clearPending && _clearPending.storageKey === 'asn_cold_leads') {
+    coldLeads = [];
+    saveCL(); renderColdLeads();
+    toast('Cold leads cleared', 'info');
+    if (typeof closeClearModal === 'function') closeClearModal();
+    return;
+  }
+  if (_origExecClearCL) _origExecClearCL.apply(this, arguments);
+};
+
+// Init
+updateCLBadge();
+
+// ══════════════════════════════════════════════════════════
+//  END COLD LEADS MODULE
+// ══════════════════════════════════════════════════════════
 </script>
 </body>
 </html>
