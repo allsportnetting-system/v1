@@ -894,7 +894,6 @@
   <div class="sidebar-footer">
     <div style="margin-bottom:6px;font-size:11px;color:var(--text-dim)">Integrations</div>
     <div class="integration-dots">
-      <div class="int-dot connected">Method CRM</div>
       <div class="int-dot" id="sheets-int-dot" onclick="toggleSheetsConfig()" style="cursor:pointer">Sheets</div>
       <div class="int-dot">Dropbox</div>
       <div class="int-dot connected">Outlook</div>
@@ -916,17 +915,7 @@
         3. Deploy → Web App → Copy URL here
       </div>
     </div>
-    <button class="crm-settings-btn" id="crm-settings-toggle" onclick="toggleCrmConfig()">
-      <span id="crm-key-icon">⚙</span> <span id="crm-key-label">Configure Method API Key</span>
-    </button>
-    <div class="crm-config-panel" id="crm-config-panel">
-      <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4">Paste your Method CRM API key — used for live duplicate detection on every lead submit.</div>
-      <div class="api-key-row">
-        <input type="password" id="method-api-key-input" placeholder="method_xxxxxxxxxxxx" value="">
-        <button class="btn btn-sm btn-primary" onclick="saveMethodApiKey()">Save</button>
-      </div>
-      <div style="margin-top:6px;font-size:10px;color:var(--text-dim)">Key is stored locally in your browser only.</div>
-    </div>
+
   </div>
 </aside>
 
@@ -934,7 +923,7 @@
   <div class="topbar">
     <div>
       <div class="page-title" id="topbar-title">Base Leads Inquiry</div>
-      <div class="page-sub" id="topbar-sub">Add new inquiry leads — auto-syncs to Method CRM</div>
+      <div class="page-sub" id="topbar-sub">Add new inquiry leads</div>
     </div>
     <div class="topbar-actions">
       <div class="sync-indicator">
@@ -953,7 +942,7 @@
     <!-- BASE LEADS -->
     <div class="tab-panel active" id="tab-base-leads">
       <div class="card">
-        <div class="card-title">Base Leads Inquiry <span class="ct-badge">Auto → Method CRM</span></div>
+        <div class="card-title">Base Leads Inquiry</div>
         <div class="form-grid">
           <div class="field"><label>First Name *</label><input type="text" id="f-first" placeholder="John"></div>
           <div class="field"><label>Last Name *</label><input type="text" id="f-last" placeholder="Smith"></div>
@@ -2721,10 +2710,13 @@ const ALL_TABS = [
   { id: 'est-followup', label: '📋 Estimate Follow-Up' },
   { id: 'invoice', label: '🧾 Invoice' },
   { id: 'base-sale', label: '💰 Base Sale' },
+  { id: 'purchase-order', label: '🧾 Purchase Order' },
   { id: 'ws-order', label: '🛒 WS Order' },
   { id: 'inventory', label: '📦 Inventory / Poles' },
   { id: 'how-found', label: '◎ How Did They Find Us' },
   { id: 'ap-tracking', label: '🏦 Accounts Payable' },
+  { id: 'ar-tracking', label: '📥 Accounts Receivable' },
+  { id: 'cold-leads', label: '❄ Cold Leads' },
 ];
 
 function openAccessManager() {
@@ -2930,7 +2922,7 @@ let leads = [];
 let estimates = [];
 let invoices = [];
 let baseSales = [];
-let methodApiKey = localStorage.getItem('asn_method_api_key')||'';
+let methodApiKey = '';
 let selectedLeadId=null, selectedSource='websearch', selectedHow=null, unsaved=false;
 
 const STAGES=['new','contacted','qualified','proposal','followup','closed','declined','dormant'];
@@ -3780,33 +3772,6 @@ function renderPipelineHealth(){
 function markUnsaved(){unsaved=true}
 
 // ===== METHOD CRM API KEY =====
-function toggleCrmConfig(){
-  const panel=document.getElementById('crm-config-panel');
-  panel.classList.toggle('open');
-  if(panel.classList.contains('open')&&methodApiKey){
-    document.getElementById('method-api-key-input').value=methodApiKey;
-  }
-}
-function saveMethodApiKey(){
-  const val=document.getElementById('method-api-key-input').value.trim();
-  if(!val){toast('Please enter an API key','error');return;}
-  methodApiKey=val;
-  localStorage.setItem('asn_method_api_key',val);
-  document.getElementById('crm-config-panel').classList.remove('open');
-  const btn=document.getElementById('crm-settings-toggle');
-  btn.classList.add('configured');
-  document.getElementById('crm-key-icon').textContent='✓';
-  document.getElementById('crm-key-label').textContent='Method API Key Saved';
-  toast('Method CRM API key saved ✓','success');
-}
-function initCrmKeyState(){
-  if(methodApiKey){
-    const btn=document.getElementById('crm-settings-toggle');
-    btn.classList.add('configured');
-    document.getElementById('crm-key-icon').textContent='✓';
-    document.getElementById('crm-key-label').textContent='Method API Key Saved';
-  }
-}
 
 // ===== DUPLICATE DETECTION =====
 let _pendingLead=null; // holds lead object while modal is open
@@ -3927,8 +3892,7 @@ function _commitLead(lead,syncToCRM){
   leads.unshift(lead);save();renderRecentLeads();updateBadges();renderPipelineList();
   pushLeadToSheets(lead);
   if(syncToCRM){
-    simulateSync('Syncing to Method CRM...');
-    setTimeout(()=>toast(`"${lead.first} ${lead.last}" synced to Method CRM ✓`,'success'),400);
+    
   } else {
     document.getElementById('sync-label').textContent='Synced';
     setTimeout(()=>toast(`"${lead.first} ${lead.last}" recorded (CRM skipped)`,'info'),100);
@@ -10476,7 +10440,7 @@ function ctxToggleTotal2(tableEl) {
 }
 
 // ── "Add Table" button injection per tab ─────────────────
-const TAB_IDS = ['base-leads','pipeline','net-info','est-followup','invoice','base-sale','how-found','ws-order','inventory','ap-tracking','ar-tracking'];
+const TAB_IDS = ['base-leads','pipeline','net-info','est-followup','invoice','base-sale','purchase-order','how-found','ws-order','inventory','ap-tracking','ar-tracking','cold-leads'];
 
 function injectAddTableBtns() {
   TAB_IDS.forEach(tabId => {
