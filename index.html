@@ -2488,7 +2488,7 @@
 // ===== CLOUD STORAGE CONFIG =====
 const _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
 const JSONBIN_BIN_ID    = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
-const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || 'y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';
+const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';
 const JSONBIN_MASTER_KEY= localStorage.getItem('asn_master_key')|| '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC';
 const JSONBIN_URL = () => `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
@@ -3590,7 +3590,7 @@ function switchTab(tab){
   if(tab==='invoice')renderInvoice();
   if(tab==='base-sale')renderBaseSale();
   if(tab==='purchase-order')renderPurchaseOrders();
-  if(tab==='ws-order'){renderWSOrders();checkWSDueDates();wsRenderColGrid();wsApplyColVisibility();}
+  if(tab==='ws-order'){renderWSOrders();checkWSDueDates();wsRenderColGrid();}
   if(tab==='inventory'){renderPolesInventory();renderPolesToShip();renderExtPoles();renderInstallRows();scanOrdersForInstall();renderInstallRows();updateInvStats();}
   if(tab==='ap-tracking'){loadAP();renderAP();}
   if(tab==='ar-tracking'){renderAR();}
@@ -6276,13 +6276,19 @@ let wsVisibleCols = loadWSColPrefs();
 function loadWSColPrefs() {
   try {
     const saved = localStorage.getItem('asn_ws_col_prefs');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
   } catch(e) {}
   return WS_COLS.filter(c=>c.default).map(c=>c.id);
 }
 
 function saveWSColPrefs() {
-  localStorage.setItem('asn_ws_col_prefs', JSON.stringify(wsVisibleCols));
+  // Only save if we actually have visible cols — never save an empty array
+  if (wsVisibleCols && wsVisibleCols.length > 0) {
+    localStorage.setItem('asn_ws_col_prefs', JSON.stringify(wsVisibleCols));
+  }
 }
 
 function wsSetStatusFilter(status) {
@@ -6349,6 +6355,10 @@ function wsSaveCurrentView() {
 function wsApplyColVisibility() {
   const table = document.querySelector('#ws-order-table')?.closest('table');
   if (!table) return;
+  // Safety: if wsVisibleCols is empty, reset to defaults so rows never disappear
+  if (!wsVisibleCols || wsVisibleCols.length === 0) {
+    wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id);
+  }
   WS_COLS.forEach((col, i) => {
     const thIdx = i + 2; // offset: col 0=del, col 1=#
     const visible = col.sticky || wsVisibleCols.includes(col.id);
