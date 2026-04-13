@@ -380,7 +380,25 @@
   .assign-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:600;padding:2px 7px;border-radius:8px;background:rgba(167,139,250,0.15);color:var(--purple)}
   /* TEAM PILLS (assign) */
   .team-pills{display:flex;gap:6px;flex-wrap:wrap}
-  .team-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;color:var(--text-muted);background:transparent;font-family:'DM Sans',sans-serif}
+  .team-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;color:var(--text-muted);background:transparent;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px}
+  .team-pill:hover{border-color:var(--accent);color:var(--accent)}
+  .team-pill.selected{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+  .team-pill .tpill-x{font-size:9px;opacity:0;transition:opacity 0.12s;color:var(--text-dim);font-weight:700;line-height:1;border:none;background:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif}
+  .team-pill:hover .tpill-x{opacity:0.8}
+  .team-pill:hover .tpill-x:hover{color:var(--red);opacity:1}
+  .pill.pill-removable .pill-x{font-size:9px;margin-left:2px;opacity:0;transition:opacity 0.12s;color:var(--text-dim);font-weight:700;line-height:1;border:none;background:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;vertical-align:middle}
+  .pill.pill-removable:hover .pill-x{opacity:0.8}
+  .pill.pill-removable .pill-x:hover{color:var(--red)!important;opacity:1!important}
+  .mgr-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+  .mgr-modal-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;max-width:380px;width:95%;box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+  .mgr-modal-title{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+  .mgr-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:5px;background:var(--surface)}
+  .mgr-item-label{color:var(--text);flex:1;font-size:12px}
+  .mgr-del-btn{background:none;border:1px solid transparent;border-radius:4px;color:var(--text-dim);cursor:pointer;font-size:11px;padding:2px 6px;font-family:'DM Sans',sans-serif;transition:all 0.12s;white-space:nowrap}
+  .mgr-del-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+  .mgr-add-row{display:flex;gap:6px;margin-top:10px}
+  .mgr-add-row input{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);outline:none}
+  .mgr-add-row input:focus{border-color:var(--accent)}
   .team-pill:hover{border-color:var(--purple);color:var(--purple)}
   .team-pill.selected{background:rgba(167,139,250,0.15);border-color:var(--purple);color:var(--purple)}
   /* GOOGLE SHEETS PANEL */
@@ -750,6 +768,73 @@
   .stage-col#col-dormant .stage-label{letter-spacing:.5px}
   /* Detail panel dormant option greyed when blocked */
   #dp-stage option[value="dormant"].locked-opt{color:var(--text-dim)}
+
+  /* ── WS ORDER FILTER / COLUMN VIEWS ──────────────────── */
+  .ws-filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:12px}
+  .ws-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ws-filter-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;min-width:52px}
+  .ws-status-pill{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+  .ws-status-pill:hover{border-color:rgba(0,0,0,0.2);color:var(--text)}
+  .ws-status-pill.active{color:white}
+  .ws-status-pill[data-s="all"].active{background:var(--text);border-color:var(--text)}
+  .ws-status-pill[data-s="pending"].active{background:var(--amber);border-color:var(--amber)}
+  .ws-status-pill[data-s="processing"].active{background:var(--accent);border-color:var(--accent)}
+  .ws-status-pill[data-s="shipped"].active{background:var(--teal);border-color:var(--teal)}
+  .ws-status-pill[data-s="completed"].active{background:var(--green);border-color:var(--green)}
+  .ws-status-pill[data-s="cancelled"].active{background:var(--red);border-color:var(--red)}
+  .ws-col-toggle-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:5px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--navy-light);color:var(--text-muted);cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px}
+  .ws-col-toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .ws-col-panel{display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:2px}
+  .ws-col-panel.open{display:block}
+  .ws-col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-bottom:10px}
+  .ws-col-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-muted);cursor:pointer;padding:5px 8px;border-radius:var(--radius);border:1px solid var(--border);transition:all 0.15s;user-select:none}
+  .ws-col-item:hover{border-color:var(--accent);color:var(--text)}
+  .ws-col-item.on{border-color:var(--accent);background:var(--accent-glow);color:var(--accent)}
+  .ws-col-item input{accent-color:var(--accent);width:13px;height:13px;cursor:pointer;pointer-events:none}
+  .ws-view-preset-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+  .ws-preset-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.15s}
+  .ws-preset-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .ws-result-count{font-size:11px;color:var(--text-dim);padding:3px 8px;background:var(--navy-light);border:1px solid var(--border);border-radius:10px;white-space:nowrap}
+</style>
+  .po-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px;backdrop-filter:blur(2px)}
+  .po-modal-overlay.hidden{display:none}
+  .po-modal-box{background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0;max-width:780px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.5);margin:auto;overflow:hidden}
+  .po-modal-header{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+  .po-modal-title{font-size:15px;font-weight:600;color:var(--text)}
+  .po-modal-body{padding:24px}
+  /* PO Print Template */
+  .po-template{background:#fff;border:1px solid #ddd;border-radius:8px;padding:32px;font-family:'DM Sans',sans-serif;color:#111;max-width:700px;margin:0 auto 20px}
+  .po-template .po-company{text-align:center;margin-bottom:8px}
+  .po-template .po-company-name{font-size:22px;font-weight:700;color:#111;margin-bottom:2px}
+  .po-template .po-doc-title{font-size:14px;color:#555;margin-bottom:16px}
+  .po-meta{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:20px}
+  .po-meta-left,.po-meta-right{padding:4px 0}
+  .po-meta-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
+  .po-meta-label{font-weight:600;color:#333;min-width:80px}
+  .po-meta-field{border:1px solid #333;border-radius:3px;padding:4px 8px;min-width:160px;font-size:13px;font-weight:600;background:#fff;color:#111;font-family:'DM Sans',sans-serif;outline:none}
+  .po-meta-field:focus{border-color:#2d7ef7;box-shadow:0 0 0 2px rgba(45,126,247,0.15)}
+  .po-items-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px}
+  .po-items-table thead th{background:#f5f5f5;border:1px solid #ccc;padding:8px 10px;text-align:left;font-weight:700;color:#333}
+  .po-items-table tbody td{border:1px solid #ccc;padding:6px 8px;vertical-align:middle}
+  .po-items-table .po-item-input{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:#111;outline:none;padding:2px 4px}
+  .po-items-table .po-item-input:focus{background:rgba(45,126,247,0.06);border-radius:3px}
+  .po-ship-section{border-top:1px solid #ccc;margin-top:8px;padding-top:12px}
+  .po-ship-block{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:10px 14px;font-size:12px;color:#333;line-height:1.7}
+  .po-confirm-msg{text-align:center;font-size:12px;font-weight:600;color:#333;border-top:1px solid #ccc;margin-top:16px;padding-top:12px}
+  .po-status-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap}
+  .po-status-draft{background:rgba(107,114,128,0.15);color:#6b7280}
+  .po-status-sent{background:rgba(45,126,247,0.15);color:#2d7ef7}
+  .po-status-confirmed{background:rgba(22,163,74,0.15);color:#16a34a}
+  .po-add-row-btn{background:var(--accent-glow);border:1px dashed rgba(45,126,247,0.4);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;margin-top:6px;transition:all 0.15s}
+  .po-add-row-btn:hover{background:rgba(45,126,247,0.18)}
+  .po-row-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;font-family:'DM Sans',sans-serif;transition:color 0.12s}
+  .po-row-del:hover{color:var(--red)}
+  @media print {
+    .po-modal-header,.po-modal-footer,.po-row-del,.po-add-row-btn{display:none!important}
+    .po-modal-body{padding:0}
+    .po-template{border:none;padding:16px}
+    .po-meta-field{border:1px solid #999}
+  }
 </style>
 </head>
 <body>
@@ -777,11 +862,13 @@
     <div class="nav-item" data-tab="est-followup"><span class="icon">📋</span> Estimate Follow-Up<span class="badge badge-purple" id="ef-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="invoice"><span class="icon">🧾</span> Invoice<span class="badge badge-orange" id="inv-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Base Sale<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
+    <div class="nav-item" data-tab="purchase-order"><span class="icon">🧾</span> Purchase Order<span class="badge badge-amber" id="po-badge" style="display:none">0</span></div>
     <div class="nav-label" style="margin-top:8px">Orders & Stock</div>
     <div class="nav-item" data-tab="ws-order"><span class="icon">🛒</span> WS Order<span class="badge badge-amber" id="ws-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="inventory"><span class="icon">📦</span> Inventory / Poles</div>
     <div class="nav-label" style="margin-top:8px">Finance</div>
     <div class="nav-item" data-tab="ap-tracking"><span class="icon">🏦</span> Accounts Payable<span class="badge badge-red" id="ap-badge" style="display:none">0</span></div>
+    <div class="nav-item" data-tab="ar-tracking"><span class="icon">📥</span> Accounts Receivable<span class="badge badge-green" id="ar-badge" style="display:none">0</span></div>
     <div class="nav-label" style="margin-top:8px">Analytics</div>
     <div class="nav-item" data-tab="how-found"><span class="icon">◎</span> How Did They Find Us</div>
   </nav>
@@ -855,12 +942,11 @@
           <div class="field"><label>Phone</label><input type="tel" id="f-phone" placeholder="+1 (555) 000-0000"></div>
           <div class="field form-full"><label>Address</label><input type="text" id="f-address" placeholder="Street, City, State, ZIP"></div>
           <div class="field form-full">
-            <label>Inquiry Source <span style="font-size:10px;color:var(--teal);font-weight:400;text-transform:none;letter-spacing:0">→ feeds How Did They Find Us analytics</span></label>
-            <div class="source-pills">
-              <button class="pill selected" data-source="websearch">🔍 Web Search</button>
-              <button class="pill" data-source="ai">🤖 AI Search</button>
-              <button class="pill" data-source="referral">🤝 Referral</button>
-            </div>
+            <label style="display:flex;align-items:center;justify-content:space-between">
+              <span>Inquiry Source <span style="font-size:10px;color:var(--teal);font-weight:400;text-transform:none;letter-spacing:0">→ feeds How Did They Find Us analytics · maps to all tabs</span></span>
+              <button onclick="openManageSources()" title="Add / remove source options" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 8px;border-radius:10px;border:1px solid rgba(45,126,247,0.4);background:var(--accent-glow);color:var(--accent);cursor:pointer;font-weight:500;letter-spacing:0;text-transform:none">⚙ Manage</button>
+            </label>
+            <div class="source-pills" id="inquiry-source-pills"></div>
           </div>
           <div class="field form-full"><label>Inquiry Notes</label><textarea id="f-notes" placeholder="Describe what the client is looking for..."></textarea></div>
           <div class="field">
@@ -877,6 +963,15 @@
             <select id="f-priority">
               <option value="normal">Normal</option><option value="hot">Hot Lead 🔥</option><option value="low">Low Priority</option>
             </select>
+          </div>
+          <div class="field">
+            <label>Netting Type <span style="font-size:10px;color:var(--accent);font-weight:400;text-transform:none;letter-spacing:0">→ syncs to all tabs</span></label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select id="f-net-type" style="flex:1">
+                <option value="">-- Select --</option>
+              </select>
+              <button onclick="openManageNetTypes()" title="Add / remove net type options" style="font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">⚙</button>
+            </div>
           </div>
           <div class="field"><label>Pole Dimensions</label><input type="text" id="f-pole-dims" placeholder="e.g. 20ft × 4in OD, Qty 6"></div>
           <div class="field">
@@ -895,19 +990,9 @@
             </div>
           </div>
           <div class="field form-full">
-            <label>Assign To <span style="font-size:10px;color:var(--purple);font-weight:400;text-transform:none;letter-spacing:0">→ auto-carries to Pipeline & all tabs</span></label>
+            <label>Assign To <span style="font-size:10px;color:var(--purple);font-weight:400;text-transform:none;letter-spacing:0">→ auto-carries to Pipeline &amp; all tabs · hover pill to remove</span></label>
             <div class="team-pills" id="f-assign-pills">
-              <button class="team-pill" data-assign="Mary">Mary</button>
-              <button class="team-pill" data-assign="JM">JM</button>
-              <button class="team-pill" data-assign="Janry">Janry</button>
-              <button class="team-pill" data-assign="Tom">Tom</button>
-              <button class="team-pill" id="f-add-person-pill" onclick="showAddPersonInput()" style="border-style:dashed;color:var(--accent);border-color:var(--accent)">+ Add Person</button>
-              <span id="f-add-person-wrap" style="display:none;align-items:center;gap:4px">
-                <input type="text" id="f-add-person-input" placeholder="Name..." maxlength="30" style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--accent);border-radius:20px;padding:4px 12px;color:var(--text);outline:none;width:110px">
-                <button onclick="confirmAddPerson()" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--green);background:var(--green-dim);color:var(--green);cursor:pointer">✓</button>
-                <button onclick="cancelAddPerson()" style="font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 8px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">✕</button>
-              </span>
-              <button class="team-pill" data-assign="Unassigned">Unassigned</button>
+              <!-- populated by renderTeamPills() -->
             </div>
           </div>
           <div class="field">
@@ -1056,10 +1141,6 @@
                 <label>Assigned To</label>
                 <select id="dp-assigned-to" onchange="markUnsaved()" style="margin-bottom:8px">
                   <option value="Unassigned">Unassigned</option>
-                  <option value="Mary">Mary</option>
-                  <option value="JM">JM</option>
-                  <option value="Janry">Janry</option>
-                  <option value="Tom">Tom</option>
                 </select>
                 <label>Due Date</label>
                 <input type="date" id="dp-due-date" oninput="markUnsaved()">
@@ -1069,6 +1150,12 @@
             <hr class="divider">
             <div class="dp-section">
               <div class="dp-section-title">Net Specifications <span class="auto-badge">→ Net Info Tab</span></div>
+              <div class="dp-field">
+                <label>Net Type</label>
+                <select id="dp-net-type" onchange="markUnsaved()">
+                  <option value="">-- Select --</option>
+                </select>
+              </div>
               <div class="dp-field"><label>Net Dimensions</label><input type="text" id="dp-net-dim" placeholder="40ft W x 20ft H x 60ft L" oninput="markUnsaved()"></div>
               <div class="dp-field"><label>Pole Dimensions</label><input type="text" id="dp-pole-dims" placeholder="e.g. 20ft × 4in OD, Qty 6" oninput="markUnsaved()"></div>
               <div class="dp-field">
@@ -1077,14 +1164,6 @@
                   <option value="">-- Select --</option>
                   <option value="Mill">Mill (Galvanized)</option>
                   <option value="Black">Black (Powder Coat)</option>
-                </select>
-              </div>
-              <div class="dp-field">
-                <label>Net Type</label>
-                <select id="dp-net-type" onchange="markUnsaved()">
-                  <option value="">-- Select --</option><option>Barrier Net</option><option>Batting Cage Net</option>
-                  <option>Golf Net</option><option>Soccer Goal Net</option><option>Baseball Backstop</option>
-                  <option>Tennis Net</option><option>Custom Containment</option><option>Other</option>
                 </select>
               </div>
               <div class="dp-field">
@@ -1101,15 +1180,7 @@
               <div class="dp-section-title">Marketing Info <span class="auto-badge">→ How Found Tab</span></div>
               <div class="dp-field">
                 <label>How Did They Find ASN?</label>
-                <div class="pill-row" id="dp-how-pills">
-                  <button class="pill" data-how="google">Google</button>
-                  <button class="pill" data-how="referral">Referral</button>
-                  <button class="pill" data-how="facebook">Facebook</button>
-                  <button class="pill" data-how="instagram">Instagram</button>
-                  <button class="pill" data-how="yelp">Yelp</button>
-                  <button class="pill" data-how="repeat">Repeat Client</button>
-                  <button class="pill" data-how="other">Other</button>
-                </div>
+                <div class="pill-row" id="dp-how-pills"></div>
               </div>
               <div class="dp-field"><label>Keywords / Search Terms</label><input type="text" id="dp-keywords" placeholder="batting cage net near me..." oninput="markUnsaved()"></div>
             </div>
@@ -1172,10 +1243,6 @@
             <label>Net Type</label>
             <select id="exp-filter-nettype">
               <option value="">All Net Types</option>
-              <option>Barrier Net</option><option>Batting Cage Net</option>
-              <option>Golf Net</option><option>Soccer Goal Net</option>
-              <option>Baseball Backstop</option><option>Tennis Net</option>
-              <option>Custom Containment</option><option>Other</option>
             </select>
           </div>
           <div class="field">
@@ -1225,7 +1292,10 @@
     <div class="tab-panel" id="tab-net-info">
       <div class="section-header">
         <div><div class="section-title">Net Specifications Log</div><div class="section-sub">Mark Estimate Ongoing or Done — Done auto-creates an Estimate Follow-Up record</div></div>
-        <button class="btn-export-tab" onclick="openTabExport('net-info')">↑ Export</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-export-tab" onclick="openNetInfoImport()">↓ Import</button>
+          <button class="btn-export-tab" onclick="openTabExport('net-info')">↑ Export</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -1368,7 +1438,10 @@
     <div class="tab-panel" id="tab-base-sale">
       <div class="section-header">
         <div><div class="section-title">Base Sale Records</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
-        <button class="btn-export-tab" onclick="openTabExport('base-sale')">↑ Export</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-export-tab" onclick="openBaseSaleImport()">↓ Import</button>
+          <button class="btn-export-tab" onclick="openTabExport('base-sale')">↑ Export</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -1376,9 +1449,9 @@
             <th>Job #</th><th>Full Name / Company</th><th>Status</th><th>Description</th>
             <th>Amount</th><th>Category</th><th>Job Type</th><th>Location</th>
             <th>Vendor</th><th>Sales Order / PO #</th><th>Date Ordered</th>
-            <th>Shipping Out</th><th>Tracking</th><th>Remarks</th>
+            <th>Shipping Out</th><th>Tracking</th><th>Remarks</th><th>Purchase Order</th>
           </tr></thead>
-          <tbody id="base-sale-table"><tr><td colspan="14"><div class="empty-state"><div class="empty-icon">💰</div><div class="empty-title">No sales yet</div><div class="empty-sub">Sales appear here automatically when an invoice is marked Paid</div></div></td></tr></tbody>
+          <tbody id="base-sale-table"><tr><td colspan="15"><div class="empty-state"><div class="empty-icon">💰</div><div class="empty-title">No sales yet</div><div class="empty-sub">Sales appear here automatically when an invoice is marked Paid</div></div></td></tr></tbody>
         </table>
       </div>
       <div class="tab-footer">
@@ -1389,6 +1462,44 @@
         <div class="tab-footer-right">
           <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
           <button class="btn-save-manual" onclick="saveBS();toast('Data saved ✓','success',1800)">💾 Save Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PURCHASE ORDER TAB -->
+    <div class="tab-panel" id="tab-purchase-order">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Purchase Orders</div>
+          <div class="section-sub">Auto-generated from Base Sale records · Editable · Export to PDF or Excel</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm" onclick="openAddPOModal()" style="background:var(--accent);border-color:var(--accent);color:white">+ New PO</button>
+          <button class="btn-export-tab" style="background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.35);color:var(--green)" onclick="exportAllPOsPDF()">📄 All PDFs</button>
+          <button class="btn-export-tab" onclick="exportPOExcel()">📊 Excel</button>
+        </div>
+      </div>
+
+      <!-- PO List Table -->
+      <div class="table-wrap" id="po-list-wrap">
+        <table>
+          <thead><tr>
+            <th>PO #</th><th>Customer</th><th>Date</th><th>Items</th>
+            <th>Ship To</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="po-table-body">
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No Purchase Orders yet</div><div class="empty-sub">POs are created automatically when a Base Sale is saved, or click "+ New PO"</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-footer">
+        <div class="tab-footer-left">
+          <button class="btn-clear" onclick="confirmClear('purchase-order','asn_purchase_orders','all Purchase Orders')">🗑 Clear All POs</button>
+        </div>
+        <div class="tab-footer-right">
+          <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
+          <button class="btn-save-manual" onclick="savePOs();toast('Saved ✓','success',1800)">💾 Save Now</button>
         </div>
       </div>
     </div>
@@ -1422,6 +1533,7 @@
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-sm" onclick="openAPColManager()" title="Show/hide columns">⚙ Columns</button>
           <button class="btn btn-sm btn-primary" onclick="openAddVendorModal()">+ Add Vendor</button>
+          <button class="btn-export-tab" onclick="openAPImport()">↓ Import</button>
           <button class="btn-export-tab" onclick="exportAPCSV()">↑ Export</button>
         </div>
       </div>
@@ -1443,6 +1555,126 @@
         <div class="tab-footer-right">
           <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
           <button class="btn-save-manual" onclick="saveAP();toast('A/P data saved ✓','success',1800)">💾 Save Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS RECEIVABLE TAB -->
+    <div class="tab-panel" id="tab-ar-tracking">
+      <!-- Summary Bar -->
+      <div class="ap-summary-row" id="ar-summary-row" style="grid-template-columns:repeat(6,1fr)">
+        <div class="ap-sum-card"><div class="ap-sum-label">Total Contract</div><div class="ap-sum-value" id="ar-total-contract">$0</div></div>
+        <div class="ap-sum-card"><div class="ap-sum-label">Total Received</div><div class="ap-sum-value green" id="ar-total-received">$0</div></div>
+        <div class="ap-sum-card"><div class="ap-sum-label">Balance Due</div><div class="ap-sum-value red" id="ar-total-balance">$0</div></div>
+        <div class="ap-sum-card"><div class="ap-sum-label">Sub Con Cost</div><div class="ap-sum-value amber" id="ar-total-subcon">$0</div></div>
+        <div class="ap-sum-card"><div class="ap-sum-label">Jobs</div><div class="ap-sum-value" id="ar-job-count">0</div></div>
+        <div class="ap-sum-card"><div class="ap-sum-label">Unpaid Balance</div><div class="ap-sum-value red" id="ar-sub-balance">$0</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="section-header" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">📥 Accounts Receivable</div>
+          <input id="ar-search" type="text" placeholder="Search customer, job type…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--input-bg);color:var(--text);outline:none;min-width:200px" oninput="renderAR()">
+          <select id="ar-filter-status" onchange="renderAR()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--input-bg);color:var(--text);outline:none">
+            <option value="">All Payment Status</option>
+            <option value="Fully Paid">Fully Paid</option>
+            <option value="Partially Paid">Partially Paid</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="In Progress">In Progress</option>
+          </select>
+          <select id="ar-filter-jobtype" onchange="renderAR()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--input-bg);color:var(--text);outline:none">
+            <option value="">All Job Types</option>
+            <option value="Small Job">Small Job</option>
+            <option value="Big Job">Big Job</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm btn-primary" onclick="openAddARJobModal()">+ Add Job</button>
+          <button class="btn-export-tab" onclick="openARImport()">↓ Import</button>
+          <button class="btn-export-tab" onclick="exportARCSV()">↑ Export CSV</button>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:24px;overflow-x:auto">
+        <table id="ar-table" style="min-width:1900px;border-collapse:collapse;width:100%;font-size:12px">
+          <thead>
+            <!-- ROW 1: Section group labels, exactly like the spreadsheet -->
+            <tr>
+              <th colspan="5" style="padding:0;background:var(--navy-light);border-bottom:none"></th>
+              <th colspan="10" style="padding:6px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);background:rgba(45,126,247,0.12);border-left:2px solid rgba(45,126,247,0.35);border-top:1px solid rgba(45,126,247,0.25);border-right:1px solid rgba(45,126,247,0.25)">Customer Receivables</th>
+              <th colspan="9" style="padding:6px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple);background:rgba(124,58,237,0.10);border-left:2px solid rgba(124,58,237,0.35);border-top:1px solid rgba(124,58,237,0.25);border-right:1px solid rgba(124,58,237,0.25)">Sub Contractor Payables</th>
+            </tr>
+            <!-- ROW 2: Column headers -->
+            <tr style="background:var(--navy-light)">
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:1px solid var(--border)">Date</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:1px solid var(--border)">Install II Date</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:1px solid var(--border)">Date Job Completed</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:1px solid var(--border)">Job Type</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:1px solid var(--border);min-width:150px">Customer Name</th>
+              <!-- Customer Receivables columns -->
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);border-left:2px solid rgba(45,126,247,0.35);background:rgba(45,126,247,0.07)">Total Contract Price</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.04)">Initial Payment</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--orange);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(255,140,0,0.08);min-width:160px">Remaining Balance After Initial Payment</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.04)">Partial Payment</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.04)">Partial Payment</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.04)">Partial Payment</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.08);min-width:145px">Customer Paid ASN to Date</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.04)">Payment Method</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--red);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(220,38,38,0.07)">Customer Balance Due</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(45,126,247,0.04)">Payment Status</th>
+              <!-- Sub Contractor Payables columns -->
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);border-left:2px solid rgba(124,58,237,0.35);background:rgba(124,58,237,0.06)">Sub Con Name</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.04)">Sub Con Cost</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.04)">Sub Con Carry</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.04)">Sub Con Gross Profit</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.04)">Paid to Sub Con</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--red);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(220,38,38,0.07)">Balance Due to Sub Con</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.04)">Invoice #</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--purple);white-space:nowrap;border-bottom:1px solid var(--border);background:rgba(124,58,237,0.04)">Status</th>
+              <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:1px solid var(--border)">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ar-table-body">
+            <tr><td colspan="24" style="padding:48px 20px;text-align:center;color:var(--text-dim)">
+              <div style="font-size:28px;margin-bottom:8px">📥</div>
+              <div style="font-size:13px;font-weight:500;color:var(--text-muted)">No receivables yet</div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Click "+ Add Job" to create your first entry</div>
+            </td></tr>
+          </tbody>
+          <tfoot id="ar-table-foot" style="display:none">
+            <tr style="background:var(--navy-light);font-weight:600;font-size:12px">
+              <td colspan="5" style="padding:9px 10px;color:var(--text-muted);border-top:2px solid var(--border)">Total</td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);background:rgba(45,126,247,0.06);font-family:'DM Mono',monospace" id="ar-foot-contract"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-initial"></td>
+              <td style="padding:9px 10px;border-top:2px solid var(--border);background:rgba(255,100,0,0.07)"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-pp1"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-pp2"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-pp3"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);background:rgba(45,126,247,0.06);font-family:'DM Mono',monospace;color:var(--accent)" id="ar-foot-paid"></td>
+              <td style="padding:9px 10px;border-top:2px solid var(--border)"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);background:rgba(220,38,38,0.06);font-family:'DM Mono',monospace;color:var(--red)" id="ar-foot-custbal"></td>
+              <td style="padding:9px 10px;border-top:2px solid var(--border)"></td>
+              <td style="padding:9px 10px;border-top:2px solid var(--border);border-left:2px solid var(--border)"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-subcon-cost"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-subcon-carry"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-subcon-profit"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);font-family:'DM Mono',monospace" id="ar-foot-paid-sub"></td>
+              <td style="padding:9px 10px;text-align:right;border-top:2px solid var(--border);background:rgba(220,38,38,0.06);font-family:'DM Mono',monospace;color:var(--red)" id="ar-foot-sub-bal"></td>
+              <td colspan="3" style="padding:9px 10px;border-top:2px solid var(--border);border-left:2px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.03)"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div class="tab-footer">
+        <div class="tab-footer-left">
+          <button class="btn-clear" onclick="confirmClear('ar-tracking','asn_ar_jobs','all Accounts Receivable records')">🗑 Clear A/R Data</button>
+        </div>
+        <div class="tab-footer-right">
+          <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
+          <button class="btn-save-manual" onclick="saveAR();toast('A/R data saved ✓','success',1800)">💾 Save Now</button>
         </div>
       </div>
     </div>
@@ -1631,18 +1863,49 @@
           <b style="color:var(--text-muted)">Apps Script setup:</b> Extensions → Apps Script → paste webhook → Deploy as Web App → copy URL here.
         </div>
       </div>
-      <!-- WS ORDER SEARCH BAR -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <div style="position:relative;flex:1;min-width:220px">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:13px;pointer-events:none">🔍</span>
-          <input type="text" id="ws-search-input" placeholder="Search by name, tracking #, order #, SKU, email, phone, notes…"
-            style="font-family:'DM Sans',sans-serif;font-size:12px;width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px 8px 32px;color:var(--text);outline:none;transition:border-color 0.15s"
-            oninput="filterWSOrders(this.value)"
-            onfocus="this.style.borderColor='var(--accent)'"
-            onblur="this.style.borderColor='var(--border)'">
+      <!-- WS FILTER BAR -->
+      <div class="ws-filter-bar" id="ws-filter-bar">
+        <!-- Row 1: Status filter -->
+        <div class="ws-filter-row">
+          <span class="ws-filter-label">Status</span>
+          <button class="ws-status-pill active" data-s="all" onclick="wsSetStatusFilter('all')">All</button>
+          <button class="ws-status-pill" data-s="pending" onclick="wsSetStatusFilter('pending')">🟡 Pending</button>
+          <button class="ws-status-pill" data-s="processing" onclick="wsSetStatusFilter('processing')">🔵 Processing</button>
+          <button class="ws-status-pill" data-s="shipped" onclick="wsSetStatusFilter('shipped')">🚚 Shipped</button>
+          <button class="ws-status-pill" data-s="completed" onclick="wsSetStatusFilter('completed')">✅ Completed</button>
+          <button class="ws-status-pill" data-s="cancelled" onclick="wsSetStatusFilter('cancelled')">🔴 Cancelled</button>
+          <div style="flex:1"></div>
+          <span class="ws-result-count" id="ws-result-count">0 orders</span>
         </div>
-        <div id="ws-search-count" style="font-size:11px;color:var(--text-muted);white-space:nowrap"></div>
-        <button class="btn btn-sm" onclick="clearWSSearch()" id="ws-search-clear" style="display:none">✕ Clear</button>
+        <!-- Row 2: Search + column toggle -->
+        <div class="ws-filter-row">
+          <span class="ws-filter-label">Search</span>
+          <div style="position:relative;flex:1;min-width:200px">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:12px;pointer-events:none">🔍</span>
+            <input type="text" id="ws-search-input" placeholder="Name, order #, tracking, SKU, email…"
+              style="font-family:'DM Sans',sans-serif;font-size:12px;width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px 7px 30px;color:var(--text);outline:none;transition:border-color 0.15s"
+              oninput="filterWSOrders(this.value)"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <button class="ws-col-toggle-btn" onclick="wsToggleColPanel()" id="ws-col-toggle-btn">⊞ Columns <span id="ws-col-toggle-arrow">▾</span></button>
+          <button class="btn btn-sm" onclick="clearWSSearch()" id="ws-search-clear" style="display:none">✕ Clear</button>
+        </div>
+        <!-- Column visibility panel (hidden by default) -->
+        <div class="ws-col-panel" id="ws-col-panel">
+          <div class="ws-view-preset-row">
+            <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-right:4px">Presets:</span>
+            <button class="ws-preset-btn" onclick="wsApplyPreset('all')">All Columns</button>
+            <button class="ws-preset-btn" onclick="wsApplyPreset('shipping')">🚚 Shipping View</button>
+            <button class="ws-preset-btn" onclick="wsApplyPreset('tracking')">📦 Tracking View</button>
+            <button class="ws-preset-btn" onclick="wsApplyPreset('contact')">👤 Contact View</button>
+            <button class="ws-preset-btn" onclick="wsApplyPreset('minimal')">📋 Minimal</button>
+            <button class="ws-preset-btn" style="border-color:var(--green);color:var(--green)" onclick="wsSaveCurrentView()">💾 Save View</button>
+          </div>
+          <div class="ws-col-grid" id="ws-col-grid">
+            <!-- populated by JS -->
+          </div>
+        </div>
       </div>
 
       <div class="ws-table-wrap">
@@ -1700,7 +1963,9 @@
 
       <div class="section-header" style="margin-bottom:12px">
         <div><div class="section-title">Inventory / Poles</div></div>
-        <button class="btn-export-tab" onclick="openTabExport('inventory')">↑ Export</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-export-tab" onclick="openTabExport('inventory')">↑ Export</button>
+        </div>
       </div>
 
       <!-- ── SUMMARY STATS ROW ── -->
@@ -1752,6 +2017,7 @@
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn btn-sm" onclick="addPoleType()">+ Add Type</button>
+            <button class="btn btn-sm" onclick="openPolesInvImport()">↓ Import</button>
             <button class="btn btn-sm" id="inv-pi-sheets-btn" onclick="toggleInvPISheetsPanel()">📊 Google Sheets</button>
             <button class="btn btn-sm btn-primary" onclick="savePoleInventory()">💾 Save</button>
           </div>
@@ -1797,6 +2063,7 @@
             <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Filters WS Orders &amp; Base Sales for pole items (ft units) · Parses System Type &amp; Mount Type · All fields editable · Click column header to sort</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="openPolesToShipImport()">↓ Import</button>
             <button class="btn btn-sm" id="inv-pts-sheets-btn" onclick="toggleInvPTSSheetsPanel()">📊 Google Sheets</button>
             <button class="btn btn-sm" onclick="pushPTSToSheets()">↑ Push to Sheets</button>
           </div>
@@ -1849,7 +2116,10 @@
             </div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Track 3-foot extension pole shipments — add rows manually</div>
           </div>
-          <button class="btn btn-sm btn-primary" onclick="addExtPoleRow()">+ Add Row</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="openExtPolesImport()">↓ Import</button>
+            <button class="btn btn-sm btn-primary" onclick="addExtPoleRow()">+ Add Row</button>
+          </div>
         </div>
         <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
           <table style="min-width:800px">
@@ -1879,7 +2149,10 @@
             </div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Auto-added when an order notes mention installation · Manually add below</div>
           </div>
-          <button class="btn btn-sm btn-primary" onclick="addInstallRow()">+ Add Row</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="openInstallImport()">↓ Import</button>
+            <button class="btn btn-sm btn-primary" onclick="addInstallRow()">+ Add Row</button>
+          </div>
         </div>
         <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
           <table style="min-width:1350px">
@@ -2016,6 +2289,12 @@
           <option value="normal">Normal</option><option value="hot">Hot Lead 🔥</option><option value="low">Low Priority</option>
         </select>
       </div>
+      <div class="field">
+        <label>Netting Type</label>
+        <select id="em-net-type">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
       <div class="field"><label>Pole Dimensions</label><input type="text" id="em-pole-dims" placeholder="e.g. 20ft × 4in OD, Qty 6"></div>
       <div class="field">
         <label>Coating Type</label>
@@ -2033,10 +2312,6 @@
         <label>Assigned To</label>
         <select id="em-assigned-to">
           <option value="Unassigned">Unassigned</option>
-          <option value="Mary">Mary</option>
-          <option value="JM">JM</option>
-          <option value="Janry">Janry</option>
-          <option value="Tom">Tom</option>
         </select>
       </div>
       <div class="field">
@@ -2068,17 +2343,7 @@
       </div>
       <div class="field form-full">
         <label>How Did They Find ASN? <span style="font-size:10px;color:var(--teal);font-weight:400;text-transform:none;letter-spacing:0">→ How Did They Find Us tab</span></label>
-        <div class="source-pills" id="em-how-pills">
-          <button class="pill" data-how="websearch">🔍 Web Search</button>
-          <button class="pill" data-how="ai">🤖 AI Search</button>
-          <button class="pill" data-how="referral">🤝 Referral</button>
-          <button class="pill" data-how="google">🔵 Google</button>
-          <button class="pill" data-how="facebook">📘 Facebook</button>
-          <button class="pill" data-how="instagram">📸 Instagram</button>
-          <button class="pill" data-how="yelp">⭐ Yelp</button>
-          <button class="pill" data-how="repeat">🔁 Repeat Client</button>
-          <button class="pill" data-how="other">◌ Other</button>
-        </div>
+        <div class="source-pills" id="em-how-pills"></div>
       </div>
       <div class="field form-full"><label>Keywords / Search Terms</label><input type="text" id="em-keywords" placeholder="batting cage net near me..."></div>
     </div>
@@ -2297,35 +2562,22 @@ function applyTabRestrictions() {
 function autoSelectAssignedTo(name) {
   // Wait for DOM render then auto-select the team pill matching this user's name
   setTimeout(() => {
-    const pills = document.querySelectorAll('#f-assign-pills .team-pill');
-    let matched = false;
-    pills.forEach(p => {
+    // If no pill matches, add to persistent team list
+    const team = loadTeam();
+    if (!team.map(n=>n.toLowerCase()).includes(name.toLowerCase()) && name !== 'Unassigned') {
+      team.push(name);
+      saveTeam(team);
+      renderTeamPills();
+      rebuildAssignSelects();
+    }
+    document.querySelectorAll('#f-assign-pills .team-pill').forEach(p => {
       if (p.dataset.assign && p.dataset.assign.toLowerCase() === name.toLowerCase()) {
         p.classList.add('selected');
         selectedAssign = p.dataset.assign;
-        matched = true;
       }
     });
-    // If no pill matches, inject one for this user
-    if (!matched && name !== 'Unassigned') {
-      const container = document.getElementById('f-assign-pills');
-      if (container) {
-        const newPill = document.createElement('button');
-        newPill.className = 'team-pill selected';
-        newPill.dataset.assign = name;
-        newPill.textContent = name;
-        newPill.onclick = function() {
-          document.querySelectorAll('#f-assign-pills .team-pill').forEach(x => x.classList.remove('selected'));
-          this.classList.add('selected');
-          selectedAssign = this.dataset.assign;
-        };
-        const addPill = document.getElementById('f-add-person-pill');
-        if (addPill) container.insertBefore(newPill, addPill);
-        else container.appendChild(newPill);
-        selectedAssign = name;
-      }
-    }
-  }, 500);
+    selectedAssign = selectedAssign || name;
+  }, 600);
 }
 
 // Check session on load — if already logged in this tab session, skip gate
@@ -2605,6 +2857,7 @@ async function cloudLoad() {
     ptsHidden        = JSON.parse(localStorage.getItem('asn_pts_hidden')||'[]');
     accessUsers      = JSON.parse(localStorage.getItem('asn_access_users')||'[]');
     apVendors        = JSON.parse(localStorage.getItem('asn_ap_vendors')||'[]');
+    arJobs           = JSON.parse(localStorage.getItem('asn_ar_jobs')||'[]');
   }
 
   if (!BIN_ID) { loadFromLocal(); showSetupBanner(); renderAll(); return; }
@@ -2635,6 +2888,7 @@ async function cloudLoad() {
     ptsHidden        = _cloudData.ptsHidden        || [];
     accessUsers      = _cloudData.accessUsers      || JSON.parse(localStorage.getItem('asn_access_users')||'[]');
     apVendors        = _cloudData.apVendors        || JSON.parse(localStorage.getItem('asn_ap_vendors')||'[]');
+    arJobs           = _cloudData.arJobs           || JSON.parse(localStorage.getItem('asn_ar_jobs')||'[]');
     showCloudStatus('ok','☁ Synced ✓');
     renderAll();
   } catch(e) {
@@ -2651,7 +2905,7 @@ async function cloudSave() {
   const data = {
     leads, estimates, invoices, baseSales, wsOrders,
     polesInventory, extPoles, installRows, polesShipOverlay, ptsHidden,
-    accessUsers, apVendors,
+    accessUsers, apVendors, arJobs,
     _lastSaved: new Date().toISOString()
   };
   // Always keep local cache as backup
@@ -2666,6 +2920,7 @@ async function cloudSave() {
   localStorage.setItem('asn_poles_ship_overlay', JSON.stringify(polesShipOverlay));
   localStorage.setItem('asn_pts_hidden', JSON.stringify(ptsHidden));
   localStorage.setItem('asn_ap_vendors', JSON.stringify(apVendors));
+  localStorage.setItem('asn_ar_jobs', JSON.stringify(arJobs));
 
   const _SAVE_BIN  = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
   const _SAVE_KEY  = localStorage.getItem('asn_master_key')|| '';
@@ -3031,7 +3286,10 @@ function renderAll() {
   updateStats();
   loadAP();
   updateAPBadge();
+  loadAR();
+  updateARBadge();
   initCrmKeyState();
+  initDynamicControls();
   const activeTab = document.querySelector('.nav-item.active');
   if (activeTab && activeTab.dataset.tab !== 'base-leads') {
     switchTab(activeTab.dataset.tab);
@@ -3192,10 +3450,12 @@ const PAGE_TITLES={
   'est-followup':['Estimate Follow-Up','Track sent estimates and automatic follow-up intervals'],
   'invoice':['Invoice','Track invoice status, payments, and follow-up schedule'],
   'base-sale':['Base Sale','Completed sales — auto-populated when invoice is paid'],
+  'purchase-order':['Purchase Orders','Auto-generated POs from Base Sale records · Editable · PDF & Excel export'],
   'how-found':['How Did They Find Us','Marketing source and keyword analytics'],
   'ws-order':['WS Order','Website orders — paste from sheet, auto-extract name & due date'],
   'inventory':['Inventory / Install / Ship Poles','Poles stock management and pole orders to ship'],
-  'ap-tracking':['Accounts Payable','Track vendor bills, aging, payments and outstanding balances']
+  'ap-tracking':['Accounts Payable','Track vendor bills, aging, payments and outstanding balances'],
+  'ar-tracking':['Accounts Receivable','Track customer payments, sub contractor payables, and job balances']
 };
 
 document.querySelectorAll('.nav-item').forEach(item=>{
@@ -3219,25 +3479,15 @@ function switchTab(tab){
   if(tab==='est-followup')renderEstFollowup();
   if(tab==='invoice')renderInvoice();
   if(tab==='base-sale')renderBaseSale();
-  if(tab==='ws-order'){renderWSOrders();checkWSDueDates();}
+  if(tab==='purchase-order')renderPurchaseOrders();
+  if(tab==='ws-order'){renderWSOrders();checkWSDueDates();wsRenderColGrid();wsApplyColVisibility();}
   if(tab==='inventory'){renderPolesInventory();renderPolesToShip();renderExtPoles();renderInstallRows();scanOrdersForInstall();renderInstallRows();updateInvStats();}
   if(tab==='ap-tracking'){loadAP();renderAP();}
+  if(tab==='ar-tracking'){renderAR();}
 }
 
-// Source pills
-document.querySelectorAll('.source-pills .pill').forEach(p=>{
-  p.addEventListener('click',()=>{
-    document.querySelectorAll('.source-pills .pill').forEach(x=>x.classList.remove('selected'));
-    p.classList.add('selected');selectedSource=p.dataset.source;
-  });
-});
-// How pills
-document.querySelectorAll('#dp-how-pills .pill').forEach(p=>{
-  p.addEventListener('click',()=>{
-    document.querySelectorAll('#dp-how-pills .pill').forEach(x=>x.classList.remove('selected'));
-    p.classList.add('selected');selectedHow=p.dataset.how;markUnsaved();
-  });
-});
+// Source pills — now dynamically rendered via renderSourcePills()
+// How pills — now dynamically rendered via renderHowPills()
 
 // ===== TOAST =====
 function toast(msg,type='info',dur=3500){
@@ -3491,6 +3741,7 @@ async function submitLead(){
     priority:document.getElementById('f-priority').value,
     poleDimensions:document.getElementById('f-pole-dims').value.trim(),
     coatingType:document.getElementById('f-coating').value,
+    netType:document.getElementById('f-net-type').value,
     poleOnly:document.getElementById('f-pole-only').checked,
     assignedTo:selectedAssign||'Unassigned',
     dueDate:document.getElementById('f-due-date').value||'',
@@ -3526,6 +3777,7 @@ function clearLeadForm(){
   ['f-first','f-last','f-email','f-phone','f-address','f-notes','f-pole-dims','f-due-date'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-sport').selectedIndex=0;
   document.getElementById('f-coating').selectedIndex=0;
+  document.getElementById('f-net-type').selectedIndex=0;
   document.getElementById('f-pole-only').checked=false;
   document.getElementById('f-priority').selectedIndex=0;
   document.querySelectorAll('.source-pills .pill').forEach(p=>p.classList.remove('selected'));
@@ -4054,6 +4306,7 @@ function openEditModal(id){
   document.getElementById('em-priority').value=l.priority||'normal';
   document.getElementById('em-pole-dims').value=l.poleDimensions||'';
   document.getElementById('em-coating').value=l.coatingType||'';
+  document.getElementById('em-net-type').value=l.netType||'';
   document.getElementById('em-pole-only').checked=l.poleOnly||false;
   document.getElementById('em-assigned-to').value=l.assignedTo||'Unassigned';
   document.getElementById('em-due-date').value=l.dueDate||'';
@@ -4102,6 +4355,7 @@ function saveEditModal(){
   l.priority=document.getElementById('em-priority').value;
   l.poleDimensions=document.getElementById('em-pole-dims').value.trim();
   l.coatingType=document.getElementById('em-coating').value;
+  l.netType=document.getElementById('em-net-type').value;
   l.poleOnly=document.getElementById('em-pole-only').checked;
   l.assignedTo=document.getElementById('em-assigned-to').value;
   l.dueDate=document.getElementById('em-due-date').value;
@@ -4269,7 +4523,13 @@ function renderNetInfo(){
       <td class="td-muted td-mono">${String(i+1).padStart(2,'0')}</td>
       <td style="font-weight:500">${l.first} ${l.last}</td>
       <td><span class="tag tag-sport">${l.netSport||l.sport||'—'}</span></td>
-      <td class="td-muted">${l.netType||'—'}</td>
+      <td>
+        <select class="inline-edit" style="min-width:130px;padding:4px 7px;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text)"
+          onchange="updateLeadField('${l.id}','netType',this.value)">
+          <option value="">--</option>
+          ${loadNetTypes().map(t=>`<option value="${t}" ${l.netType===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </td>
       <td><input type="text" class="inline-edit" value="${(l.netDimensions||'').replace(/"/g,'&quot;')}" placeholder="Net dims" style="min-width:130px;color:var(--accent);font-family:'DM Mono',monospace;font-size:11px" onchange="updateLeadField('${l.id}','netDimensions',this.value)"></td>
       <td><input type="text" class="inline-edit" value="${(l.poleDimensions||'').replace(/"/g,'&quot;')}" placeholder="Pole dims" style="min-width:120px;font-family:'DM Mono',monospace;font-size:11px" onchange="updateLeadField('${l.id}','poleDimensions',this.value)"></td>
       <td>
@@ -4782,7 +5042,7 @@ const BS_CATEGORY_OPTS=['','Net Only','Poles Only','Net + Poles','Installation',
 
 function renderBaseSale(){
   const tbody=document.getElementById('base-sale-table');
-  if(!baseSales.length){tbody.innerHTML=`<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">💰</div><div class="empty-title">No sales yet</div><div class="empty-sub">Sales appear here automatically when an invoice is marked Paid</div></div></td></tr>`;return}
+  if(!baseSales.length){tbody.innerHTML=`<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">💰</div><div class="empty-title">No sales yet</div><div class="empty-sub">Sales appear here automatically when an invoice is marked Paid</div></div></td></tr>`;return}
   tbody.innerHTML=baseSales.map(bs=>{
     const statusVal=bs.status||'pending';
     const statusColor=BS_STATUS_COLORS[statusVal]||'var(--text-muted)';
@@ -4847,6 +5107,24 @@ function renderBaseSale(){
       <td><input type="date" class="inline-edit" value="${toDateInputVal(shipOutVal)}" style="min-width:130px" onchange="updateBS('${bs.id}','shippingOut',formatDateFromInput(this.value));updateBS('${bs.id}','estimatedShipOut',formatDateFromInput(this.value));triggerShipOutEmail(baseSales.find(s=>s.id==='${bs.id}'))"></td>
       <td>${trackCell}</td>
       <td><input type="text" class="inline-edit" value="${(bs.remarks||bs.notes||'').replace(/"/g,'&quot;')}" placeholder="Remarks…" style="min-width:140px" onchange="updateBS('${bs.id}','remarks',this.value);updateBS('${bs.id}','notes',this.value)"></td>
+      <td style="min-width:160px;text-align:center">${(()=>{
+        const linkedPO = purchaseOrders.find(p=>p.baseSaleId===bs.id);
+        if(linkedPO){
+          const statusCls={draft:'po-status-draft',sent:'po-status-sent',confirmed:'po-status-confirmed'}[linkedPO.status]||'po-status-draft';
+          const statusLabel={draft:'Draft',sent:'Sent',confirmed:'Confirmed'}[linkedPO.status]||'Draft';
+          return `<div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+            <span class="po-status-badge ${statusCls}" style="font-size:10px">${statusLabel}</span>
+            <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--accent)">${linkedPO.poNumber||''}</span>
+            <span style="font-size:10px;color:var(--text-dim)">${linkedPO.poCreatedDate||''}</span>
+            <div style="display:flex;gap:4px;margin-top:2px">
+              <button class="ef-tbl-edit" style="font-size:10px;padding:2px 7px" onclick="openPOModal('${linkedPO.id}')">✎ Edit</button>
+              <button class="ef-tbl-edit" style="font-size:10px;padding:2px 7px;background:rgba(22,163,74,0.1);border-color:rgba(22,163,74,0.35);color:var(--green)" onclick="exportSinglePOPDF('${linkedPO.id}')">📄</button>
+            </div>
+          </div>`;
+        } else {
+          return `<button class="btn btn-sm btn-primary" style="font-size:11px;padding:5px 12px;white-space:nowrap" onclick="createPOFromBaseSaleRow('${bs.id}')">+ Create PO</button>`;
+        }
+      })()}</td>
     </tr>`}).join('');
 }
 function updateBS_orig_replaced(id,field,value){
@@ -5003,10 +5281,12 @@ function confirmClear(tabId, storageKey, label){
     'est-followup':'Clear Estimate Follow-Ups?',
     'invoice':'Clear Invoices?',
     'base-sale':'Clear Base Sale Records?',
+    'purchase-order':'Clear All Purchase Orders?',
     'how-found':'Clear How Found Data?',
     'ws-order':'Clear WS Orders?',
     'inventory':'Reset Inventory to Defaults?',
-    'ap-tracking':'Clear All A/P Records?'
+    'ap-tracking':'Clear All A/P Records?',
+    'ar-tracking':'Clear All A/R Records?'
   };
   document.getElementById('clear-modal-title').textContent = titles[tabId]||'Clear Data?';
   const isInventory = tabId==='inventory';
@@ -5050,6 +5330,8 @@ function executeClear(){
     renderPolesInventory();renderPolesToShip();renderExtPoles();renderInstallRows();updateInvStats();
   } else if(tabId==='ap-tracking'){
     apVendors=[];saveAP();renderAP();updateAPBadge();
+  } else if(tabId==='ar-tracking'){
+    arJobs=[];saveAR();renderAR();updateARBadge();
   }
 
   closeClearModal();
@@ -5086,6 +5368,7 @@ const TAB_EXPORT_SCHEMA = {
       {key:'phone',     header:'Phone',           get:l=>l.phone||''},
       {key:'source',    header:'Source',          get:l=>l.source||''},
       {key:'sport',     header:'Sport / Category',get:l=>l.sport||''},
+      {key:'netType',   header:'Net Type',        get:l=>l.netType||''},
       {key:'poleDims',  header:'Pole Dims',       get:l=>l.poleDimensions||''},
       {key:'coating',   header:'Coating',         get:l=>l.coatingType||''},
       {key:'poleOnly',  header:'Pole Only',       get:l=>l.poleOnly?'Yes':'No'},
@@ -5758,6 +6041,145 @@ function extractAddressOnly(raw, fullName){
 let wsSortCol = null;
 let wsSortDir = 1; // 1=asc, -1=desc
 
+// ══════════════════════════════════════════════════════════
+//  WS ORDER FILTER & COLUMN VISIBILITY MODULE
+// ══════════════════════════════════════════════════════════
+
+// Column definitions — id matches the th/td order in the table (0-based, skip sticky del+# cols)
+const WS_COLS = [
+  { id:'orderNumber',  label:'WS Order #',        sticky:true,  default:true  },
+  { id:'status',       label:'Status',             sticky:true,  default:true  },
+  { id:'dateOrdered',  label:'Date',               sticky:false, default:true  },
+  { id:'firstName',    label:'First Name',         sticky:false, default:true  },
+  { id:'qty',          label:'Qty',                sticky:false, default:true  },
+  { id:'netting',      label:'Item Name',          sticky:false, default:true  },
+  { id:'dimension',    label:'Item Data',          sticky:false, default:true  },
+  { id:'fullName',     label:'Full Name',          sticky:false, default:true  },
+  { id:'address',      label:'Address (raw)',      sticky:false, default:false },
+  { id:'fullInfo',     label:'Full Info (street)', sticky:false, default:true  },
+  { id:'phone',        label:'Phone',              sticky:false, default:true  },
+  { id:'email',        label:'Email',              sticky:false, default:true  },
+  { id:'trackingNumber',label:'Tracking #',        sticky:false, default:true  },
+  { id:'howFound',     label:'How Found',          sticky:false, default:false },
+  { id:'emailSent',    label:'Email Sent',         sticky:false, default:true  },
+  { id:'estShipByVendor',label:'Est. Ship by Vendor',sticky:false,default:true },
+  { id:'shipEmailSent',label:'Ship Email Sent',    sticky:false, default:false },
+  { id:'dueShipOut',   label:'Ship Out Due',       sticky:false, default:true  },
+  { id:'informed',     label:'Informed',           sticky:false, default:false },
+  { id:'shipmentDelay',label:'Shipment Delay',     sticky:false, default:false },
+  { id:'trackingDateSent',label:'Tracking Date Sent',sticky:false,default:false},
+  { id:'deliveryDate', label:'Delivery Date',      sticky:false, default:true  },
+  { id:'received',     label:'Received',           sticky:false, default:true  },
+  { id:'sku',          label:'SKU',                sticky:false, default:true  },
+  { id:'notes',        label:'Notes',              sticky:false, default:true  },
+];
+
+const WS_PRESETS = {
+  all:      WS_COLS.map(c=>c.id),
+  shipping: ['orderNumber','status','dateOrdered','firstName','qty','netting','dimension','fullName','fullInfo','phone','estShipByVendor','dueShipOut','trackingNumber','shipEmailSent','received'],
+  tracking: ['orderNumber','status','dateOrdered','firstName','fullName','trackingNumber','trackingDateSent','estShipByVendor','dueShipOut','shipEmailSent','deliveryDate','received'],
+  contact:  ['orderNumber','status','dateOrdered','firstName','fullName','phone','email','address','fullInfo','howFound'],
+  minimal:  ['orderNumber','status','dateOrdered','firstName','qty','netting','dimension','trackingNumber','dueShipOut'],
+};
+
+let wsStatusFilter = 'all';
+let wsVisibleCols = loadWSColPrefs();
+
+function loadWSColPrefs() {
+  try {
+    const saved = localStorage.getItem('asn_ws_col_prefs');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return WS_COLS.filter(c=>c.default).map(c=>c.id);
+}
+
+function saveWSColPrefs() {
+  localStorage.setItem('asn_ws_col_prefs', JSON.stringify(wsVisibleCols));
+}
+
+function wsSetStatusFilter(status) {
+  wsStatusFilter = status;
+  // Update pill active states
+  document.querySelectorAll('.ws-status-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.s === status);
+  });
+  renderWSOrders();
+}
+
+function wsToggleColPanel() {
+  const panel = document.getElementById('ws-col-panel');
+  const arrow = document.getElementById('ws-col-toggle-arrow');
+  const btn   = document.getElementById('ws-col-toggle-btn');
+  if (!panel) return;
+  const isOpen = panel.classList.toggle('open');
+  if (arrow) arrow.textContent = isOpen ? '▴' : '▾';
+  if (btn) btn.style.borderColor = isOpen ? 'var(--accent)' : '';
+  if (btn) btn.style.color = isOpen ? 'var(--accent)' : '';
+  if (isOpen) wsRenderColGrid();
+}
+
+function wsRenderColGrid() {
+  const grid = document.getElementById('ws-col-grid');
+  if (!grid) return;
+  grid.innerHTML = WS_COLS.map(col => {
+    const on = wsVisibleCols.includes(col.id);
+    const stickyNote = col.sticky ? ' <span style="font-size:9px;color:var(--text-dim)">(locked)</span>' : '';
+    return `<label class="ws-col-item ${on?'on':''}" onclick="wsToggleCol('${col.id}',this)">
+      <input type="checkbox" ${on?'checked':''} ${col.sticky?'disabled':''}>
+      ${col.label}${stickyNote}
+    </label>`;
+  }).join('');
+}
+
+function wsToggleCol(colId, labelEl) {
+  const col = WS_COLS.find(c=>c.id===colId);
+  if (!col || col.sticky) return;
+  const idx = wsVisibleCols.indexOf(colId);
+  if (idx > -1) {
+    wsVisibleCols.splice(idx, 1);
+    if (labelEl) { labelEl.classList.remove('on'); labelEl.querySelector('input').checked = false; }
+  } else {
+    wsVisibleCols.push(colId);
+    if (labelEl) { labelEl.classList.add('on'); labelEl.querySelector('input').checked = true; }
+  }
+  wsApplyColVisibility();
+}
+
+function wsApplyPreset(name) {
+  wsVisibleCols = [...(WS_PRESETS[name] || WS_PRESETS.all)];
+  wsRenderColGrid();
+  wsApplyColVisibility();
+}
+
+function wsSaveCurrentView() {
+  saveWSColPrefs();
+  toast('Column view saved ✓', 'success', 1800);
+}
+
+// Show/hide <th> and <td> columns based on wsVisibleCols
+// Column order in table matches WS_COLS order, offset by 2 (del + # sticky cols)
+function wsApplyColVisibility() {
+  const table = document.querySelector('#ws-order-table')?.closest('table');
+  if (!table) return;
+  WS_COLS.forEach((col, i) => {
+    const thIdx = i + 2; // offset: col 0=del, col 1=#
+    const visible = col.sticky || wsVisibleCols.includes(col.id);
+    // Hide/show header
+    const th = table.querySelectorAll('thead tr th')[thIdx];
+    if (th) th.style.display = visible ? '' : 'none';
+    // Hide/show all body cells in this column
+    table.querySelectorAll(`tbody tr td:nth-child(${thIdx+1})`).forEach(td => {
+      td.style.display = visible ? '' : 'none';
+    });
+  });
+}
+
+function wsMatchesStatusFilter(o) {
+  if (wsStatusFilter === 'all') return true;
+  return (o.status || 'pending') === wsStatusFilter;
+}
+
+// ══════════════════════════════════════════════════════════
 function sortWSOrders(col){
   if(wsSortCol===col){ wsSortDir*=-1; }
   else { wsSortCol=col; wsSortDir=1; }
@@ -5801,7 +6223,7 @@ function wsMatchesSearch(o, q){
 function renderWSOrders(){
   const tbody=document.getElementById('ws-order-table');
   if(!wsOrders.length){tbody.innerHTML=`<tr><td colspan="27"><div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-title">No WS orders yet</div><div class="empty-sub">Upload an Excel/CSV above or click "+ Add Order"</div></div></td></tr>`;
-    const cnt=document.getElementById('ws-search-count');if(cnt)cnt.textContent='';return;}
+    const cnt=document.getElementById('ws-result-count');if(cnt)cnt.textContent='0 orders';return;}
   const now=Date.now();
 
   // Sort
@@ -5816,14 +6238,28 @@ function renderWSOrders(){
     });
   }
 
+  // Filter by status
+  const statusFiltered = displayOrders.filter(o => wsMatchesStatusFilter(o));
+
   // Filter by search
-  const filtered = wsSearchQuery ? displayOrders.filter(o=>wsMatchesSearch(o,wsSearchQuery)) : displayOrders;
-  const cntEl=document.getElementById('ws-search-count');
+  const filtered = wsSearchQuery ? statusFiltered.filter(o=>wsMatchesSearch(o,wsSearchQuery)) : statusFiltered;
+
+  // Update result count
+  const cntEl=document.getElementById('ws-result-count');
   if(cntEl){
-    if(wsSearchQuery) cntEl.textContent=`${filtered.length} of ${wsOrders.length} orders`;
-    else cntEl.textContent=`${wsOrders.length} order${wsOrders.length!==1?'s':''}`;
+    const total = wsStatusFilter==='all' ? wsOrders.length : wsOrders.filter(o=>wsMatchesStatusFilter(o)).length;
+    if(wsSearchQuery) cntEl.textContent=`${filtered.length} of ${total} orders`;
+    else cntEl.textContent=`${filtered.length} order${filtered.length!==1?'s':''}`;
   }
-  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="27"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No results for "${wsSearchQuery}"</div><div class="empty-sub">Try a different keyword or clear the search</div></div></td></tr>`;return;}
+
+  // Legacy count element (keep for compat)
+  const cntEl2=document.getElementById('ws-search-count');
+  if(cntEl2){
+    if(wsSearchQuery) cntEl2.textContent=`${filtered.length} of ${wsOrders.length} orders`;
+    else cntEl2.textContent='';
+  }
+
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="27"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No results${wsStatusFilter!=='all'?' for "'+wsStatusFilter+'" status':wsSearchQuery?' for "'+wsSearchQuery+'"':''}</div><div class="empty-sub">Try a different filter or clear the search</div></div></td></tr>`;return;}
 
   tbody.innerHTML=filtered.map((o,i)=>{
     const origIdx=wsOrders.indexOf(o);
@@ -5931,6 +6367,8 @@ function renderWSOrders(){
       <td><input class="inline-edit" value="${(o.notes||'').replace(/"/g,'&quot;')}" style="min-width:170px" onchange="updateWSOrder('${o.id}','notes',this.value)" placeholder="Notes..."></td>
     </tr>`;
   }).join('');
+  // Apply column visibility after rendering
+  requestAnimationFrame(() => wsApplyColVisibility());
 }
 
 function updateWSOrder(id,field,value){
@@ -6981,48 +7419,407 @@ async function pushPTSToSheets(){
   }catch(e){toast('Push failed — check webhook URL','error');}
 }
 
-// ===== ADD PERSON TO ASSIGN PILLS =====
-function showAddPersonInput(){
-  document.getElementById('f-add-person-pill').style.display='none';
-  const wrap=document.getElementById('f-add-person-wrap');
-  wrap.style.display='inline-flex';
-  document.getElementById('f-add-person-input').value='';
-  document.getElementById('f-add-person-input').focus();
+// ====================================================================
+// MANAGED LISTS — Team Members, Net Types, Inquiry Sources
+// All stored in localStorage, rendered dynamically everywhere
+// ====================================================================
+
+const TEAM_STORAGE_KEY    = 'asn_team_members';
+const NETTYPE_STORAGE_KEY = 'asn_net_types';
+const SOURCE_STORAGE_KEY  = 'asn_inquiry_sources';
+
+const DEFAULT_TEAM    = ['Mary','JM','Janry','Tom'];
+const DEFAULT_NETTYPES= ['Barrier Net','Batting Cage Net','Golf Net','Soccer Goal Net','Baseball Backstop','Tennis Net','Custom Containment','Other'];
+const DEFAULT_SOURCES = [
+  {value:'websearch',label:'🔍 Web Search'},
+  {value:'ai',label:'🤖 AI Search'},
+  {value:'referral',label:'🤝 Referral'},
+  {value:'google',label:'🔵 Google'},
+  {value:'facebook',label:'📘 Facebook'},
+  {value:'instagram',label:'📸 Instagram'},
+  {value:'yelp',label:'⭐ Yelp'},
+  {value:'repeat',label:'🔁 Repeat Client'},
+  {value:'other',label:'◌ Other'},
+];
+
+function loadTeam(){
+  try{ return JSON.parse(localStorage.getItem(TEAM_STORAGE_KEY))||DEFAULT_TEAM.slice(); }
+  catch(e){ return DEFAULT_TEAM.slice(); }
 }
-function cancelAddPerson(){
-  document.getElementById('f-add-person-wrap').style.display='none';
-  document.getElementById('f-add-person-pill').style.display='';
+function saveTeam(arr){ localStorage.setItem(TEAM_STORAGE_KEY,JSON.stringify(arr)); }
+
+function loadNetTypes(){
+  try{ return JSON.parse(localStorage.getItem(NETTYPE_STORAGE_KEY))||DEFAULT_NETTYPES.slice(); }
+  catch(e){ return DEFAULT_NETTYPES.slice(); }
 }
-function confirmAddPerson(){
-  const name=document.getElementById('f-add-person-input').value.trim();
-  if(!name){toast('Please enter a name','error');return;}
-  const existing=[...document.querySelectorAll('#f-assign-pills .team-pill[data-assign]')].map(p=>p.dataset.assign.toLowerCase());
-  if(existing.includes(name.toLowerCase())){toast('This person is already listed','error');return;}
-  const unassignedPill=document.querySelector('#f-assign-pills .team-pill[data-assign="Unassigned"]');
-  const newPill=document.createElement('button');
-  newPill.className='team-pill';
-  newPill.dataset.assign=name;
-  newPill.textContent=name;
-  newPill.addEventListener('click',function(){
+function saveNetTypes(arr){ localStorage.setItem(NETTYPE_STORAGE_KEY,JSON.stringify(arr)); }
+
+function loadSources(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SOURCE_STORAGE_KEY));
+    return s||DEFAULT_SOURCES.map(x=>({...x}));
+  }catch(e){ return DEFAULT_SOURCES.map(x=>({...x})); }
+}
+function saveSources(arr){ localStorage.setItem(SOURCE_STORAGE_KEY,JSON.stringify(arr)); }
+
+// ── Render team pills (base leads form) ─────────────────────────────
+function renderTeamPills(){
+  const container=document.getElementById('f-assign-pills');
+  if(!container)return;
+  const team=loadTeam();
+  const curSel=selectedAssign;
+  container.innerHTML='';
+  team.forEach(name=>{
+    const btn=document.createElement('button');
+    btn.className='team-pill'+(curSel===name?' selected':'');
+    btn.dataset.assign=name;
+    const lbl=document.createTextNode(name);
+    btn.appendChild(lbl);
+    // Remove button shown on hover
+    const xBtn=document.createElement('button');
+    xBtn.className='tpill-x';
+    xBtn.textContent='×';
+    xBtn.title='Remove '+name;
+    xBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(!confirm(`Remove "${name}" from the team list?`))return;
+      const arr=loadTeam().filter(n=>n!==name);
+      saveTeam(arr);
+      renderTeamPills();
+      rebuildAssignSelects();
+      if(selectedAssign===name){selectedAssign=null;}
+      toast(`"${name}" removed from team list`,'info');
+    });
+    btn.appendChild(xBtn);
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('#f-assign-pills .team-pill').forEach(x=>x.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedAssign=this.dataset.assign;
+    });
+    container.appendChild(btn);
+  });
+  // Unassigned pill
+  const ua=document.createElement('button');
+  ua.className='team-pill'+(curSel==='Unassigned'||!curSel?' ':' ');
+  ua.dataset.assign='Unassigned';
+  ua.textContent='Unassigned';
+  ua.addEventListener('click',function(){
     document.querySelectorAll('#f-assign-pills .team-pill').forEach(x=>x.classList.remove('selected'));
     this.classList.add('selected');
-    selectedAssign=this.dataset.assign;
+    selectedAssign='Unassigned';
   });
-  document.getElementById('f-assign-pills').insertBefore(newPill,unassignedPill);
-  ['dp-assigned-to','em-assigned-to'].forEach(id=>{
-    const sel=document.getElementById(id);
-    if(sel){
-      const opt=document.createElement('option');
-      opt.value=name;opt.textContent=name;
-      sel.insertBefore(opt,sel.options[1]||null);
-    }
-  });
-  document.querySelectorAll('#f-assign-pills .team-pill').forEach(x=>x.classList.remove('selected'));
-  newPill.classList.add('selected');
+  container.appendChild(ua);
+  // Add person button
+  const addBtn=document.createElement('button');
+  addBtn.className='team-pill';
+  addBtn.style.cssText='border-style:dashed;color:var(--accent);border-color:var(--accent)';
+  addBtn.textContent='+ Add Person';
+  addBtn.addEventListener('click',showAddPersonInline);
+  container.appendChild(addBtn);
+}
+
+function showAddPersonInline(){
+  // Prevent duplicate input
+  if(document.getElementById('f-add-person-inline'))return;
+  const container=document.getElementById('f-assign-pills');
+  const wrap=document.createElement('span');
+  wrap.id='f-add-person-inline';
+  wrap.style.cssText='display:inline-flex;align-items:center;gap:4px';
+  wrap.innerHTML=`
+    <input type="text" id="f-add-person-input" placeholder="Name..." maxlength="30"
+      style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--accent);border-radius:20px;padding:4px 12px;color:var(--text);outline:none;width:110px">
+    <button onclick="confirmAddPerson()" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--green);background:var(--green-dim);color:var(--green);cursor:pointer">✓</button>
+    <button onclick="cancelAddPerson()" style="font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 8px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">✕</button>`;
+  container.appendChild(wrap);
+  const inp=document.getElementById('f-add-person-input');
+  if(inp){ inp.focus(); inp.addEventListener('keydown',e=>{ if(e.key==='Enter')confirmAddPerson(); if(e.key==='Escape')cancelAddPerson(); }); }
+}
+function cancelAddPerson(){
+  const w=document.getElementById('f-add-person-inline');
+  if(w)w.remove();
+}
+function confirmAddPerson(){
+  const inp=document.getElementById('f-add-person-input');
+  if(!inp)return;
+  const name=inp.value.trim();
+  if(!name){toast('Please enter a name','error');return;}
+  const arr=loadTeam();
+  if(arr.map(n=>n.toLowerCase()).includes(name.toLowerCase())){toast('This person is already listed','error');return;}
+  arr.push(name);
+  saveTeam(arr);
   selectedAssign=name;
   cancelAddPerson();
+  renderTeamPills();
+  rebuildAssignSelects();
+  // Re-select the new person
+  document.querySelectorAll('#f-assign-pills .team-pill').forEach(p=>{
+    p.classList.toggle('selected',p.dataset.assign===name);
+  });
   toast(`"${name}" added to team ✓`,'success');
 }
+
+// ── Rebuild assigned-to <select> in DP and Edit modal ────────────────
+function rebuildAssignSelects(){
+  const team=loadTeam();
+  ['dp-assigned-to','em-assigned-to'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="Unassigned">Unassigned</option>'+
+      team.map(n=>`<option value="${n}">${n}</option>`).join('');
+    if(cur)sel.value=cur;
+  });
+}
+
+// ── Render net type <select> everywhere ──────────────────────────────
+function renderNetTypeSelects(){
+  const types=loadNetTypes();
+  const opts='<option value="">-- Select --</option>'+types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  ['f-net-type','em-net-type','dp-net-type','ef-em-nettype','inv-em-nettype'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML=opts;
+    if(cur)sel.value=cur;
+  });
+  // Export filter dropdown uses "All Net Types" as first option
+  const expSel=document.getElementById('exp-filter-nettype');
+  if(expSel){
+    const curExp=expSel.value;
+    expSel.innerHTML='<option value="">All Net Types</option>'+
+      loadNetTypes().map(t=>`<option value="${t}">${t}</option>`).join('');
+    if(curExp)expSel.value=curExp;
+  }
+}
+
+// ── Render source pills (inquiry source on base-leads form) ──────────
+function renderSourcePills(containerId, selectedVal, onSelect){
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  const sources=loadSources();
+  container.innerHTML='';
+  sources.forEach(src=>{
+    const btn=document.createElement('button');
+    btn.className='pill'+(selectedVal===src.value?' selected':'');
+    btn.dataset.source=src.value;
+    btn.dataset.how=src.value;
+    btn.textContent=src.label;
+    btn.addEventListener('click',function(){
+      container.querySelectorAll('.pill').forEach(x=>x.classList.remove('selected'));
+      this.classList.add('selected');
+      if(onSelect)onSelect(src.value);
+    });
+    container.appendChild(btn);
+  });
+}
+
+// ── Render How-Found pills (DP panel + Edit modal) ───────────────────
+function renderHowPills(containerId, selectedVal, onSelect){
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  const sources=loadSources();
+  container.innerHTML='';
+  sources.forEach(src=>{
+    const btn=document.createElement('button');
+    btn.className='pill'+(selectedVal===src.value?' selected':'');
+    btn.dataset.how=src.value;
+    btn.textContent=src.label;
+    btn.addEventListener('click',function(){
+      container.querySelectorAll('.pill').forEach(x=>x.classList.remove('selected'));
+      this.classList.add('selected');
+      if(onSelect)onSelect(src.value);
+    });
+    container.appendChild(btn);
+  });
+}
+
+// ── Open Manage Net Types modal ──────────────────────────────────────
+function openManageNetTypes(){
+  const types=loadNetTypes();
+  const modal=document.createElement('div');
+  modal.className='mgr-modal-overlay';
+  modal.id='mgr-nettypes-modal';
+  modal.innerHTML=`
+    <div class="mgr-modal-box">
+      <div class="mgr-modal-title">
+        <span>⚙ Manage Net Types</span>
+        <button onclick="document.getElementById('mgr-nettypes-modal').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">These options appear in Net Type dropdowns across all tabs.</div>
+      <div id="mgr-nt-list">
+        ${types.map((t,i)=>`
+          <div class="mgr-item" data-nt-idx="${i}">
+            <span class="mgr-item-label">${t}</span>
+            <button class="mgr-del-btn" onclick="removeNetType(${i})">✕ Remove</button>
+          </div>`).join('')}
+      </div>
+      <div class="mgr-add-row">
+        <input type="text" id="mgr-nt-input" placeholder="New net type..." maxlength="50"
+          onkeydown="if(event.key==='Enter')addNetType()">
+        <button class="btn btn-sm btn-primary" onclick="addNetType()">+ Add</button>
+      </div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end">
+        <button class="btn" onclick="document.getElementById('mgr-nettypes-modal').remove()">Done</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click',e=>{ if(e.target===modal)modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('mgr-nt-input')?.focus(),80);
+}
+function addNetType(){
+  const inp=document.getElementById('mgr-nt-input');
+  if(!inp)return;
+  const val=inp.value.trim();
+  if(!val)return;
+  const arr=loadNetTypes();
+  if(arr.map(x=>x.toLowerCase()).includes(val.toLowerCase())){toast('Already exists','error');return;}
+  arr.push(val);
+  saveNetTypes(arr);
+  renderNetTypeSelects();
+  inp.value='';
+  // Refresh list in modal
+  const list=document.getElementById('mgr-nt-list');
+  if(list){
+    const d=document.createElement('div');
+    d.className='mgr-item';
+    d.dataset.ntIdx=arr.length-1;
+    d.innerHTML=`<span class="mgr-item-label">${val}</span><button class="mgr-del-btn" onclick="removeNetType(${arr.length-1})">✕ Remove</button>`;
+    list.appendChild(d);
+  }
+  toast(`Net type "${val}" added ✓`,'success');
+}
+function removeNetType(idx){
+  const arr=loadNetTypes();
+  const removed=arr[idx];
+  if(!confirm(`Remove "${removed}"?`))return;
+  arr.splice(idx,1);
+  saveNetTypes(arr);
+  renderNetTypeSelects();
+  // Re-render modal list
+  const modal=document.getElementById('mgr-nettypes-modal');
+  if(modal)modal.remove();
+  openManageNetTypes();
+  toast(`"${removed}" removed`,'info');
+}
+
+// ── Open Manage Sources modal ────────────────────────────────────────
+function openManageSources(){
+  const sources=loadSources();
+  const modal=document.createElement('div');
+  modal.className='mgr-modal-overlay';
+  modal.id='mgr-sources-modal';
+  modal.innerHTML=`
+    <div class="mgr-modal-box">
+      <div class="mgr-modal-title">
+        <span>⚙ Manage Inquiry Sources</span>
+        <button onclick="document.getElementById('mgr-sources-modal').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">These source options appear in Base Leads, Edit Lead, Pipeline detail panel, and How Found tab — everywhere at once.</div>
+      <div id="mgr-src-list">
+        ${sources.map((s,i)=>`
+          <div class="mgr-item" data-src-idx="${i}">
+            <span class="mgr-item-label">${s.label}</span>
+            <button class="mgr-del-btn" onclick="removeSource(${i})">✕ Remove</button>
+          </div>`).join('')}
+      </div>
+      <div class="mgr-add-row">
+        <input type="text" id="mgr-src-emoji" placeholder="Emoji" maxlength="4"
+          style="width:60px;flex:none;text-align:center">
+        <input type="text" id="mgr-src-label" placeholder="Label (e.g. Nextdoor)" maxlength="40"
+          onkeydown="if(event.key==='Enter')addSource()">
+        <button class="btn btn-sm btn-primary" onclick="addSource()">+ Add</button>
+      </div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end">
+        <button class="btn" onclick="closeManageSources()">Done</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click',e=>{ if(e.target===modal)closeManageSources(); });
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('mgr-src-label')?.focus(),80);
+}
+function closeManageSources(){
+  const modal=document.getElementById('mgr-sources-modal');
+  if(modal)modal.remove();
+  // Re-render all source pill containers
+  renderSourcePills('inquiry-source-pills', selectedSource, v=>{ selectedSource=v; });
+  renderHowPills('dp-how-pills', selectedHow, v=>{ selectedHow=v; markUnsaved(); });
+  renderHowPills('em-how-pills', _emHow, v=>{ _emHow=v; });
+}
+function addSource(){
+  const emojiInp=document.getElementById('mgr-src-emoji');
+  const labelInp=document.getElementById('mgr-src-label');
+  if(!labelInp)return;
+  const rawLabel=(labelInp.value||'').trim();
+  if(!rawLabel)return;
+  const emoji=(emojiInp?.value||'').trim();
+  const label=emoji?`${emoji} ${rawLabel}`:rawLabel;
+  const value=rawLabel.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  const arr=loadSources();
+  if(arr.some(s=>s.value===value)){toast('Source already exists','error');return;}
+  arr.push({value,label});
+  saveSources(arr);
+  if(emojiInp)emojiInp.value='';
+  labelInp.value='';
+  // Refresh modal list
+  const list=document.getElementById('mgr-src-list');
+  if(list){
+    const d=document.createElement('div');
+    d.className='mgr-item';
+    d.dataset.srcIdx=arr.length-1;
+    d.innerHTML=`<span class="mgr-item-label">${label}</span><button class="mgr-del-btn" onclick="removeSource(${arr.length-1})">✕ Remove</button>`;
+    list.appendChild(d);
+  }
+  toast(`Source "${label}" added ✓`,'success');
+}
+function removeSource(idx){
+  const arr=loadSources();
+  const removed=arr[idx];
+  if(!confirm(`Remove "${removed.label}"?`))return;
+  arr.splice(idx,1);
+  saveSources(arr);
+  const modal=document.getElementById('mgr-sources-modal');
+  if(modal)modal.remove();
+  openManageSources();
+  toast(`"${removed.label}" removed`,'info');
+}
+
+// ── Boot: render all dynamic controls on page load ───────────────────
+function initDynamicControls(){
+  // Team pills
+  renderTeamPills();
+  rebuildAssignSelects();
+  // Net type selects
+  renderNetTypeSelects();
+  // Source pills
+  renderSourcePills('inquiry-source-pills', selectedSource, v=>{ selectedSource=v; });
+  // DP how-pills — bind with markUnsaved
+  renderHowPills('dp-how-pills', null, v=>{ selectedHow=v; markUnsaved(); });
+  // EM how-pills — bind with _emHow
+  renderHowPills('em-how-pills', null, v=>{ _emHow=v; });
+}
+
+// Patch openEditModal to re-render how-pills with current lead's howFound
+const _origOpenEditModal = openEditModal;
+openEditModal = function(id){
+  _origOpenEditModal(id);
+  const l=leads.find(x=>x.id===id);
+  renderHowPills('em-how-pills', l?.howFound||null, v=>{ _emHow=v; });
+  renderNetTypeSelects();
+  // Restore em-net-type value after re-render
+  const emNT=document.getElementById('em-net-type');
+  if(emNT && l)emNT.value=l.netType||'';
+};
+
+// Patch selectLead to re-render how-pills with lead's howFound
+const _origSelectLead = selectLead;
+selectLead = function(id){
+  _origSelectLead(id);
+  const l=leads.find(x=>x.id===id);
+  renderHowPills('dp-how-pills', l?.howFound||null, v=>{ selectedHow=v; markUnsaved(); });
+  renderNetTypeSelects();
+  const dpNT=document.getElementById('dp-net-type');
+  if(dpNT && l)dpNT.value=l.netType||'';
+};
 </script>
 
 <!-- ===== EF EDIT MODAL ===== -->
@@ -7036,15 +7833,13 @@ function confirmAddPerson(){
       <div class="field"><label>Customer Name</label><input type="text" id="ef-em-name" placeholder="Full Name"></div>
       <div class="field"><label>Email</label><input type="email" id="ef-em-email" placeholder="email@example.com"></div>
       <div class="field"><label>Phone</label><input type="tel" id="ef-em-phone" placeholder="+1 (555) 000-0000"></div>
-      <div class="field"><label>Net Dimensions</label><input type="text" id="ef-em-netdim" placeholder="40ft W x 20ft H"></div>
       <div class="field">
         <label>Net Type</label>
         <select id="ef-em-nettype">
-          <option value="">-- Select --</option><option>Barrier Net</option><option>Batting Cage Net</option>
-          <option>Golf Net</option><option>Soccer Goal Net</option><option>Baseball Backstop</option>
-          <option>Tennis Net</option><option>Custom Containment</option><option>Other</option>
+          <option value="">-- Select --</option>
         </select>
       </div>
+      <div class="field"><label>Net Dimensions</label><input type="text" id="ef-em-netdim" placeholder="40ft W x 20ft H"></div>
       <div class="field">
         <label>Sport</label>
         <select id="ef-em-sport">
@@ -7086,15 +7881,13 @@ function confirmAddPerson(){
       <div class="field"><label>Customer Name</label><input type="text" id="inv-em-name" placeholder="Full Name"></div>
       <div class="field"><label>Email</label><input type="email" id="inv-em-email" placeholder="email@example.com"></div>
       <div class="field"><label>Phone</label><input type="tel" id="inv-em-phone" placeholder="+1 (555) 000-0000"></div>
-      <div class="field"><label>Net Dimensions</label><input type="text" id="inv-em-netdim" placeholder="40ft W x 20ft H"></div>
       <div class="field">
         <label>Net Type</label>
         <select id="inv-em-nettype">
-          <option value="">-- Select --</option><option>Barrier Net</option><option>Batting Cage Net</option>
-          <option>Golf Net</option><option>Soccer Goal Net</option><option>Baseball Backstop</option>
-          <option>Tennis Net</option><option>Custom Containment</option><option>Other</option>
+          <option value="">-- Select --</option>
         </select>
       </div>
+      <div class="field"><label>Net Dimensions</label><input type="text" id="inv-em-netdim" placeholder="40ft W x 20ft H"></div>
       <div class="field">
         <label>Sport</label>
         <select id="inv-em-sport">
@@ -7128,26 +7921,52 @@ function confirmAddPerson(){
 
 <!-- ===== IMPORT MODAL (shared for EF and INV) ===== -->
 <div class="import-modal-overlay hidden" id="import-modal" onclick="if(event.target===this)closeImportModal()">
-  <div class="import-modal-box">
-    <div style="font-size:15px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+  <div class="import-modal-box" style="max-width:640px">
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between">
       <span id="import-modal-title">↓ Import Records</span>
       <button class="export-close-btn" onclick="closeImportModal()">✕ Close</button>
     </div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Upload a CSV or Excel file. Required columns: <strong style="color:var(--text)">customerName</strong>. Optional: email, phone, netDimensions, netType, netSport, netPrice, polesPrice, totalPrice/totalAmount, outcome/status, sentDate/createdDate.</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px" id="import-modal-desc">Upload a CSV or Excel file then map columns to the correct fields.</div>
 
-    <label class="import-drop-zone" id="import-drop-zone" ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
-      <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="importHandleFile(this.files[0])">
-      <div style="font-size:28px;margin-bottom:8px">📂</div>
-      <div style="font-size:13px;font-weight:500;color:var(--text)">Drop file here or click to browse</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">.xlsx / .xls / .csv</div>
-    </label>
+    <!-- STEP 1: Upload -->
+    <div id="import-step-upload">
+      <label class="import-drop-zone" id="import-drop-zone" ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
+        <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="importHandleFile(this.files[0])">
+        <div style="font-size:28px;margin-bottom:8px">📂</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">Drop file here or click to browse</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">.xlsx / .xls / .csv</div>
+      </label>
+    </div>
 
-    <div id="import-preview-wrap" style="display:none">
-      <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Preview (first 3 rows)</div>
+    <!-- STEP 2: Column Mapping + Preview -->
+    <div id="import-step-map" style="display:none">
+      <!-- File info bar -->
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--navy-light);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;font-size:12px">
+        <span style="font-size:16px">📄</span>
+        <div style="flex:1">
+          <span id="import-fname" style="font-weight:500;color:var(--text)"></span>
+          <span id="import-fmeta" style="color:var(--text-muted);margin-left:8px"></span>
+        </div>
+        <button class="btn btn-sm" onclick="importReset()" style="font-size:11px">✕ Change File</button>
+      </div>
+
+      <!-- Detected columns chips -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">Detected Columns in Your File</div>
+        <div id="import-detected-cols" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+
+      <!-- Column mapping grid -->
+      <div style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Map Fields <span style="font-weight:400;font-size:10px;letter-spacing:0;text-transform:none;color:var(--accent)">— Auto-mapped where column names match. Adjust if needed.</span></div>
+      <div id="import-map-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-bottom:14px;max-height:260px;overflow-y:auto;padding-right:4px"></div>
+
+      <!-- Data preview -->
+      <div style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">Data Preview (first 3 rows)</div>
       <div class="import-preview-table">
         <table><thead id="import-preview-head"></thead><tbody id="import-preview-body"></tbody></table>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px"><span id="import-row-count" style="font-weight:600;color:var(--text)">0</span> rows detected</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px"><span id="import-row-count" style="font-weight:600;color:var(--text)">0</span> rows detected · <span id="import-req-warn" style="color:var(--red)"></span></div>
+
       <div style="display:flex;gap:10px;justify-content:flex-end">
         <button class="btn" onclick="closeImportModal()">Cancel</button>
         <button class="btn btn-success" onclick="doImport()">⚡ Import All Rows</button>
@@ -7160,8 +7979,225 @@ function confirmAddPerson(){
 // ===== EF VIEW TOGGLE =====
 let efView='card';
 let invView='card';
-let _importTarget=''; // 'ef' or 'inv'
+let _importTarget=''; // 'ef','inv','net-info','base-sale','ap','poles-inv','poles-to-ship','ext-poles','install'
 let _importRows=[];
+let _importFileHeaders=[];
+
+// ── IMPORT FIELD DEFINITIONS per target ──────────────────────────────────────
+const IMPORT_FIELDS = {
+  'ef': {
+    title: '↓ Import Estimate Follow-Up Records',
+    desc: 'Map your columns to estimate fields. Only <strong>Customer Name</strong> is required.',
+    required: ['customerName'],
+    fields: [
+      {key:'customerName', label:'Customer Name *', aliases:['customername','customer','name','fullname','client']},
+      {key:'email',        label:'Email',            aliases:['email','emailaddress']},
+      {key:'phone',        label:'Phone',            aliases:['phone','phonenumber','tel','mobile']},
+      {key:'netDimensions',label:'Net Dimensions',   aliases:['netdimensions','netdim','dimensions','netting dim']},
+      {key:'netType',      label:'Net Type',         aliases:['nettype','type','net type']},
+      {key:'netSport',     label:'Sport',            aliases:['sport','netsport','sporttype']},
+      {key:'netPrice',     label:'Net Price',        aliases:['netprice','net price']},
+      {key:'polesPrice',   label:'Poles Price',      aliases:['polesprice','poles price','pole price']},
+      {key:'totalPrice',   label:'Total Price',      aliases:['totalprice','total','totalamount','amount']},
+      {key:'outcome',      label:'Outcome',          aliases:['outcome','result','status']},
+      {key:'sentDate',     label:'Sent Date',        aliases:['sentdate','date sent','date','estimatedate']},
+    ]
+  },
+  'inv': {
+    title: '↓ Import Invoice Records',
+    desc: 'Map your columns to invoice fields. Only <strong>Customer Name</strong> is required.',
+    required: ['customerName'],
+    fields: [
+      {key:'customerName', label:'Customer Name *', aliases:['customername','customer','name','fullname','client']},
+      {key:'email',        label:'Email',            aliases:['email','emailaddress']},
+      {key:'phone',        label:'Phone',            aliases:['phone','phonenumber','tel','mobile']},
+      {key:'netDimensions',label:'Net Dimensions',   aliases:['netdimensions','netdim','dimensions']},
+      {key:'netType',      label:'Net Type',         aliases:['nettype','type','net type']},
+      {key:'netSport',     label:'Sport',            aliases:['sport','netsport','sporttype']},
+      {key:'netPrice',     label:'Net Price',        aliases:['netprice','net price']},
+      {key:'polesPrice',   label:'Poles Price',      aliases:['polesprice','poles price','pole price']},
+      {key:'totalAmount',  label:'Total Amount',     aliases:['totalamount','total','totalprice','amount','invoiceamount']},
+      {key:'status',       label:'Status',           aliases:['status','invoicestatus']},
+      {key:'createdDate',  label:'Created Date',     aliases:['createddate','invoicedate','date created','date']},
+    ]
+  },
+  'net-info': {
+    title: '↓ Import Net Specifications',
+    desc: 'Map your columns to net spec fields. Only <strong>Client Name</strong> is required.',
+    required: ['clientName'],
+    fields: [
+      {key:'clientName',   label:'Client Name *',    aliases:['clientname','client','name','customername','fullname']},
+      {key:'sport',        label:'Sport',            aliases:['sport','sporttype','net sport']},
+      {key:'netType',      label:'Net Type',         aliases:['nettype','type','net type']},
+      {key:'netDimensions',label:'Net Dimensions',   aliases:['netdimensions','netdim','dimensions','netting dim']},
+      {key:'poleDimensions',label:'Pole Dimensions', aliases:['poledimensions','poledim','pole dim','poles']},
+      {key:'coating',      label:'Coating',          aliases:['coating','coatingtype','coat']},
+      {key:'installNotes', label:'Install Notes',    aliases:['installnotes','notes','install notes','remarks']},
+      {key:'estimateStatus',label:'Estimate Status', aliases:['estimatestatus','status','estimate status']},
+      {key:'stage',        label:'Stage',            aliases:['stage','pipelinestage']},
+      {key:'date',         label:'Date',             aliases:['date','dateadded','created']},
+    ]
+  },
+  'base-sale': {
+    title: '↓ Import Base Sale Records',
+    desc: 'Map your columns to sale fields. Only <strong>Customer Name</strong> is required.',
+    required: ['customerName'],
+    fields: [
+      {key:'jobNumber',    label:'Job #',            aliases:['jobnumber','job#','job number','job']},
+      {key:'customerName', label:'Customer Name *',  aliases:['customername','customer','name','fullname','client']},
+      {key:'company',      label:'Company',          aliases:['company','companyname']},
+      {key:'status',       label:'Status',           aliases:['status','salestatus']},
+      {key:'description',  label:'Description',      aliases:['description','desc','item','product']},
+      {key:'amount',       label:'Amount',           aliases:['amount','total','totalsale','price']},
+      {key:'category',     label:'Category',         aliases:['category','cat']},
+      {key:'jobType',      label:'Job Type',         aliases:['jobtype','job type','type']},
+      {key:'location',     label:'Location',         aliases:['location','address','city']},
+      {key:'vendor',       label:'Vendor',           aliases:['vendor','supplier']},
+      {key:'salesOrderPO', label:'Sales Order / PO #', aliases:['salesorderpo','so','po','ponumber','sales order']},
+      {key:'dateOrdered',  label:'Date Ordered',     aliases:['dateordered','date ordered','date','orderdate']},
+      {key:'shippingOut',  label:'Shipping Out',     aliases:['shippingout','ship out','shipout','ship date']},
+      {key:'trackingNumber',label:'Tracking #',      aliases:['trackingnumber','tracking','trackingno']},
+      {key:'remarks',      label:'Remarks',          aliases:['remarks','notes']},
+    ]
+  },
+  'ap': {
+    title: '↓ Import Accounts Payable Bills',
+    desc: 'Map your columns to bill fields. <strong>Vendor</strong> and <strong>Amount</strong> are required.',
+    required: ['vendor','amount'],
+    fields: [
+      {key:'vendor',       label:'Vendor *',         aliases:['vendor','vendorname','supplier','company']},
+      {key:'invoiceNum',   label:'Invoice #',        aliases:['invoicenum','invoice#','invoicenumber','bill#','billnumber']},
+      {key:'item',         label:'Item / Service',   aliases:['item','service','description','itemservice']},
+      {key:'amount',       label:'Amount *',         aliases:['amount','total','invoiceamount','billamount']},
+      {key:'amountPaid',   label:'Amount Paid',      aliases:['amountpaid','paid','amtpaid']},
+      {key:'billDate',     label:'Bill Date',        aliases:['billdate','bill date','invoicedate','date']},
+      {key:'dueDate',      label:'Due Date',         aliases:['duedate','due date','due']},
+      {key:'paymentDate',  label:'Payment Date',     aliases:['paymentdate','payment date','paiddate','date paid']},
+      {key:'terms',        label:'Payment Terms',    aliases:['terms','paymentterms']},
+      {key:'status',       label:'Status',           aliases:['status','billstatus','paymentstatus']},
+      {key:'notes',        label:'Notes',            aliases:['notes','remarks','othernotes']},
+    ]
+  },
+  'poles-inv': {
+    title: '↓ Import Poles Inventory',
+    desc: 'Map your columns to poles inventory fields. <strong>Description</strong> is required.',
+    required: ['description'],
+    fields: [
+      {key:'description',  label:'Description *',   aliases:['description','desc','poletype','type','item']},
+      {key:'coating',      label:'Coating',         aliases:['coating','coatingtype','coat']},
+      {key:'stocks',       label:'Stocks (Qty)',    aliases:['stocks','stock','qty','quantity','onhand']},
+      {key:'ship',         label:'Ship Qty',        aliases:['ship','shipqty','to ship']},
+      {key:'install',      label:'Install Qty',     aliases:['install','installqty','to install']},
+      {key:'minQty',       label:'Min Qty',         aliases:['minqty','minimum','minstock','min qty']},
+      {key:'remarks',      label:'Remarks',         aliases:['remarks','notes']},
+    ]
+  },
+  'poles-to-ship': {
+    title: '↓ Import Poles to Ship',
+    desc: 'Map your columns to poles-to-ship fields. <strong>Name</strong> is required.',
+    required: ['name'],
+    fields: [
+      {key:'name',         label:'Name *',          aliases:['name','customername','customer','fullname','client']},
+      {key:'source',       label:'Source',          aliases:['source','ordersource']},
+      {key:'systemType',   label:'System Type',     aliases:['systemtype','system type','system']},
+      {key:'mountType',    label:'Mount Type',      aliases:['mounttype','mount type','mount']},
+      {key:'description',  label:'Description',     aliases:['description','desc','netting','item']},
+      {key:'coating',      label:'Coating',         aliases:['coating','coatingtype']},
+      {key:'qty',          label:'Qty',             aliases:['qty','quantity']},
+      {key:'poleStatus',   label:'Status',          aliases:['polestatus','status']},
+      {key:'dateOrdered',  label:'Date Ordered',    aliases:['dateordered','date ordered','date','orderdate']},
+      {key:'vendorDate',   label:'Vendor Date',     aliases:['vendordate','vendor date','vendorshipdate']},
+      {key:'shipped',      label:'Shipped',         aliases:['shipped','isshipped']},
+      {key:'installNotes', label:'Install Notes',   aliases:['installnotes','notes','remarks']},
+      {key:'trackingNumber',label:'Tracking #',     aliases:['trackingnumber','tracking','trackingno']},
+    ]
+  },
+  'ext-poles': {
+    title: '↓ Import Extension Poles',
+    desc: 'Map your columns to extension pole fields. <strong>Name</strong> is required.',
+    required: ['name'],
+    fields: [
+      {key:'name',         label:'Name *',          aliases:['name','customername','customer','fullname']},
+      {key:'coating',      label:'Coating',         aliases:['coating','coatingtype']},
+      {key:'qty',          label:'Qty',             aliases:['qty','quantity']},
+      {key:'shipped',      label:'Shipped',         aliases:['shipped','isshipped']},
+      {key:'dateOrdered',  label:'Date Ordered',    aliases:['dateordered','date','orderdate']},
+      {key:'remarks',      label:'Remarks',         aliases:['remarks','notes']},
+    ]
+  },
+  'install': {
+    title: '↓ Import For Install',
+    desc: 'Map your columns to install fields. <strong>Name</strong> is required.',
+    required: ['name'],
+    fields: [
+      {key:'name',         label:'Name *',          aliases:['name','customername','customer','fullname']},
+      {key:'description',  label:'Description',     aliases:['description','desc','item','netting']},
+      {key:'coating',      label:'Coating',         aliases:['coating','coatingtype']},
+      {key:'qty',          label:'Qty',             aliases:['qty','quantity']},
+      {key:'address',      label:'Address',         aliases:['address','location']},
+      {key:'contact',      label:'Contact',         aliases:['contact','phone','email','contactinfo']},
+      {key:'dateOrdered',  label:'Date Ordered',    aliases:['dateordered','date','orderdate']},
+      {key:'remarks',      label:'Remarks',         aliases:['remarks','notes']},
+    ]
+  },
+  'ar': {
+    title: '↓ Import Accounts Receivable Jobs',
+    desc: 'Map your columns to A/R fields. <strong>Customer Name</strong> is required.',
+    required: ['customerName'],
+    fields: [
+      {key:'customerName',        label:'Customer Name *',                  aliases:['customername','customer','name','client','fullname']},
+      {key:'date',                label:'Date',                             aliases:['date','jobdate','startdate']},
+      {key:'installIIDate',       label:'Install II Date',                  aliases:['installiidate','install ii date','install2date','install2']},
+      {key:'dateJobCompleted',    label:'Date Job Completed',               aliases:['datejobcompleted','date job completed','completeddate','datecompeted','completed']},
+      {key:'jobType',             label:'Job Type',                         aliases:['jobtype','job type','type']},
+      {key:'totalContractPrice',  label:'Total Contract Price',             aliases:['totalcontractprice','total contract price','contractprice','contract price','total contract']},
+      {key:'initialPayment',      label:'Initial Payment',                  aliases:['initialpayment','initial payment','initial','firstpayment','down payment','downpayment']},
+      {key:'partialPayment1',     label:'Partial Payment 1',               aliases:['partialpayment1','partial payment 1','partial1','pp1','partial payment']},
+      {key:'partialPayment2',     label:'Partial Payment 2',               aliases:['partialpayment2','partial payment 2','partial2','pp2']},
+      {key:'partialPayment3',     label:'Partial Payment 3',               aliases:['partialpayment3','partial payment 3','partial3','pp3']},
+      {key:'customerPaidToDate',  label:'Customer Paid ASN to Date',        aliases:['customerpaidtodate','customer paid','paid to date','customerpaid','totalpaid']},
+      {key:'paymentMethod',       label:'Payment Method',                   aliases:['paymentmethod','payment method','method','paymethod']},
+      {key:'paymentStatus',       label:'Payment Status',                   aliases:['paymentstatus','payment status','status','paystatus']},
+      {key:'subConName',          label:'Sub Con Name',                     aliases:['subconname','sub con name','subcontractor','subcon','subcontractorname']},
+      {key:'subConCost',          label:'Sub Con Cost',                     aliases:['subconcost','sub con cost','subcon cost','subcost']},
+      {key:'subConCarry',         label:'Sub Con Carry',                    aliases:['subconcarry','sub con carry','subcon carry','subcarry']},
+      {key:'paidToSubCon',        label:'Paid to Sub Con',                  aliases:['paidtosubcon','paid to sub','paid sub','paidtosub']},
+      {key:'invoiceNum',          label:'Invoice #',                        aliases:['invoicenum','invoice#','invoicenumber','invoice no']},
+      {key:'status',              label:'Status',                           aliases:['status','jobstatus']},
+    ]
+  }
+};
+
+// ── OPEN HELPERS ─────────────────────────────────────────────────────────────
+function _openImport(target){
+  _importTarget=target;
+  _importRows=[];
+  _importFileHeaders=[];
+  const cfg=IMPORT_FIELDS[target];
+  document.getElementById('import-modal-title').textContent=cfg.title;
+  document.getElementById('import-modal-desc').innerHTML=cfg.desc;
+  document.getElementById('import-file-input').value='';
+  document.getElementById('import-step-upload').style.display='block';
+  document.getElementById('import-step-map').style.display='none';
+  document.getElementById('import-modal').classList.remove('hidden');
+}
+function openEFImport()        { _openImport('ef'); }
+function openINVImport()       { _openImport('inv'); }
+function openNetInfoImport()   { _openImport('net-info'); }
+function openBaseSaleImport()  { _openImport('base-sale'); }
+function openAPImport()        { _openImport('ap'); }
+function openARImport()        { _openImport('ar'); }
+function openPolesInvImport()  { _openImport('poles-inv'); }
+function openPolesToShipImport(){ _openImport('poles-to-ship'); }
+function openExtPolesImport()  { _openImport('ext-poles'); }
+function openInstallImport()   { _openImport('install'); }
+
+function importReset(){
+  document.getElementById('import-file-input').value='';
+  document.getElementById('import-step-upload').style.display='block';
+  document.getElementById('import-step-map').style.display='none';
+  _importRows=[];_importFileHeaders=[];
+}
 
 function setEFView(v){
   efView=v;
@@ -7368,26 +8404,11 @@ function exportINV(){
 }
 
 // ===== IMPORT LOGIC =====
-function openEFImport(){
-  _importTarget='ef';
-  document.getElementById('import-modal-title').textContent='↓ Import Estimate Records';
-  document.getElementById('import-preview-wrap').style.display='none';
-  document.getElementById('import-file-input').value='';
-  _importRows=[];
-  document.getElementById('import-modal').classList.remove('hidden');
-}
-function openINVImport(){
-  _importTarget='inv';
-  document.getElementById('import-modal-title').textContent='↓ Import Invoice Records';
-  document.getElementById('import-preview-wrap').style.display='none';
-  document.getElementById('import-file-input').value='';
-  _importRows=[];
-  document.getElementById('import-modal').classList.remove('hidden');
-}
 function closeImportModal(){document.getElementById('import-modal').classList.add('hidden');}
 function importDragOver(e){e.preventDefault();document.getElementById('import-drop-zone').classList.add('drag-over');}
 function importDragLeave(e){document.getElementById('import-drop-zone').classList.remove('drag-over');}
 function importDrop(e){e.preventDefault();document.getElementById('import-drop-zone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)importHandleFile(f);}
+
 function importHandleFile(file){
   if(!file)return;
   const ext=file.name.split('.').pop().toLowerCase();
@@ -7397,86 +8418,414 @@ function importHandleFile(file){
     let rows=[];
     if(ext==='csv'){
       const text=ev.target.result;
-      const lines=text.split('\n').filter(l=>l.trim());
-      const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase());
+      // Handle quoted CSV properly
+      function parseCSVLine(line){
+        const result=[];let cur='';let inQ=false;
+        for(let i=0;i<line.length;i++){
+          const c=line[i];
+          if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+          else if(c===','&&!inQ){result.push(cur.trim());cur='';}
+          else cur+=c;
+        }
+        result.push(cur.trim());return result;
+      }
+      const lines=text.split(/\r?\n/).filter(l=>l.trim());
+      const headers=parseCSVLine(lines[0]).map(h=>h.replace(/^"|"$/g,'').trim());
       rows=lines.slice(1).map(line=>{
-        const vals=line.split(',').map(v=>v.replace(/"/g,'').trim());
-        const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');
+        const vals=parseCSVLine(line);
+        const obj={};headers.forEach((h,i)=>obj[h]=String(vals[i]||'').replace(/^"|"$/g,'').trim());
         return obj;
-      });
+      }).filter(r=>Object.values(r).some(v=>v));
     } else {
       const wb=XLSX.read(ev.target.result,{type:'binary'});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
-      rows=raw.map(r=>{const obj={};Object.keys(r).forEach(k=>obj[k.toLowerCase().replace(/\s+/g,'')]=String(r[k]||'').trim());return obj;});
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+      rows=raw.map(r=>{const obj={};Object.keys(r).forEach(k=>obj[k.trim()]=String(r[k]||'').trim());return obj;});
     }
-    _importRows=rows;
-    // Show preview
     if(!rows.length){toast('No data rows found in file','error');return;}
-    const keys=Object.keys(rows[0]);
-    document.getElementById('import-preview-head').innerHTML='<tr>'+keys.map(k=>`<th style="padding:6px 8px;background:var(--navy-light);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);border-bottom:1px solid var(--border)">${k}</th>`).join('')+'</tr>';
-    document.getElementById('import-preview-body').innerHTML=rows.slice(0,3).map(r=>'<tr>'+keys.map(k=>`<td style="padding:5px 8px;border-bottom:1px solid var(--border-light);font-size:11px;color:var(--text)">${r[k]||''}</td>`).join('')+'</tr>').join('');
+    _importRows=rows;
+    _importFileHeaders=Object.keys(rows[0]);
+    // Show step 2
+    document.getElementById('import-step-upload').style.display='none';
+    document.getElementById('import-step-map').style.display='block';
+    // File info
+    document.getElementById('import-fname').textContent=file.name;
+    document.getElementById('import-fmeta').textContent=`${rows.length} rows · ${_importFileHeaders.length} columns`;
     document.getElementById('import-row-count').textContent=rows.length;
-    document.getElementById('import-preview-wrap').style.display='block';
+    // Detected column chips
+    document.getElementById('import-detected-cols').innerHTML=_importFileHeaders.map(h=>
+      `<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:var(--accent-glow);border:1px solid rgba(45,126,247,0.3);color:var(--accent)">${h}</span>`
+    ).join('');
+    // Build mapping grid
+    _buildImportMapGrid();
+    // Preview table
+    const keys=_importFileHeaders;
+    document.getElementById('import-preview-head').innerHTML='<tr>'+keys.map(k=>`<th style="padding:5px 8px;background:var(--navy-light);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap">${k}</th>`).join('')+'</tr>';
+    document.getElementById('import-preview-body').innerHTML=rows.slice(0,3).map(r=>'<tr>'+keys.map(k=>`<td style="padding:4px 8px;border-bottom:1px solid var(--border-light);font-size:11px;color:var(--text);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis">${r[k]||''}</td>`).join('')+'</tr>').join('');
+    // Required warning
+    const cfg=IMPORT_FIELDS[_importTarget];
+    const reqWarn=document.getElementById('import-req-warn');
+    if(reqWarn)reqWarn.textContent=cfg.required.map(k=>{
+      const fd=cfg.fields.find(f=>f.key===k);return`Required: "${fd?fd.label.replace(' *',''):k}"`;
+    }).join(' · ');
   };
   if(ext==='csv')reader.readAsText(file);
   else reader.readAsBinaryString(file);
 }
+
+function _buildImportMapGrid(){
+  const cfg=IMPORT_FIELDS[_importTarget];
+  if(!cfg)return;
+  // Auto-map: for each field, find matching header
+  function autoMap(fieldKey){
+    const fd=cfg.fields.find(f=>f.key===fieldKey);
+    if(!fd)return'';
+    // exact match on alias (normalized)
+    for(const h of _importFileHeaders){
+      const hn=h.toLowerCase().replace(/[\s_\-\/]/g,'');
+      if(fd.aliases.some(a=>a.replace(/[\s_\-\/]/g,'')=== hn))return h;
+    }
+    // partial match
+    for(const h of _importFileHeaders){
+      const hn=h.toLowerCase();
+      if(fd.aliases.some(a=>hn.includes(a.replace(/\s/g,''))||a.includes(hn.replace(/\s/g,''))))return h;
+    }
+    return'';
+  }
+  const opts=['<option value="">-- Skip --</option>',..._importFileHeaders.map(h=>`<option value="${h.replace(/"/g,'&quot;')}">${h}</option>`)].join('');
+  document.getElementById('import-map-grid').innerHTML=cfg.fields.map(fd=>{
+    const mapped=autoMap(fd.key);
+    const borderStyle=mapped?'border-color:var(--green)':'';
+    return`<div class="field">
+      <label style="font-size:10px">${fd.label}</label>
+      <select id="imap-${fd.key}" style="font-family:'DM Sans',sans-serif;font-size:12px;background:var(--input-bg);border:1px solid var(--border);${borderStyle};border-radius:var(--radius);padding:6px 10px;color:var(--text);outline:none;width:100%;transition:border-color 0.15s" onchange="this.style.borderColor=this.value?'var(--green)':'var(--border)'">
+        ${opts.replace(`value="${mapped.replace(/"/g,'&quot;')}"`,`value="${mapped.replace(/"/g,'&quot;')}" selected`)}
+      </select>
+    </div>`;
+  }).join('');
+}
+
+function _getMapVal(key){
+  const el=document.getElementById('imap-'+key);
+  return el?el.value:'';
+}
+function _colVal(row,key){
+  const col=_getMapVal(key);
+  return col?String(row[col]||'').trim():'';
+}
+
 function doImport(){
   if(!_importRows.length){toast('No rows to import','error');return;}
+  const cfg=IMPORT_FIELDS[_importTarget];
+  if(!cfg){toast('Unknown import target','error');return;}
+  // Validate required fields are mapped
+  for(const req of cfg.required){
+    if(!_getMapVal(req)){
+      const fd=cfg.fields.find(f=>f.key===req);
+      toast(`Please map the required field: ${fd?fd.label.replace(' *',''):req}`,'error');return;
+    }
+  }
   const now=Date.now();
   let count=0;
+
   if(_importTarget==='ef'){
     _importRows.forEach((r,i)=>{
-      const name=r['customername']||r['customer']||r['name']||r['fullname']||'';
-      if(!name)return;
+      const name=_colVal(r,'customerName');if(!name)return;
       const est={
-        id:'est_imp_'+now+'_'+i,
-        leadId:null,
+        id:'est_imp_'+now+'_'+i, leadId:null,
         customerName:name,
-        email:r['email']||'',
-        phone:r['phone']||'',
-        netDimensions:r['netdimensions']||r['netdim']||'',
-        netType:r['nettype']||'',
-        netSport:r['sport']||r['netsport']||'',
-        netPrice:r['netprice']||'',
-        polesPrice:r['polesprice']||'',
-        totalPrice:r['totalprice']||r['total']||'',
-        outcome:r['outcome']||'',
-        sentDate:r['sentdate']?new Date(r['sentdate']).getTime()||now:now,
+        email:_colVal(r,'email'), phone:_colVal(r,'phone'),
+        netDimensions:_colVal(r,'netDimensions'), netType:_colVal(r,'netType'),
+        netSport:_colVal(r,'netSport'), netPrice:_colVal(r,'netPrice'),
+        polesPrice:_colVal(r,'polesPrice'),
+        totalPrice:_colVal(r,'totalPrice'),
+        outcome:_colVal(r,'outcome'),
+        sentDate:(()=>{const d=_colVal(r,'sentDate');const t=d?new Date(d).getTime():NaN;return isNaN(t)?now:t;})(),
         history:[{ts:now,event:'Imported from file'}],
         followups:typeof FU_DAYS!=='undefined'?FU_DAYS.map((d,idx)=>({label:typeof FU_LABELS!=='undefined'?FU_LABELS[idx]:'FU '+(idx+1),dueDate:null,done:false,doneDate:null})):[]
       };
       estimates.unshift(est);count++;
     });
     saveEst();updateBadges();renderEstFollowup();
-    toast(`Imported ${count} estimate records ✓`,'success');
-  } else {
+    toast(`Imported ${count} estimate record${count!==1?'s':''}  ✓`,'success');
+
+  } else if(_importTarget==='inv'){
     _importRows.forEach((r,i)=>{
-      const name=r['customername']||r['customer']||r['name']||r['fullname']||'';
-      if(!name)return;
+      const name=_colVal(r,'customerName');if(!name)return;
       const inv={
-        id:'inv_imp_'+now+'_'+i,
-        estimateId:null,leadId:null,
+        id:'inv_imp_'+now+'_'+i, estimateId:null,leadId:null,
         customerName:name,
-        email:r['email']||'',
-        phone:r['phone']||'',
-        netDimensions:r['netdimensions']||r['netdim']||'',
-        netType:r['nettype']||'',
-        netSport:r['sport']||r['netsport']||'',
-        netPrice:r['netprice']||'',
-        polesPrice:r['polesprice']||'',
-        totalAmount:r['totalamount']||r['total']||r['totalprice']||'',
-        status:r['status']||'',
-        createdDate:r['createddate']?new Date(r['createddate']).getTime()||now:now,
+        email:_colVal(r,'email'), phone:_colVal(r,'phone'),
+        netDimensions:_colVal(r,'netDimensions'), netType:_colVal(r,'netType'),
+        netSport:_colVal(r,'netSport'), netPrice:_colVal(r,'netPrice'),
+        polesPrice:_colVal(r,'polesPrice'),
+        totalAmount:_colVal(r,'totalAmount'),
+        status:_colVal(r,'status'),
+        createdDate:(()=>{const d=_colVal(r,'createdDate');const t=d?new Date(d).getTime():NaN;return isNaN(t)?now:t;})(),
         history:[{ts:now,event:'Imported from file'}],
         followups:typeof FU_DAYS!=='undefined'?FU_DAYS.map((d,idx)=>({label:typeof FU_LABELS!=='undefined'?FU_LABELS[idx]:'FU '+(idx+1),dueDate:null,done:false,doneDate:null})):[]
       };
       invoices.unshift(inv);count++;
     });
     saveInv();updateBadges();renderInvoice();
-    toast(`Imported ${count} invoice records ✓`,'success');
+    toast(`Imported ${count} invoice record${count!==1?'s':''}  ✓`,'success');
+
+  } else if(_importTarget==='net-info'){
+    _importRows.forEach((r,i)=>{
+      const name=_colVal(r,'clientName');if(!name)return;
+      // Find or create a lead for this client
+      let lead=leads.find(l=>l.firstName&&(l.firstName+' '+l.lastName).toLowerCase().trim()===name.toLowerCase().trim());
+      if(!lead){
+        const parts=name.trim().split(/\s+/);
+        lead={
+          id:'lead_ni_imp_'+now+'_'+i,
+          firstName:parts[0]||'', lastName:parts.slice(1).join(' ')||'',
+          email:'', phone:'', source:'', notes:'', priority:'normal',
+          stage:'new', dateAdded:now,
+          netDimensions:_colVal(r,'netDimensions'), poleDimensions:_colVal(r,'poleDimensions'),
+          netType:_colVal(r,'netType'), netSport:_colVal(r,'sport'),
+          coatingType:_colVal(r,'coating'), installNotes:_colVal(r,'installNotes'),
+          estimateStatus:_colVal(r,'estimateStatus')||'Ongoing'
+        };
+        leads.unshift(lead);
+      } else {
+        if(_colVal(r,'netDimensions'))lead.netDimensions=_colVal(r,'netDimensions');
+        if(_colVal(r,'poleDimensions'))lead.poleDimensions=_colVal(r,'poleDimensions');
+        if(_colVal(r,'netType'))lead.netType=_colVal(r,'netType');
+        if(_colVal(r,'sport'))lead.netSport=_colVal(r,'sport');
+        if(_colVal(r,'coating'))lead.coatingType=_colVal(r,'coating');
+        if(_colVal(r,'installNotes'))lead.installNotes=_colVal(r,'installNotes');
+        if(_colVal(r,'estimateStatus'))lead.estimateStatus=_colVal(r,'estimateStatus');
+      }
+      count++;
+    });
+    save();updateBadges();
+    if(typeof renderNetInfo==='function')renderNetInfo();
+    toast(`Imported ${count} net spec record${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='base-sale'){
+    _importRows.forEach((r,i)=>{
+      const name=_colVal(r,'customerName');if(!name)return;
+      const bs={
+        id:'bs_imp_'+now+'_'+i,
+        invoiceId:null, estimateId:null, leadId:null,
+        jobNumber:_colVal(r,'jobNumber'),
+        customerName:name,
+        company:_colVal(r,'company'),
+        status:_colVal(r,'status')||'in-progress',
+        description:_colVal(r,'description'),
+        amount:_colVal(r,'amount'), totalSale:_colVal(r,'amount'),
+        category:_colVal(r,'category'),
+        jobType:_colVal(r,'jobType'),
+        location:_colVal(r,'location'),
+        vendor:_colVal(r,'vendor'),
+        salesOrderPO:_colVal(r,'salesOrderPO'),
+        dateOrdered:_colVal(r,'dateOrdered'),
+        shippingOut:_colVal(r,'shippingOut'),
+        trackingNumber:_colVal(r,'trackingNumber'),
+        remarks:_colVal(r,'remarks'), notes:_colVal(r,'remarks'),
+        datePaid:now, _imported:true
+      };
+      baseSales.unshift(bs);count++;
+    });
+    saveBS();
+    if(typeof renderBaseSale==='function')renderBaseSale();
+    toast(`Imported ${count} sale record${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='ap'){
+    _importRows.forEach((r,i)=>{
+      const vendorName=_colVal(r,'vendor');if(!vendorName)return;
+      const amtStr=_colVal(r,'amount');if(!amtStr)return;
+      // Find or create vendor
+      let vendor=apVendors.find(v=>v.name.toLowerCase()===vendorName.toLowerCase());
+      if(!vendor){
+        vendor={id:'apv_imp_'+now+'_'+i+'_v',name:vendorName,contact:'',email:'',phone:'',notes:'',invoices:[]};
+        apVendors.push(vendor);
+      }
+      const paid=_colVal(r,'amountPaid');
+      const paidNum=apParseMoney(paid);
+      const amtNum=apParseMoney(amtStr);
+      let status=_colVal(r,'status')||'unpaid';
+      if(paidNum>=amtNum&&amtNum>0)status='paid';
+      else if(paidNum>0&&paidNum<amtNum)status='partial';
+      const inv={
+        id:'api_imp_'+now+'_'+i,
+        invoiceNum:_colVal(r,'invoiceNum'),
+        item:_colVal(r,'item'),
+        notes:_colVal(r,'notes'),
+        amount:amtStr, amountPaid:paid,
+        billDate:_colVal(r,'billDate'), dueDate:_colVal(r,'dueDate'),
+        paymentDate:_colVal(r,'paymentDate'),
+        terms:_colVal(r,'terms'), dropboxUrl:'',
+        status:status,
+        _history:status==='paid',
+        _paidAt:status==='paid'?new Date().toISOString():null
+      };
+      vendor.invoices.push(inv);count++;
+    });
+    saveAP();
+    if(typeof renderAP==='function')renderAP();
+    toast(`Imported ${count} bill record${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='ar'){
+    _importRows.forEach((r,i)=>{
+      const name=_colVal(r,'customerName');if(!name)return;
+      const initial=_colVal(r,'initialPayment')||'';
+      const pp1=_colVal(r,'partialPayment1')||'';
+      const pp2=_colVal(r,'partialPayment2')||'';
+      const pp3=_colVal(r,'partialPayment3')||'';
+      const contract=_colVal(r,'totalContractPrice')||'';
+      const custPaidRaw=_colVal(r,'customerPaidToDate')||'';
+      const custPaidNum=custPaidRaw?arParseMoney(custPaidRaw):(arParseMoney(initial)+arParseMoney(pp1)+arParseMoney(pp2)+arParseMoney(pp3));
+      const contractNum=arParseMoney(contract);
+      const custBal=Math.max(0,contractNum-custPaidNum);
+      const subCost=_colVal(r,'subConCost')||'';
+      const subCarry=_colVal(r,'subConCarry')||'';
+      const paidSub=_colVal(r,'paidToSubCon')||'';
+      const subBal=Math.max(0,arParseMoney(subCost)-arParseMoney(paidSub));
+      const subGross=arParseMoney(subCarry)-arParseMoney(subCost);
+      const job={
+        id:'ar_imp_'+now+'_'+i,
+        date:_colVal(r,'date')||'',
+        installIIDate:_colVal(r,'installIIDate')||'',
+        dateJobCompleted:_colVal(r,'dateJobCompleted')||'',
+        jobType:_colVal(r,'jobType')||'',
+        customerName:name,
+        totalContractPrice:contract,
+        initialPayment:initial,
+        partialPayment1:pp1,
+        partialPayment2:pp2,
+        partialPayment3:pp3,
+        customerPaidToDate:custPaidRaw||arFmt(custPaidNum).replace('$',''),
+        paymentMethod:_colVal(r,'paymentMethod')||'',
+        customerBalanceDue:arFmt(custBal).replace('$',''),
+        paymentStatus:_colVal(r,'paymentStatus')||'Unpaid',
+        subConName:_colVal(r,'subConName')||'',
+        subConCost:subCost,
+        subConCarry:subCarry,
+        subConGrossProfit:arFmt(subGross).replace('$',''),
+        paidToSubCon:paidSub,
+        balanceDueToSubCon:arFmt(subBal).replace('$',''),
+        invoiceNum:_colVal(r,'invoiceNum')||'',
+        status:_colVal(r,'status')||_colVal(r,'paymentStatus')||'',
+      };
+      arJobs.unshift(job);count++;
+    });
+    saveAR();updateARBadge();
+    if(typeof renderAR==='function')renderAR();
+    toast(`Imported ${count} A/R record${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='poles-inv'){
+    _importRows.forEach((r,i)=>{
+      const desc=_colVal(r,'description');if(!desc)return;
+      const existing=polesInventory.find(p=>p.description.toLowerCase()===desc.toLowerCase());
+      if(existing){
+        if(_colVal(r,'coating'))existing.coating=_colVal(r,'coating')||existing.coating;
+        if(_colVal(r,'stocks'))existing.stocks=parseInt(_colVal(r,'stocks'))||existing.stocks;
+        if(_colVal(r,'ship'))existing.ship=parseInt(_colVal(r,'ship'))||existing.ship;
+        if(_colVal(r,'install'))existing.install=parseInt(_colVal(r,'install'))||existing.install;
+        if(_colVal(r,'minQty'))existing.minQty=parseInt(_colVal(r,'minQty'))||existing.minQty;
+        if(_colVal(r,'remarks'))existing.remarks=_colVal(r,'remarks');
+      } else {
+        polesInventory.push({
+          id:'pi_imp_'+now+'_'+i,
+          description:desc,
+          coating:_colVal(r,'coating')||'Mill',
+          stocks:parseInt(_colVal(r,'stocks'))||0,
+          ship:parseInt(_colVal(r,'ship'))||0,
+          install:parseInt(_colVal(r,'install'))||0,
+          minQty:parseInt(_colVal(r,'minQty'))||2,
+          remarks:_colVal(r,'remarks')
+        });
+      }
+      count++;
+    });
+    savePoles();
+    if(typeof renderPolesInventory==='function')renderPolesInventory();
+    toast(`Imported ${count} pole type${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='poles-to-ship'){
+    _importRows.forEach((r,i)=>{
+      const name=_colVal(r,'name');if(!name)return;
+      // Create a synthetic WS order entry that will appear in Poles to Ship
+      const fakeId='pts_imp_'+now+'_'+i;
+      wsOrders.unshift({
+        id:fakeId,
+        fullName:name,
+        source:_colVal(r,'source')||'Import',
+        systemType:_colVal(r,'systemType'),
+        mountType:_colVal(r,'mountType'),
+        netting:_colVal(r,'description'),
+        dimension:_colVal(r,'description'),
+        coating:_colVal(r,'coating'),
+        qty:_colVal(r,'qty')||'1',
+        status:_colVal(r,'poleStatus')||'pending',
+        dateOrdered:_colVal(r,'dateOrdered'),
+        estShipByVendor:_colVal(r,'vendorDate'),
+        shipped:_colVal(r,'shipped')||'No',
+        installNotes:_colVal(r,'installNotes'),
+        trackingNumber:_colVal(r,'trackingNumber'),
+        _ptsImport:true
+      });
+      // Also set overlay flags
+      if(!polesShipOverlay[fakeId]){
+        polesShipOverlay[fakeId]={
+          coating:_colVal(r,'coating')||'Mill',
+          qty:_colVal(r,'qty')||'1',
+          shipped:_colVal(r,'shipped')||'No',
+          remarks:_colVal(r,'description'),
+          installNotes:_colVal(r,'installNotes'),
+          vendorDate:_colVal(r,'vendorDate'),
+          trackingNumber:_colVal(r,'trackingNumber'),
+          poleStatus:_colVal(r,'poleStatus')||'Ordered'
+        };
+      }
+      count++;
+    });
+    saveWS();savePolesOverlay();
+    if(typeof renderPolesToShip==='function')renderPolesToShip();
+    toast(`Imported ${count} pole ship record${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='ext-poles'){
+    _importRows.forEach((r,i)=>{
+      const name=_colVal(r,'name');if(!name)return;
+      extPolesRows.push({
+        id:'ep_imp_'+now+'_'+i,
+        name:name,
+        coating:_colVal(r,'coating')||'Mill',
+        qty:_colVal(r,'qty')||'1',
+        shipped:_colVal(r,'shipped')||'No',
+        dateOrdered:_colVal(r,'dateOrdered'),
+        remarks:_colVal(r,'remarks')
+      });
+      count++;
+    });
+    saveExtPoles();
+    if(typeof renderExtPoles==='function')renderExtPoles();
+    toast(`Imported ${count} extension pole row${count!==1?'s':''} ✓`,'success');
+
+  } else if(_importTarget==='install'){
+    _importRows.forEach((r,i)=>{
+      const name=_colVal(r,'name');if(!name)return;
+      installRows.push({
+        id:'ins_imp_'+now+'_'+i,
+        name:name,
+        description:_colVal(r,'description'),
+        coating:_colVal(r,'coating')||'Mill',
+        qty:_colVal(r,'qty')||'1',
+        address:_colVal(r,'address'),
+        contact:_colVal(r,'contact'),
+        dateOrdered:_colVal(r,'dateOrdered'),
+        remarks:_colVal(r,'remarks'),
+        installSheetReady:false
+      });
+      count++;
+    });
+    saveInstallRows();
+    if(typeof renderInstallTable==='function')renderInstallTable();
+    toast(`Imported ${count} install row${count!==1?'s':''} ✓`,'success');
   }
+
   closeImportModal();
 }
 
@@ -8166,6 +9515,7 @@ switchTab = function(tab) {
 // Run once on load for the active (base-leads) tab
 setTimeout(() => {
   initAllEditableHeaders();
+  initDynamicControls();
   // Init for current active tab
   addDeleteToRecentLeads();
   const rlTable = document.getElementById('recent-leads-table');
@@ -9018,7 +10368,7 @@ function ctxToggleTotal2(tableEl) {
 }
 
 // ── "Add Table" button injection per tab ─────────────────
-const TAB_IDS = ['base-leads','pipeline','net-info','est-followup','invoice','base-sale','how-found','ws-order','inventory','ap-tracking'];
+const TAB_IDS = ['base-leads','pipeline','net-info','est-followup','invoice','base-sale','how-found','ws-order','inventory','ap-tracking','ar-tracking'];
 
 function injectAddTableBtns() {
   TAB_IDS.forEach(tabId => {
@@ -9588,6 +10938,941 @@ function exportAPCSV(){
 }
 // ══════════════════════════════════════════════════════════
 //  END ACCOUNTS PAYABLE MODULE
+// ══════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+//  ACCOUNTS RECEIVABLE MODULE
+// ══════════════════════════════════════════════════════════
+let arJobs = [];
+
+const AR_PAYMENT_METHODS = ['Card','Check','Cash','Bank','Zelle','Venmo','Wire','Other'];
+const AR_STATUSES = ['Fully Paid','Partially Paid','Unpaid','In Progress'];
+
+function arId(){ return 'ar_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function arParseMoney(v){ if(!v&&v!==0) return 0; return parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0; }
+function arFmt(n){ if(!n&&n!==0) return ''; return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function arFmtDate(s){ if(!s) return ''; try{ const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }catch(e){ return s; } }
+
+function saveAR(){ try{ localStorage.setItem('asn_ar_jobs', JSON.stringify(arJobs)); }catch(e){} }
+function loadAR(){
+  try{ const d=localStorage.getItem('asn_ar_jobs'); if(d) arJobs=JSON.parse(d); }catch(e){ arJobs=[]; }
+  renderAR(); updateARBadge();
+}
+
+function updateARBadge(){
+  const unpaid = arJobs.filter(j=>j.paymentStatus!=='Fully Paid').length;
+  const badge = document.getElementById('ar-badge');
+  if(badge){ badge.textContent=unpaid; badge.style.display=unpaid>0?'':'none'; }
+}
+
+function arStatusBadge(status){
+  const map={
+    'Fully Paid':'background:var(--green-dim);color:var(--green);border:1px solid rgba(22,163,74,0.3)',
+    'Partially Paid':'background:var(--amber-dim);color:var(--amber);border:1px solid rgba(217,119,6,0.3)',
+    'Unpaid':'background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,0.3)',
+    'In Progress':'background:rgba(251,146,60,0.12);color:var(--orange);border:1px solid rgba(234,88,12,0.3)',
+  };
+  const style=map[status]||'background:var(--navy-light);color:var(--text-muted);border:1px solid var(--border)';
+  return `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;${style}">${status||'—'}</span>`;
+}
+
+function renderAR(){
+  const search=(document.getElementById('ar-search')||{}).value||'';
+  const filterStatus=(document.getElementById('ar-filter-status')||{}).value||'';
+  const filterJob=(document.getElementById('ar-filter-jobtype')||{}).value||'';
+
+  let filtered=arJobs.filter(j=>{
+    if(filterStatus && j.paymentStatus!==filterStatus) return false;
+    if(filterJob && j.jobType!==filterJob) return false;
+    if(search){
+      const q=search.toLowerCase();
+      if(!(j.customerName||'').toLowerCase().includes(q) &&
+         !(j.jobType||'').toLowerCase().includes(q) &&
+         !(j.subConName||'').toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Summary
+  const totContract=filtered.reduce((s,j)=>s+arParseMoney(j.totalContractPrice),0);
+  const totPaid=filtered.reduce((s,j)=>s+arParseMoney(j.customerPaidToDate),0);
+  const totBalance=filtered.reduce((s,j)=>s+arParseMoney(j.customerBalanceDue),0);
+  const totSubCon=filtered.reduce((s,j)=>s+arParseMoney(j.subConCost),0);
+  const totSubBal=filtered.reduce((s,j)=>s+arParseMoney(j.balanceDueToSubCon),0);
+  document.getElementById('ar-total-contract').textContent=arFmt(totContract);
+  document.getElementById('ar-total-received').textContent=arFmt(totPaid);
+  document.getElementById('ar-total-balance').textContent=arFmt(totBalance);
+  document.getElementById('ar-total-subcon').textContent=arFmt(totSubCon);
+  document.getElementById('ar-job-count').textContent=filtered.length;
+  document.getElementById('ar-sub-balance').textContent=arFmt(totSubBal);
+
+  const tbody=document.getElementById('ar-table-body');
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="24" style="padding:48px 20px;text-align:center;color:var(--text-dim)">
+      <div style="font-size:28px;margin-bottom:8px">📥</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text-muted)">${arJobs.length?'No results match your filters':'No receivables yet'}</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">${arJobs.length?'Try clearing filters':'Click &quot;+ Add Job&quot; to create your first entry'}</div>
+    </td></tr>`;
+    document.getElementById('ar-table-foot').style.display='none';
+    return;
+  }
+
+  const rowStyle='border-bottom:1px solid var(--border-light)';
+  const tdR='padding:8px 10px;text-align:right;font-family:"DM Mono",monospace;font-size:12px;color:var(--text)';
+  const tdL='padding:8px 10px;text-align:left;font-size:12px;color:var(--text)';
+  const tdM='padding:8px 10px;text-align:left;color:var(--text-muted);font-size:11px';
+
+  tbody.innerHTML=filtered.map(j=>{
+    const contract=arParseMoney(j.totalContractPrice);
+    const initial=arParseMoney(j.initialPayment);
+    const remaining=contract-initial;
+    const pp1=arParseMoney(j.partialPayment1);
+    const pp2=arParseMoney(j.partialPayment2);
+    const pp3=arParseMoney(j.partialPayment3);
+    const custPaid=arParseMoney(j.customerPaidToDate)||initial+pp1+pp2+pp3;
+    const custBal=Math.max(0,contract-custPaid);
+    const subConCarry=arParseMoney(j.subConCarry);
+    const subConCost=arParseMoney(j.subConCost);
+    const subConGross=subConCarry-subConCost;
+    const paidToSub=arParseMoney(j.paidToSubCon);
+    const subBal=Math.max(0,subConCost-paidToSub);
+    const rowBg=j.paymentStatus==='Fully Paid'?'background:rgba(22,163,74,0.03)':j.paymentStatus==='In Progress'?'background:rgba(251,146,60,0.04)':'';
+    return`<tr style="${rowBg};${rowStyle}" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='${j.paymentStatus==='Fully Paid'?'rgba(22,163,74,0.03)':j.paymentStatus==='In Progress'?'rgba(251,146,60,0.04)':''}'">
+      <td style="${tdM}">${arFmtDate(j.date)||'—'}</td>
+      <td style="${tdM}">${arFmtDate(j.installIIDate)||'—'}</td>
+      <td style="${tdM}">${arFmtDate(j.dateJobCompleted)||'—'}</td>
+      <td style="${tdL}"><span style="font-size:11px;padding:2px 8px;border-radius:8px;background:var(--accent-glow);color:var(--accent);font-weight:500">${j.jobType||'—'}</span></td>
+      <td style="${tdL};font-weight:500">${j.customerName||'—'}</td>
+      <td style="${tdR};background:rgba(45,126,247,0.04);font-weight:600">${j.totalContractPrice?arFmt(contract):'—'}</td>
+      <td style="${tdR}">${j.initialPayment?arFmt(initial):'—'}</td>
+      <td style="${tdR};background:rgba(255,100,0,0.04);color:var(--orange)">${contract&&initial?arFmt(remaining):'—'}</td>
+      <td style="${tdR}">${j.partialPayment1?arFmt(pp1):'—'}</td>
+      <td style="${tdR}">${j.partialPayment2?arFmt(pp2):'—'}</td>
+      <td style="${tdR}">${j.partialPayment3?arFmt(pp3):'—'}</td>
+      <td style="${tdR};background:rgba(45,126,247,0.04);color:var(--accent);font-weight:600">${arFmt(custPaid)}</td>
+      <td style="${tdL}"><span style="font-size:11px;color:var(--text-muted)">${j.paymentMethod||'—'}</span></td>
+      <td style="${tdR};background:rgba(220,38,38,0.04);color:var(--red);font-weight:600">${custBal>0?arFmt(custBal):'<span style=color:var(--green)>—</span>'}</td>
+      <td style="padding:8px 10px">${arStatusBadge(j.paymentStatus)}</td>
+      <td style="${tdL};border-left:2px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.03);font-weight:500">${j.subConName||'—'}</td>
+      <td style="${tdR}">${j.subConCost?arFmt(subConCost):'—'}</td>
+      <td style="${tdR}">${j.subConCarry?arFmt(subConCarry):'—'}</td>
+      <td style="${tdR};${subConGross>0?'color:var(--green)':subConGross<0?'color:var(--red)':''}">${(j.subConCost||j.subConCarry)?arFmt(subConGross):'—'}</td>
+      <td style="${tdR}">${j.paidToSubCon?arFmt(paidToSub):'—'}</td>
+      <td style="${tdR};background:rgba(220,38,38,0.04);${subBal>0?'color:var(--red);font-weight:600':''}">${subBal>0?arFmt(subBal):'<span style=color:var(--green)>—</span>'}</td>
+      <td style="${tdL};font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">${j.invoiceNum||'—'}</td>
+      <td style="padding:8px 10px">${arStatusBadge(j.status||j.paymentStatus)}</td>
+      <td style="padding:8px 10px;text-align:center;white-space:nowrap">
+        <button onclick="openEditARJob('${j.id}')" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(45,126,247,0.35);background:var(--accent-glow);color:var(--accent);cursor:pointer;margin-right:4px">Edit</button>
+        <button onclick="deleteARJob('${j.id}')" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(220,38,38,0.3);background:var(--red-dim);color:var(--red);cursor:pointer">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Totals footer
+  const tfoot=document.getElementById('ar-table-foot');
+  tfoot.style.display='';
+  const sumFn=(key)=>filtered.reduce((s,j)=>s+arParseMoney(j[key]),0);
+  document.getElementById('ar-foot-contract').textContent=arFmt(sumFn('totalContractPrice'));
+  document.getElementById('ar-foot-initial').textContent=arFmt(sumFn('initialPayment'));
+  document.getElementById('ar-foot-pp1').textContent=arFmt(sumFn('partialPayment1'));
+  document.getElementById('ar-foot-pp2').textContent=arFmt(sumFn('partialPayment2'));
+  document.getElementById('ar-foot-pp3').textContent=arFmt(sumFn('partialPayment3'));
+  const totCustPaid=filtered.reduce((s,j)=>{
+    const ip=arParseMoney(j.initialPayment);
+    const pp=arParseMoney(j.partialPayment1)+arParseMoney(j.partialPayment2)+arParseMoney(j.partialPayment3);
+    return s+(arParseMoney(j.customerPaidToDate)||ip+pp);
+  },0);
+  document.getElementById('ar-foot-paid').textContent=arFmt(totCustPaid);
+  const totCustBal=filtered.reduce((s,j)=>s+Math.max(0,arParseMoney(j.totalContractPrice)-(arParseMoney(j.customerPaidToDate)||arParseMoney(j.initialPayment)+arParseMoney(j.partialPayment1)+arParseMoney(j.partialPayment2)+arParseMoney(j.partialPayment3))),0);
+  document.getElementById('ar-foot-custbal').textContent=arFmt(totCustBal);
+  document.getElementById('ar-foot-subcon-cost').textContent=arFmt(sumFn('subConCost'));
+  document.getElementById('ar-foot-subcon-carry').textContent=arFmt(sumFn('subConCarry'));
+  const gp=filtered.reduce((s,j)=>s+(arParseMoney(j.subConCarry)-arParseMoney(j.subConCost)),0);
+  document.getElementById('ar-foot-subcon-profit').textContent=arFmt(gp);
+  document.getElementById('ar-foot-paid-sub').textContent=arFmt(sumFn('paidToSubCon'));
+  const subbal=filtered.reduce((s,j)=>s+Math.max(0,arParseMoney(j.subConCost)-arParseMoney(j.paidToSubCon)),0);
+  document.getElementById('ar-foot-sub-bal').textContent=arFmt(subbal);
+}
+
+function arModalHTML(job,title){
+  const fld=(id,label,type='text',val='',extra='')=>
+    `<div class="field"><label>${label}</label><input type="${type}" id="${id}" value="${val||''}" ${extra} style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:100%;background:var(--input-bg);color:var(--text)"></div>`;
+  const sel=(id,label,options,val='')=>
+    `<div class="field"><label>${label}</label><select id="${id}" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:100%;background:var(--input-bg);color:var(--text)">
+      ${options.map(o=>`<option ${(job&&job[id]===o||val===o)?'selected':''}>${o}</option>`).join('')}
+    </select></div>`;
+  const j=job||{};
+  return `
+  <div style="font-size:15px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between">
+    <span>${title}</span>
+    <button onclick="document.getElementById('ar-job-modal').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted)">✕</button>
+  </div>
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">📅 Job Info</div>
+  <div class="form-grid" style="gap:12px;margin-bottom:16px">
+    ${fld('ar-date','Date','date',j.date)}
+    ${fld('ar-install2','Install II Date','date',j.installIIDate)}
+    ${fld('ar-completed','Date Job Completed','date',j.dateJobCompleted)}
+    <div class="field"><label>Job Type</label><select id="ar-jobtype" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:100%;background:var(--input-bg);color:var(--text)">
+      <option ${!j.jobType?'selected':''} value="">-- Select --</option>
+      <option ${j.jobType==='Small Job'?'selected':''}>Small Job</option>
+      <option ${j.jobType==='Big Job'?'selected':''}>Big Job</option>
+    </select></div>
+    ${fld('ar-custname','Customer Name','text',j.customerName,'placeholder="Customer or Company Name"')}
+  </div>
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;border-top:1px solid var(--border);padding-top:14px">💰 Customer Receivables</div>
+  <div class="form-grid" style="gap:12px;margin-bottom:16px">
+    ${fld('ar-contract','Total Contract Price','text',j.totalContractPrice,'placeholder="$0.00"')}
+    ${fld('ar-initial','Initial Payment','text',j.initialPayment,'placeholder="$0.00"')}
+    ${fld('ar-pp1','Partial Payment 1','text',j.partialPayment1,'placeholder="$0.00"')}
+    ${fld('ar-pp2','Partial Payment 2','text',j.partialPayment2,'placeholder="$0.00"')}
+    ${fld('ar-pp3','Partial Payment 3','text',j.partialPayment3,'placeholder="$0.00"')}
+    ${fld('ar-custpaid','Customer Paid ASN to Date','text',j.customerPaidToDate,'placeholder="Auto-calculated if blank"')}
+    <div class="field"><label>Payment Method</label><select id="ar-paymethod" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:100%;background:var(--input-bg);color:var(--text)">
+      <option value="">-- Select --</option>
+      ${AR_PAYMENT_METHODS.map(m=>`<option ${j.paymentMethod===m?'selected':''}>${m}</option>`).join('')}
+    </select></div>
+    <div class="field"><label>Payment Status</label><select id="ar-paystatus" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:100%;background:var(--input-bg);color:var(--text)">
+      ${AR_STATUSES.map(s=>`<option ${j.paymentStatus===s?'selected':''}>${s}</option>`).join('')}
+    </select></div>
+  </div>
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple);margin-bottom:10px;border-top:1px solid var(--border);padding-top:14px">🔧 Sub Contractor Payables</div>
+  <div class="form-grid" style="gap:12px;margin-bottom:16px">
+    ${fld('ar-subname','Sub Con Name','text',j.subConName,'placeholder="Sub Contractor Name"')}
+    ${fld('ar-subcost','Sub Con Cost','text',j.subConCost,'placeholder="$0.00"')}
+    ${fld('ar-subcarry','Sub Con Carry','text',j.subConCarry,'placeholder="$0.00"')}
+    ${fld('ar-paidtosub','Paid to Sub Con','text',j.paidToSubCon,'placeholder="$0.00"')}
+    ${fld('ar-invoicenum','Invoice #','text',j.invoiceNum,'placeholder="INV-001"')}
+    <div class="field"><label>Status</label><select id="ar-status" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);outline:none;width:100%;background:var(--input-bg);color:var(--text)">
+      ${AR_STATUSES.map(s=>`<option ${(j.status||j.paymentStatus)===s?'selected':''}>${s}</option>`).join('')}
+    </select></div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+    <button onclick="document.getElementById('ar-job-modal').remove()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 16px;border:1px solid var(--border);border-radius:var(--radius);background:none;cursor:pointer;color:var(--text-muted)">Cancel</button>
+    <button onclick="submitARJob('${j.id||''}')" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 18px;border-radius:var(--radius);background:var(--accent);border:none;color:white;cursor:pointer;font-weight:500">Save Job</button>
+  </div>`;
+}
+
+function openAddARJobModal(){
+  if(document.getElementById('ar-job-modal')) document.getElementById('ar-job-modal').remove();
+  const modal=document.createElement('div');
+  modal.id='ar-job-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto';
+  modal.innerHTML=`<div style="background:var(--surface);border-radius:var(--radius-lg);padding:28px;max-width:640px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.4);margin:auto">${arModalHTML(null,'+ Add Job — Accounts Receivable')}</div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.remove(); });
+}
+
+function openEditARJob(id){
+  const job=arJobs.find(j=>j.id===id);
+  if(!job) return;
+  if(document.getElementById('ar-job-modal')) document.getElementById('ar-job-modal').remove();
+  const modal=document.createElement('div');
+  modal.id='ar-job-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto';
+  modal.innerHTML=`<div style="background:var(--surface);border-radius:var(--radius-lg);padding:28px;max-width:640px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.4);margin:auto">${arModalHTML(job,'Edit Job — Accounts Receivable')}</div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.remove(); });
+}
+
+function submitARJob(existingId){
+  const g=id=>document.getElementById(id);
+  const contract=g('ar-contract').value.trim();
+  const initial=g('ar-initial').value.trim();
+  const pp1=g('ar-pp1').value.trim();
+  const pp2=g('ar-pp2').value.trim();
+  const pp3=g('ar-pp3').value.trim();
+  const cPaid=g('ar-custpaid').value.trim();
+  const subCost=g('ar-subcost').value.trim();
+  const subCarry=g('ar-subcarry').value.trim();
+  const paidSub=g('ar-paidtosub').value.trim();
+
+  // Auto-calculate
+  const custPaidNum=cPaid?arParseMoney(cPaid):(arParseMoney(initial)+arParseMoney(pp1)+arParseMoney(pp2)+arParseMoney(pp3));
+  const custBal=Math.max(0,arParseMoney(contract)-custPaidNum);
+  const subConGross=arParseMoney(subCarry)-arParseMoney(subCost);
+  const subBal=Math.max(0,arParseMoney(subCost)-arParseMoney(paidSub));
+
+  const job={
+    id:existingId||arId(),
+    date:g('ar-date').value,
+    installIIDate:g('ar-install2').value,
+    dateJobCompleted:g('ar-completed').value,
+    jobType:g('ar-jobtype').value,
+    customerName:g('ar-custname').value.trim(),
+    totalContractPrice:contract,
+    initialPayment:initial,
+    partialPayment1:pp1,
+    partialPayment2:pp2,
+    partialPayment3:pp3,
+    customerPaidToDate:arFmt(custPaidNum).replace('$',''),
+    paymentMethod:g('ar-paymethod').value,
+    customerBalanceDue:arFmt(custBal).replace('$',''),
+    paymentStatus:g('ar-paystatus').value,
+    subConName:g('ar-subname').value.trim(),
+    subConCost:subCost,
+    subConCarry:subCarry,
+    subConGrossProfit:arFmt(subConGross).replace('$',''),
+    paidToSubCon:paidSub,
+    balanceDueToSubCon:arFmt(subBal).replace('$',''),
+    invoiceNum:g('ar-invoicenum').value.trim(),
+    status:g('ar-status').value,
+  };
+
+  if(existingId){
+    const idx=arJobs.findIndex(j=>j.id===existingId);
+    if(idx>-1) arJobs[idx]=job; else arJobs.unshift(job);
+    toast('Job updated ✓','success',1800);
+  } else {
+    arJobs.unshift(job);
+    toast('Job added ✓','success',1800);
+  }
+  saveAR(); updateARBadge();
+  document.getElementById('ar-job-modal').remove();
+  renderAR();
+}
+
+function deleteARJob(id){
+  if(!confirm('Delete this job record?')) return;
+  arJobs=arJobs.filter(j=>j.id!==id);
+  saveAR(); updateARBadge(); renderAR();
+  toast('Job deleted','info',1600);
+}
+
+function exportARCSV(){
+  const headers=['Date','Install II Date','Date Job Completed','Job Type','Customer Name','Total Contract Price','Initial Payment','Remaining Balance','Partial Payment 1','Partial Payment 2','Partial Payment 3','Customer Paid ASN to Date','Payment Method','Customer Balance Due','Payment Status','Sub Con Name','Sub Con Cost','Sub Con Carry','Sub Con Gross Profit','Paid to Sub Con','Balance Due to Sub Con','Invoice #','Status'];
+  const rows=[headers];
+  arJobs.forEach(j=>{
+    const contract=arParseMoney(j.totalContractPrice);
+    const initial=arParseMoney(j.initialPayment);
+    const pp1=arParseMoney(j.partialPayment1);
+    const pp2=arParseMoney(j.partialPayment2);
+    const pp3=arParseMoney(j.partialPayment3);
+    const custPaid=arParseMoney(j.customerPaidToDate)||initial+pp1+pp2+pp3;
+    const custBal=Math.max(0,contract-custPaid);
+    const subCost=arParseMoney(j.subConCost);
+    const subCarry=arParseMoney(j.subConCarry);
+    const subGross=subCarry-subCost;
+    const paidSub=arParseMoney(j.paidToSubCon);
+    const subBal=Math.max(0,subCost-paidSub);
+    rows.push([
+      arFmtDate(j.date),arFmtDate(j.installIIDate),arFmtDate(j.dateJobCompleted),
+      j.jobType||'',j.customerName||'',
+      arFmt(contract),arFmt(initial),arFmt(contract-initial),
+      arFmt(pp1),arFmt(pp2),arFmt(pp3),
+      arFmt(custPaid),j.paymentMethod||'',arFmt(custBal),j.paymentStatus||'',
+      j.subConName||'',arFmt(subCost),arFmt(subCarry),arFmt(subGross),arFmt(paidSub),arFmt(subBal),
+      j.invoiceNum||'',j.status||j.paymentStatus||''
+    ]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='asn_accounts_receivable.csv'; a.click();
+}
+
+// ══════════════════════════════════════════════════════════
+//  END ACCOUNTS RECEIVABLE MODULE
+// ══════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+//  PURCHASE ORDER MODULE
+// ══════════════════════════════════════════════════════════
+
+let purchaseOrders = JSON.parse(localStorage.getItem('asn_purchase_orders') || '[]');
+
+function savePOs() {
+  localStorage.setItem('asn_purchase_orders', JSON.stringify(purchaseOrders));
+  updatePOBadge();
+}
+
+function updatePOBadge() {
+  const badge = document.getElementById('po-badge');
+  if (!badge) return;
+  const count = purchaseOrders.length;
+  badge.textContent = count;
+  badge.style.display = count > 0 ? '' : 'none';
+}
+
+function poId() {
+  return 'PO-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+}
+
+function poNextNumber() {
+  // Find max PO number from existing records
+  let max = 400;
+  purchaseOrders.forEach(po => {
+    const m = (po.poNumber || '').match(/(\d+)/);
+    if (m) max = Math.max(max, parseInt(m[1]));
+  });
+  return String(max + 1);
+}
+
+// Auto-generate a PO when a Base Sale is saved/created
+function autoCreatePOFromBaseSale(bs) {
+  if (!bs || !bs.id) return;
+  // Only create if no PO already exists for this baseSaleId
+  const existing = purchaseOrders.find(p => p.baseSaleId === bs.id);
+  if (existing) return;
+  const po = buildPOFromBaseSale(bs);
+  purchaseOrders.unshift(po);
+  savePOs();
+}
+
+function buildPOFromBaseSale(bs) {
+  const nameParts = (bs.customerName || '').split(' ');
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : (bs.customerName || '');
+  const cityState = (bs.location || '').replace(/\s+\d{5}(-\d{4})?$/, '').trim();
+  // Default items from description
+  const descLines = (bs.description || '').split('\n').filter(Boolean);
+  const items = [
+    { qty: '1', description: '#30 1-1/2" Mesh Black Nylon Netting with rope edging', checked: false },
+    { qty: '1', description: descLines[0] || '', checked: false },
+    { qty: '',  description: descLines[1] || '', checked: false },
+    { qty: '1', description: '3/16" Cable 205\'', checked: false },
+    { qty: '202', description: '6mm Snap Clips', checked: false },
+    { qty: '15', description: '1/4" Cable Clamp', checked: false },
+    { qty: '15', description: '3/8" eyebolt with washer', checked: false },
+  ].filter(i => i.description.trim() !== '' || i.qty !== '');
+  return {
+    id: poId(),
+    baseSaleId: bs.id,
+    poNumber: poNextNumber() + ' ' + lastName + (cityState ? ' ' + cityState.split(',')[0] : ''),
+    date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+    toVendor: bs.vendor || 'JFN',
+    customerName: bs.customerName || '',
+    shipToName: 'All Sport Netting',
+    shipToAddress: '454 Main Street',
+    shipToCity: 'Cold Spring Harbor, NY 11724',
+    shipToPhone: '917-717-2275',
+    items: items,
+    status: 'draft',
+    confirmNote: 'Please Confirm this order and the delivery information.',
+    dateCreated: new Date().toISOString()
+  };
+}
+
+function createPOFromBaseSaleRow(bsId) {
+  // Find base sale
+  const bs = (typeof baseSales !== 'undefined' ? baseSales : []).find(s => s.id === bsId);
+  if (!bs) { toast('Base sale not found', 'error'); return; }
+
+  // Check not already created
+  const existing = purchaseOrders.find(p => p.baseSaleId === bsId);
+  if (existing) {
+    toast('PO already exists for this sale — opening it…', 'info', 2000);
+    setTimeout(() => { switchTab('purchase-order'); openPOModal(existing.id); }, 300);
+    return;
+  }
+
+  // Pull extra info from the linked invoice if available
+  const inv = (typeof invoices !== 'undefined' ? invoices : []).find(i => i.id === bs.invoiceId) || {};
+  const lead = (typeof leads !== 'undefined' ? leads : []).find(l => l.id === (bs.leadId || inv.leadId)) || {};
+
+  // Build the customer name / location
+  const customerName = bs.customerName || `${lead.first||''} ${lead.last||''}`.trim() || inv.customerName || '';
+  const location = bs.location || lead.address || inv.address || '';
+  const nameParts = customerName.split(' ');
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : customerName;
+  const cityFirst = location.split(',')[0].trim();
+
+  // Build PO number: next sequential + LastName + City
+  const poNum = poNextNumber() + (lastName ? ' ' + lastName : '') + (cityFirst ? ' ' + cityFirst : '');
+
+  // Build items from description lines + infer netting dimensions
+  const descRaw = bs.description || (bs.dimensions ? (bs.dimensions + (bs.coatingType ? ' · ' + bs.coatingType : '')) : '');
+  const descLines = descRaw.split('\n').filter(Boolean);
+  const dim1 = inv.netDimensions || bs.dimensions || lead.netDimensions || '';
+  const dim2 = bs.dimensions2 || lead.dimensions2 || '';
+  const cableLen = bs.cableLength || inv.cableLength || lead.cableLength || "205'";
+
+  const items = [
+    { qty: '',    description: '#30 1-1/2" Mesh Black Nylon Netting with rope edging' },
+    { qty: '1',   description: dim1 || descLines[0] || '' },
+    { qty: dim2 ? '1' : '', description: dim2 },
+    { qty: '1',   description: `3/16" Cable ${cableLen}` },
+    { qty: '202', description: '6mm Snap Clips' },
+    { qty: '15',  description: '1/4" Cable Clamp' },
+    { qty: '15',  description: '3/8" eyebolt with washer' },
+  ].filter(i => i.description && i.description.trim() !== '');
+
+  // Today's date as the PO creation date
+  const today = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+
+  const po = {
+    id: poId(),
+    baseSaleId: bsId,
+    invoiceId: bs.invoiceId || inv.id || '',
+    poNumber: poNum,
+    date: today,
+    poCreatedDate: today,
+    toVendor: bs.vendor || inv.vendor || 'JFN',
+    refField: '',
+    customerName: customerName,
+    shipToName: 'All Sport Netting',
+    shipToAddress: '454 Main Street',
+    shipToCity: 'Cold Spring Harbor, NY 11724',
+    shipToPhone: '917-717-2275',
+    items: items,
+    status: 'draft',
+    confirmNote: 'Please Confirm this order and the delivery information.',
+    dateCreated: new Date().toISOString()
+  };
+
+  purchaseOrders.unshift(po);
+  savePOs();
+
+  // Refresh base sale table so the cell updates to show the PO badge
+  if (typeof renderBaseSale === 'function') renderBaseSale();
+
+  toast('Purchase Order created! ✓', 'success', 2200);
+
+  // Navigate to PO tab and open the modal so user can review / edit immediately
+  setTimeout(() => {
+    switchTab('purchase-order');
+    openPOModal(po.id);
+  }, 400);
+}
+
+function renderPurchaseOrders() {
+  updatePOBadge();
+  const tbody = document.getElementById('po-table-body');
+  if (!tbody) return;
+  if (!purchaseOrders.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No Purchase Orders yet</div><div class="empty-sub">POs are created automatically when a Base Sale is saved, or click "+ New PO"</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = purchaseOrders.map(po => {
+    const statusCls = { draft: 'po-status-draft', sent: 'po-status-sent', confirmed: 'po-status-confirmed' }[po.status] || 'po-status-draft';
+    const statusLabel = { draft: 'Draft', sent: 'Sent', confirmed: 'Confirmed' }[po.status] || 'Draft';
+    const itemCount = (po.items || []).filter(i => i.description).length;
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:12px">${po.poNumber || '—'}</td>
+      <td style="font-weight:500">${po.customerName || '—'}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${po.date || '—'}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${itemCount} item${itemCount !== 1 ? 's' : ''}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${po.shipToName || '—'}</td>
+      <td><span class="po-status-badge ${statusCls}">${statusLabel}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="ef-tbl-edit" onclick="openPOModal('${po.id}')">✎ Edit / View</button>
+          <button class="ef-tbl-edit" style="background:rgba(22,163,74,0.1);border-color:rgba(22,163,74,0.35);color:var(--green)" onclick="exportSinglePOPDF('${po.id}')">📄 PDF</button>
+          <button class="ef-tbl-del" onclick="deletePO('${po.id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function deletePO(id) {
+  if (!confirm('Delete this Purchase Order?')) return;
+  purchaseOrders = purchaseOrders.filter(p => p.id !== id);
+  savePOs();
+  renderPurchaseOrders();
+  toast('PO deleted', 'info', 1600);
+}
+
+function openAddPOModal() {
+  // Build a blank PO
+  const po = {
+    id: poId(),
+    baseSaleId: null,
+    poNumber: poNextNumber(),
+    date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+    toVendor: 'JFN',
+    customerName: '',
+    shipToName: 'All Sport Netting',
+    shipToAddress: '454 Main Street',
+    shipToCity: 'Cold Spring Harbor, NY 11724',
+    shipToPhone: '917-717-2275',
+    items: [
+      { qty: '1', description: '#30 1-1/2" Mesh Black Nylon Netting with rope edging' },
+      { qty: '', description: '' },
+      { qty: '', description: '' },
+      { qty: '202', description: '6mm Snap Clips' },
+      { qty: '15', description: '1/4" Cable Clamp' },
+      { qty: '15', description: '3/8" eyebolt with washer' },
+    ],
+    status: 'draft',
+    confirmNote: 'Please Confirm this order and the delivery information.',
+    dateCreated: new Date().toISOString(),
+    _isNew: true
+  };
+  showPOModal(po);
+}
+
+function openPOModal(id) {
+  const po = purchaseOrders.find(p => p.id === id);
+  if (!po) return;
+  showPOModal(JSON.parse(JSON.stringify(po))); // deep clone to edit
+}
+
+function showPOModal(po) {
+  if (document.getElementById('po-modal-overlay')) document.getElementById('po-modal-overlay').remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'po-modal-overlay';
+  overlay.className = 'po-modal-overlay';
+  overlay.innerHTML = buildPOModalHTML(po);
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  // Wire up add row button
+  document.getElementById('po-add-item-row').addEventListener('click', () => addPOItemRow());
+  // Wire up status select
+  document.getElementById('po-status-select').addEventListener('change', function() {
+    po.status = this.value;
+  });
+}
+
+function buildPOModalHTML(po) {
+  const statusOpts = ['draft','sent','confirmed'].map(s =>
+    `<option value="${s}" ${po.status === s ? 'selected' : ''}>${{draft:'Draft',sent:'Sent',confirmed:'Confirmed'}[s]}</option>`
+  ).join('');
+  const itemRows = (po.items || []).map((item, i) => buildPOItemRowHTML(item, i)).join('');
+  return `
+  <div class="po-modal-box">
+    <div class="po-modal-header">
+      <span class="po-modal-title">🧾 Purchase Order — ${po.poNumber || ''}</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <label style="font-size:11px;color:var(--text-muted);font-weight:500">Status:</label>
+        <select id="po-status-select" class="inline-edit" style="font-size:12px;padding:5px 8px;min-width:110px">${statusOpts}</select>
+        <button class="btn btn-sm" onclick="document.getElementById('po-modal-overlay').remove()">✕ Close</button>
+      </div>
+    </div>
+    <div class="po-modal-body">
+      <!-- PO Template (matches the image) -->
+      <div class="po-template" id="po-print-area">
+        <div class="po-company">
+          <div class="po-company-name">All Sport Netting</div>
+          <div class="po-doc-title">Purchase Order</div>
+        </div>
+
+        <div class="po-meta">
+          <div class="po-meta-left">
+            <div class="po-meta-row">
+              <span class="po-meta-label">TO:</span>
+              <input class="po-meta-field" id="po-to-vendor" value="${(po.toVendor||'JFN').replace(/"/g,'&quot;')}" placeholder="Vendor" style="min-width:120px;font-size:13px">
+            </div>
+            <div class="po-meta-row">
+              <span class="po-meta-label">DATE:</span>
+              <input class="po-meta-field" id="po-date" value="${(po.date||'').replace(/"/g,'&quot;')}" placeholder="Date" style="min-width:140px">
+            </div>
+            <div class="po-meta-row" style="align-items:flex-start;gap:8px">
+              <span class="po-meta-label" style="padding-top:4px">PURCHASE<br>ORDER NUMBER:</span>
+              <input class="po-meta-field" id="po-number" value="${(po.poNumber||'').replace(/"/g,'&quot;')}" placeholder="PO Number" style="min-width:180px;font-weight:700">
+            </div>
+          </div>
+          <div class="po-meta-right" style="display:flex;justify-content:flex-end;align-items:flex-start">
+            <div style="border:1px solid #333;min-width:120px;min-height:48px;border-radius:3px;padding:4px 8px">
+              <input class="po-item-input" id="po-ref-field" value="${(po.refField||'').replace(/"/g,'&quot;')}" placeholder="(ref / stamp)" style="width:100%;font-size:12px;color:#666">
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="po-items-table">
+          <thead>
+            <tr>
+              <th style="width:80px">Quantity</th>
+              <th>Description</th>
+              <th style="width:32px"></th>
+            </tr>
+          </thead>
+          <tbody id="po-items-tbody">
+            ${itemRows}
+          </tbody>
+        </table>
+        <button class="po-add-row-btn" id="po-add-item-row" type="button">+ Add Row</button>
+
+        <!-- Ship To -->
+        <div class="po-ship-section">
+          <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px">BLIND SHIP TO ADDRESS:</div>
+          <div class="po-ship-block">
+            <input class="po-item-input" id="po-ship-name" value="${(po.shipToName||'All Sport Netting').replace(/"/g,'&quot;')}" placeholder="Company Name" style="width:100%;font-weight:600;font-size:13px;display:block;margin-bottom:2px"><br>
+            <input class="po-item-input" id="po-ship-addr" value="${(po.shipToAddress||'454 Main Street').replace(/"/g,'&quot;')}" placeholder="Street Address" style="width:100%;display:block;margin-bottom:2px"><br>
+            <input class="po-item-input" id="po-ship-city" value="${(po.shipToCity||'Cold Spring Harbor, NY 11724').replace(/"/g,'&quot;')}" placeholder="City, State ZIP" style="width:100%;display:block;margin-bottom:2px"><br>
+            <input class="po-item-input" id="po-ship-phone" value="${(po.shipToPhone||'917-717-2275').replace(/"/g,'&quot;')}" placeholder="Phone" style="width:100%;display:block">
+          </div>
+        </div>
+
+        <div class="po-confirm-msg">
+          <input class="po-item-input" id="po-confirm-note" value="${(po.confirmNote||'Please Confirm this order and the delivery information.').replace(/"/g,'&quot;')}" style="width:100%;text-align:center;font-weight:600;font-size:12px;color:#333">
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px" id="po-modal-footer">
+        <button class="btn btn-sm" onclick="document.getElementById('po-modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-sm btn-success" onclick="savePOFromModal('${po.id}',${po._isNew ? 'true' : 'false'})">💾 Save PO</button>
+        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:white" onclick="printPOModal()">🖨 Print / PDF</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildPOItemRowHTML(item, i) {
+  return `<tr class="po-item-row" data-idx="${i}">
+    <td><input class="po-item-input po-qty" value="${(item.qty||'').replace(/"/g,'&quot;')}" placeholder="Qty" style="text-align:center"></td>
+    <td><input class="po-item-input po-desc" value="${(item.description||'').replace(/"/g,'&quot;')}" placeholder="Description"></td>
+    <td style="text-align:center"><button class="po-row-del" onclick="this.closest('tr').remove()" title="Remove row">✕</button></td>
+  </tr>`;
+}
+
+function addPOItemRow() {
+  const tbody = document.getElementById('po-items-tbody');
+  if (!tbody) return;
+  const idx = tbody.querySelectorAll('tr').length;
+  const tr = document.createElement('tr');
+  tr.className = 'po-item-row';
+  tr.dataset.idx = idx;
+  tr.innerHTML = `
+    <td><input class="po-item-input po-qty" value="" placeholder="Qty" style="text-align:center"></td>
+    <td><input class="po-item-input po-desc" value="" placeholder="Description"></td>
+    <td style="text-align:center"><button class="po-row-del" onclick="this.closest('tr').remove()" title="Remove row">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function collectPOFromModal(poId) {
+  const g = id => document.getElementById(id);
+  const rows = Array.from(document.querySelectorAll('#po-items-tbody .po-item-row'));
+  const items = rows.map(row => ({
+    qty: row.querySelector('.po-qty')?.value || '',
+    description: row.querySelector('.po-desc')?.value || ''
+  })).filter(i => i.qty || i.description);
+  return {
+    id: poId,
+    poNumber: g('po-number')?.value || '',
+    date: g('po-date')?.value || '',
+    toVendor: g('po-to-vendor')?.value || '',
+    refField: g('po-ref-field')?.value || '',
+    shipToName: g('po-ship-name')?.value || '',
+    shipToAddress: g('po-ship-addr')?.value || '',
+    shipToCity: g('po-ship-city')?.value || '',
+    shipToPhone: g('po-ship-phone')?.value || '',
+    confirmNote: g('po-confirm-note')?.value || '',
+    status: g('po-status-select')?.value || 'draft',
+    items,
+    customerName: purchaseOrders.find(p => p.id === poId)?.customerName || '',
+    baseSaleId: purchaseOrders.find(p => p.id === poId)?.baseSaleId || null,
+    dateCreated: purchaseOrders.find(p => p.id === poId)?.dateCreated || new Date().toISOString()
+  };
+}
+
+function savePOFromModal(poId, isNew) {
+  const po = collectPOFromModal(poId);
+  if (isNew || !purchaseOrders.find(p => p.id === poId)) {
+    purchaseOrders.unshift(po);
+  } else {
+    const idx = purchaseOrders.findIndex(p => p.id === poId);
+    if (idx > -1) purchaseOrders[idx] = po;
+  }
+  savePOs();
+  document.getElementById('po-modal-overlay')?.remove();
+  renderPurchaseOrders();
+  toast('Purchase Order saved ✓', 'success', 1800);
+}
+
+function printPOModal() {
+  const printArea = document.getElementById('po-print-area');
+  if (!printArea) return;
+  const w = window.open('', '_blank', 'width=820,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><title>Purchase Order</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#fff;padding:32px;color:#111}
+    .po-company-name{font-size:22px;font-weight:700;text-align:center;margin-bottom:2px}
+    .po-doc-title{font-size:14px;text-align:center;color:#555;margin-bottom:20px}
+    .po-meta{display:grid;grid-template-columns:1fr 1fr;margin-bottom:20px}
+    .po-meta-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+    .po-meta-label{font-weight:600;color:#333;min-width:80px}
+    .po-meta-field{border:1px solid #333;border-radius:3px;padding:4px 8px;min-width:160px;font-size:13px;font-weight:600}
+    .po-ref-box{border:1px solid #333;min-width:120px;min-height:48px;border-radius:3px;padding:4px 8px;font-size:12px;color:#666}
+    .po-items-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px}
+    .po-items-table thead th{background:#f5f5f5;border:1px solid #ccc;padding:8px 10px;text-align:left;font-weight:700}
+    .po-items-table tbody td{border:1px solid #ccc;padding:7px 10px}
+    .po-ship-block{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:10px 14px;font-size:12px;line-height:2}
+    .po-confirm-msg{text-align:center;font-size:12px;font-weight:700;border-top:1px solid #ccc;margin-top:16px;padding-top:12px}
+    @media print{body{padding:16px}}
+  </style></head><body>`);
+  // Get values from modal inputs
+  const g = id => document.getElementById(id)?.value || '';
+  const rows = Array.from(document.querySelectorAll('#po-items-tbody .po-item-row'));
+  const itemRowsHTML = rows.map(row => {
+    const qty = row.querySelector('.po-qty')?.value || '';
+    const desc = row.querySelector('.po-desc')?.value || '';
+    if (!qty && !desc) return '';
+    return `<tr><td style="text-align:center;font-weight:${qty?'600':'400'}">${qty}</td><td>${desc}</td></tr>`;
+  }).join('');
+  w.document.write(`
+    <div class="po-company-name">All Sport Netting</div>
+    <div class="po-doc-title">Purchase Order</div>
+    <div class="po-meta">
+      <div>
+        <div class="po-meta-row"><span class="po-meta-label">TO:</span><span class="po-meta-field">${g('po-to-vendor')}</span></div>
+        <div class="po-meta-row"><span class="po-meta-label">DATE:</span><span class="po-meta-field">${g('po-date')}</span></div>
+        <div class="po-meta-row"><span class="po-meta-label" style="white-space:nowrap">PURCHASE ORDER NUMBER:</span>&nbsp;<span class="po-meta-field">${g('po-number')}</span></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;align-items:flex-start">
+        <div class="po-ref-box">${g('po-ref-field')}</div>
+      </div>
+    </div>
+    <table class="po-items-table">
+      <thead><tr><th style="width:80px">Quantity</th><th>Description</th></tr></thead>
+      <tbody>${itemRowsHTML}</tbody>
+    </table>
+    <div style="margin-bottom:6px;font-size:12px;font-weight:700;color:#333">BLIND SHIP TO ADDRESS:</div>
+    <div class="po-ship-block">
+      <b>${g('po-ship-name')}</b><br>
+      ${g('po-ship-addr')}<br>
+      ${g('po-ship-city')}<br>
+      ${g('po-ship-phone')}
+    </div>
+    <div class="po-confirm-msg">${g('po-confirm-note')}</div>
+  `);
+  w.document.write('</body></html>');
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 600);
+}
+
+function exportSinglePOPDF(id) {
+  const po = purchaseOrders.find(p => p.id === id);
+  if (!po) return;
+  printPODirect(po);
+}
+
+function printPODirect(po) {
+  const w = window.open('', '_blank', 'width=860,height=1000');
+  const itemRowsHTML = (po.items || []).map(i => {
+    if (!i.qty && !i.description) return '';
+    return `<tr><td style="text-align:center;font-weight:${i.qty?'600':'400'};border:1px solid #ccc;padding:7px 10px">${i.qty||''}</td><td style="border:1px solid #ccc;padding:7px 10px">${i.description||''}</td></tr>`;
+  }).join('');
+  w.document.write(`<!DOCTYPE html><html><head><title>PO — ${po.poNumber||''}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#fff;padding:40px;color:#111;max-width:760px;margin:0 auto}
+    h1{font-size:24px;font-weight:700;text-align:center;margin-bottom:4px}
+    .subtitle{font-size:14px;text-align:center;color:#555;margin-bottom:24px}
+    .meta-grid{display:grid;grid-template-columns:1fr auto;gap:16px;margin-bottom:24px}
+    .meta-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13px}
+    .meta-label{font-weight:700;color:#333;white-space:nowrap;min-width:72px}
+    .meta-val{border:1.5px solid #333;border-radius:3px;padding:5px 10px;font-weight:700;font-size:13px;min-width:170px}
+    .ref-box{border:1.5px solid #333;border-radius:3px;padding:5px 10px;min-width:130px;min-height:54px;font-size:12px;color:#888}
+    table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
+    thead th{background:#f3f3f3;border:1px solid #ccc;padding:9px 12px;text-align:left;font-weight:700;color:#222}
+    .ship-label{font-size:12px;font-weight:700;color:#333;margin-bottom:6px}
+    .ship-block{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:12px 16px;font-size:13px;line-height:1.9}
+    .confirm{text-align:center;font-size:13px;font-weight:700;border-top:1.5px solid #ccc;margin-top:20px;padding-top:14px;color:#222}
+    .print-btn{display:block;margin:24px auto 0;padding:10px 28px;background:#2d7ef7;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+    @media print{.print-btn{display:none}body{padding:20px}}
+  </style></head><body>
+  <h1>All Sport Netting</h1>
+  <div class="subtitle">Purchase Order</div>
+  <div class="meta-grid">
+    <div>
+      <div class="meta-row"><span class="meta-label">TO:</span><span class="meta-val">${po.toVendor||'JFN'}</span></div>
+      <div class="meta-row"><span class="meta-label">DATE:</span><span class="meta-val">${po.date||''}</span></div>
+      <div class="meta-row"><span class="meta-label" style="white-space:normal;padding-top:2px">PURCHASE<br>ORDER NUMBER:</span><span class="meta-val" style="font-size:14px">${po.poNumber||''}</span></div>
+    </div>
+    <div class="ref-box">${po.refField||''}</div>
+  </div>
+  <table>
+    <thead><tr><th style="width:90px">Quantity</th><th>Description</th></tr></thead>
+    <tbody>${itemRowsHTML}</tbody>
+  </table>
+  <div class="ship-label">BLIND SHIP TO ADDRESS:</div>
+  <div class="ship-block">
+    <strong>${po.shipToName||'All Sport Netting'}</strong><br>
+    ${po.shipToAddress||'454 Main Street'}<br>
+    ${po.shipToCity||'Cold Spring Harbor, NY 11724'}<br>
+    ${po.shipToPhone||'917-717-2275'}
+  </div>
+  <div class="confirm">${po.confirmNote||'Please Confirm this order and the delivery information.'}</div>
+  <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+  </body></html>`);
+  w.document.close();
+  // Auto-trigger print after fonts load
+  setTimeout(() => { w.focus(); w.print(); }, 700);
+}
+
+function exportAllPOsPDF() {
+  if (!purchaseOrders.length) { toast('No Purchase Orders to export', 'error'); return; }
+  // Open each PO in its own print window with a slight delay between each
+  purchaseOrders.forEach((po, i) => {
+    setTimeout(() => printPODirect(po), i * 900);
+  });
+  toast(`Opening ${purchaseOrders.length} PO${purchaseOrders.length>1?'s':''} for print/PDF…`, 'info', 3000);
+}
+
+function exportPOExcel() {
+  if (!window.XLSX) { toast('Excel library not loaded', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+  purchaseOrders.forEach((po, idx) => {
+    const rows = [
+      ['All Sport Netting'],
+      ['Purchase Order'],
+      [],
+      ['TO:', po.toVendor || ''],
+      ['DATE:', po.date || ''],
+      ['PURCHASE ORDER NUMBER:', po.poNumber || ''],
+      [],
+      ['Quantity', 'Description'],
+      ...(po.items || []).map(i => [i.qty || '', i.description || '']),
+      [],
+      ['BLIND SHIP TO ADDRESS:'],
+      [po.shipToName || ''],
+      [po.shipToAddress || ''],
+      [po.shipToCity || ''],
+      [po.shipToPhone || ''],
+      [],
+      [po.confirmNote || 'Please Confirm this order and the delivery information.']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 22 }, { wch: 55 }];
+    // Merge title cells
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } }
+    ];
+    const sheetName = ('PO ' + (po.poNumber || (idx + 1))).replace(/[:\\\/\?\*\[\]]/g, '-').slice(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+  if (!purchaseOrders.length) {
+    const ws = XLSX.utils.aoa_to_sheet([['No Purchase Orders yet']]);
+    XLSX.utils.book_append_sheet(wb, ws, 'POs');
+  }
+  XLSX.writeFile(wb, 'asn_purchase_orders.xlsx');
+  toast('Excel exported ✓', 'success');
+}
+
+// Hook into saveBS — no longer auto-creates POs (now created on demand via "+ Create PO" button)
+// PO badge still updates when base sales change
+const _origSaveBS = window.saveBS;
+window.saveBS = function() {
+  if (_origSaveBS) _origSaveBS.apply(this, arguments);
+  updatePOBadge();
+};
+
+// On load just update badge from existing stored POs
+(function initPOs() {
+  updatePOBadge();
+})();
+
+// Also add purchase-order to the executeClear handler
+const _origExecClear = window.executeClear;
+window.executeClear = function() {
+  if (typeof _clearPending !== 'undefined' && _clearPending && _clearPending.storageKey === 'asn_purchase_orders') {
+    purchaseOrders = [];
+    savePOs();
+    renderPurchaseOrders();
+    toast('Purchase Orders cleared', 'info');
+    if (typeof closeClearModal === 'function') closeClearModal();
+    return;
+  }
+  if (_origExecClear) _origExecClear.apply(this, arguments);
+};
+
+// ══════════════════════════════════════════════════════════
+//  END PURCHASE ORDER MODULE
 // ══════════════════════════════════════════════════════════
 
 (function() {
