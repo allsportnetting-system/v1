@@ -920,12 +920,20 @@
       <span id="crm-key-icon">⚙</span> <span id="crm-key-label">Configure Method API Key</span>
     </button>
     <div class="crm-config-panel" id="crm-config-panel">
-      <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4">Paste your Method CRM API key — used for live duplicate detection on every lead submit.</div>
+      <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4">NjlkY2ZjNDNkYTRmY2U4NzNiNGEyZjJmLjM3NkQ2MTJGODFDQjQ5OTU5MEZDQ0QzMzA0QUE2QTIw</div>
       <div class="api-key-row">
         <input type="password" id="method-api-key-input" placeholder="method_xxxxxxxxxxxx" value="">
         <button class="btn btn-sm btn-primary" onclick="saveMethodApiKey()">Save</button>
       </div>
       <div style="margin-top:6px;font-size:10px;color:var(--text-dim)">Key is stored locally in your browser only.</div>
+      <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+        <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4;font-size:12px"><b>https://asn-system-proxy.allsportnetting2026.workers.dev/</b><br>Paste your Cloudflare Worker URL here. This is needed to connect to Method CRM from the browser.</div>
+        <div class="api-key-row">
+          <input type="text" id="method-proxy-url-input" placeholder="https://your-worker.workers.dev" style="font-size:11px" value="">
+          <button class="btn btn-sm btn-primary" onclick="saveMethodProxyUrl()">Save</button>
+        </div>
+        <div style="margin-top:4px;font-size:10px;color:var(--text-dim)" id="proxy-url-status">Not configured — see setup guide</div>
+      </div>
     </div>
   </div>
 </aside>
@@ -2532,8 +2540,8 @@
 // ===== CLOUD STORAGE CONFIG =====
 const _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
 const JSONBIN_BIN_ID    = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
-const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';
-const JSONBIN_MASTER_KEY= localStorage.getItem('asn_master_key')|| '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC';
+const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || '';
+const JSONBIN_MASTER_KEY= localStorage.getItem('asn_master_key')|| '';
 const JSONBIN_URL = () => `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
 // ===== URL PARAMS =====
@@ -2978,6 +2986,10 @@ let estimates = [];
 let invoices = [];
 let baseSales = [];
 let methodApiKey = localStorage.getItem('asn_method_api_key')||'';
+// ===== METHOD CRM PROXY =====
+// All Method CRM calls go through this proxy to avoid CORS browser blocks.
+// Deploy the Cloudflare Worker from the setup guide and paste its URL here.
+const METHOD_PROXY_URL = localStorage.getItem('asn_method_proxy_url') || '';
 let selectedLeadId=null, selectedSource='websearch', selectedHow=null, unsaved=false;
 
 const STAGES=['new','contacted','qualified','proposal','followup','closed','declined','dormant'];
@@ -3841,9 +3853,23 @@ function markUnsaved(){unsaved=true}
 function toggleCrmConfig(){
   const panel=document.getElementById('crm-config-panel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open')&&methodApiKey){
-    document.getElementById('method-api-key-input').value=methodApiKey;
+  if(panel.classList.contains('open')){
+    if(methodApiKey) document.getElementById('method-api-key-input').value=methodApiKey;
+    const savedProxy=localStorage.getItem('asn_method_proxy_url')||'';
+    if(savedProxy){
+      document.getElementById('method-proxy-url-input').value=savedProxy;
+      document.getElementById('proxy-url-status').textContent='✓ Proxy URL configured';
+    }
   }
+}
+function saveMethodProxyUrl(){
+  const val=document.getElementById('method-proxy-url-input').value.trim();
+  if(!val){toast('Please enter a proxy URL','error');return;}
+  localStorage.setItem('asn_method_proxy_url',val);
+  // Update the in-memory variable
+  window._methodProxyUrlUpdated=val;
+  document.getElementById('proxy-url-status').textContent='✓ Proxy URL saved';
+  toast('Proxy URL saved ✓','success');
 }
 function saveMethodApiKey(){
   const val=document.getElementById('method-api-key-input').value.trim();
@@ -3870,18 +3896,23 @@ function initCrmKeyState(){
 let _pendingLead=null; // holds lead object while modal is open
 
 async function checkMethodCRMDuplicate(email){
-  // Live lookup via Method CRM API (contacts endpoint)
-  // Returns matching contact object or null
-  if(!methodApiKey)return null;
+  // Live lookup via Method CRM API — routed through proxy to avoid CORS
+  if(!methodApiKey||!METHOD_PROXY_URL)return null;
   try{
-    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(email)}'`,{
-      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'}
+    const res=await fetch(METHOD_PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'GET',
+        endpoint:`contacts?filter=email eq '${email}'`,
+        apiKey:methodApiKey
+      })
     });
     if(!res.ok)return null;
     const data=await res.json();
     const items=data.value||data.items||data.contacts||[];
     if(items.length>0)return items[0];
-  }catch(e){/* network or CORS — fall back to local check only */}
+  }catch(e){/* proxy unreachable — fall back to local check only */}
   return null;
 }
 
@@ -3985,12 +4016,14 @@ function dupProceedUpdateCRM(){
 }
 
 async function updateMethodContact(lead){
-  if(!methodApiKey) return;
+  if(!methodApiKey||!METHOD_PROXY_URL) return;
   simulateSync('Updating Method CRM contact…');
   try{
     // First find the contact ID by email
-    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(lead.email)}'`,{
-      headers:{'Authorization':'Bearer '+methodApiKey}
+    const res=await fetch(METHOD_PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'GET',endpoint:`contacts?filter=email eq '${lead.email}'`,apiKey:methodApiKey})
     });
     if(!res.ok){toast('Could not find Method contact to update','error',3000);return;}
     const data=await res.json();
@@ -4002,10 +4035,10 @@ async function updateMethodContact(lead){
       Email:lead.email, Phone:lead.phone||'',
       BillingAddressLine1:lead.address||''
     };
-    const patchRes=await fetch(`https://app.method.me/api/v1/contacts/${contactId}`,{
-      method:'PATCH',
-      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
-      body:JSON.stringify(patch)
+    const patchRes=await fetch(METHOD_PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'PATCH',endpoint:`contacts/${contactId}`,apiKey:methodApiKey,payload:patch})
     });
     if(patchRes.ok){
       toast(`Method CRM contact updated ✓`,'success');
@@ -4034,6 +4067,11 @@ async function createMethodContact(lead){
     document.getElementById('sync-label').textContent='Synced';
     return;
   }
+  if(!METHOD_PROXY_URL){
+    toast('Method CRM proxy not configured — lead saved locally','error',4000);
+    document.getElementById('sync-label').textContent='Synced';
+    return;
+  }
   simulateSync('Creating Method CRM contact…');
   try{
     const payload={
@@ -4046,10 +4084,10 @@ async function createMethodContact(lead){
       LeadSource: lead.source||'',
       Notes: lead.notes||''
     };
-    const res=await fetch('https://app.method.me/api/v1/contacts',{
+    const res=await fetch(METHOD_PROXY_URL,{
       method:'POST',
-      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'POST',endpoint:'contacts',apiKey:methodApiKey,payload})
     });
     if(res.ok){
       const data=await res.json();
@@ -4066,7 +4104,7 @@ async function createMethodContact(lead){
     }
   }catch(e){
     console.warn('Method CRM error:',e.message);
-    toast('Lead saved — Method CRM unreachable (CORS? Check API key)','error',4000);
+    toast('Lead saved — Method CRM unreachable. Check proxy URL in settings.','error',4000);
     document.getElementById('sync-label').textContent='Synced';
   }
 }
