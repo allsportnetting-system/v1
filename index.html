@@ -2989,7 +2989,9 @@ let methodApiKey = localStorage.getItem('asn_method_api_key')||'';
 // ===== METHOD CRM PROXY =====
 // All Method CRM calls go through this proxy to avoid CORS browser blocks.
 // Deploy the Cloudflare Worker from the setup guide and paste its URL here.
-const METHOD_PROXY_URL = localStorage.getItem('asn_method_proxy_url') || '';
+function getProxyUrl(){
+  return localStorage.getItem('asn_method_proxy_url') || '';
+}
 let selectedLeadId=null, selectedSource='websearch', selectedHow=null, unsaved=false;
 
 const STAGES=['new','contacted','qualified','proposal','followup','closed','declined','dormant'];
@@ -3899,7 +3901,7 @@ async function checkMethodCRMDuplicate(email){
   // Live lookup via Method CRM API — routed through proxy to avoid CORS
   if(!methodApiKey||!METHOD_PROXY_URL)return null;
   try{
-    const res=await fetch(METHOD_PROXY_URL,{
+    const res=await fetch(getProxyUrl(),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
