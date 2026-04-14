@@ -3634,7 +3634,18 @@ function switchTab(tab){
   if(tab==='invoice')renderInvoice();
   if(tab==='base-sale')renderBaseSale();
   if(tab==='purchase-order')renderPurchaseOrders();
-  if(tab==='ws-order'){renderWSOrders();checkWSDueDates();wsRenderColGrid();}
+  if(tab==='ws-order'){
+    // Heal stale col prefs before rendering
+    const _validWsIds = WS_COLS.map(c => c.id);
+    if (wsVisibleCols && wsVisibleCols.length > 0) {
+      const _cleaned = wsVisibleCols.filter(id => _validWsIds.includes(id));
+      if (_cleaned.length === 0) { wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id); saveWSColPrefs(); }
+      else if (_cleaned.length !== wsVisibleCols.length) { wsVisibleCols = _cleaned; saveWSColPrefs(); }
+    } else {
+      wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id); saveWSColPrefs();
+    }
+    renderWSOrders();checkWSDueDates();wsRenderColGrid();
+  }
   if(tab==='inventory'){renderPolesInventory();renderPolesToShip();renderExtPoles();renderInstallRows();scanOrdersForInstall();renderInstallRows();updateInvStats();}
   if(tab==='ap-tracking'){loadAP();renderAP();}
   if(tab==='ar-tracking'){renderAR();}
@@ -5185,6 +5196,9 @@ function setInvStatus(invId,status){
         email:inv.email||'',phone:inv.phone||''
       };
       baseSales.unshift(bs);saveBS();updateBadges();
+      // Reset sort so new sale shows at top
+      bsSortCol=null; bsSortDir=1;
+      document.querySelectorAll('#tab-base-sale thead th.sort-th').forEach(th=>th.classList.remove('asc','desc'));
       // If pole-only order → auto-add to Poles to Ship overlay
       if(bs.poleOnly){
         autoAddPoleOnlyToInventory(bs);
@@ -6232,7 +6246,11 @@ function wsImportMapped(){
     added++;
   });
 
-  saveWS();updateWSBadge();renderWSOrders();checkWSDueDates();
+  saveWS();updateWSBadge();
+  // Reset sort so newly imported orders show at top
+  wsSortCol=null; wsSortDir=1;
+  document.querySelectorAll('.ws-sort-th').forEach(th=>th.classList.remove('asc','desc'));
+  renderWSOrders();checkWSDueDates();
   wsResetUpload();
   toast(`✓ ${added} order${added!==1?'s':''} imported from sheet`,'success');
 }
@@ -6322,10 +6340,16 @@ function loadWSColPrefs() {
     const saved = localStorage.getItem('asn_ws_col_prefs');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Validate: keep only IDs that actually exist in current WS_COLS
+        const validIds = WS_COLS.map(c => c.id);
+        const cleaned = parsed.filter(id => validIds.includes(id));
+        if (cleaned.length > 0) return cleaned;
+        // All were stale — fall through to defaults
+      }
     }
   } catch(e) {}
-  return WS_COLS.filter(c=>c.default).map(c=>c.id);
+  return WS_COLS.filter(c => c.default).map(c => c.id);
 }
 
 function saveWSColPrefs() {
@@ -6337,8 +6361,8 @@ function saveWSColPrefs() {
 
 function wsSetStatusFilter(status) {
   wsStatusFilter = status;
-  // Update pill active states
-  document.querySelectorAll('.ws-status-pill').forEach(p => {
+  // Update pill active states — match only the ws-order tab pills (data-s), not CL pills (data-cl-s)
+  document.querySelectorAll('#tab-ws-order .ws-status-pill[data-s]').forEach(p => {
     p.classList.toggle('active', p.dataset.s === status);
   });
   renderWSOrders();
@@ -6399,18 +6423,34 @@ function wsSaveCurrentView() {
 function wsApplyColVisibility() {
   const table = document.querySelector('#ws-order-table')?.closest('table');
   if (!table) return;
-  // Safety: if wsVisibleCols is empty, reset to defaults so rows never disappear
-  if (!wsVisibleCols || wsVisibleCols.length === 0) {
-    wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id);
+
+  // Validate stored prefs: strip any IDs no longer in WS_COLS (avoids stale prefs hiding all rows)
+  const validIds = WS_COLS.map(c => c.id);
+  if (wsVisibleCols && wsVisibleCols.length > 0) {
+    wsVisibleCols = wsVisibleCols.filter(id => validIds.includes(id));
   }
+  // If nothing left after pruning, reset to defaults
+  if (!wsVisibleCols || wsVisibleCols.length === 0) {
+    wsVisibleCols = WS_COLS.filter(c => c.default).map(c => c.id);
+    saveWSColPrefs();
+  }
+
+  // Un-hide every row and cell first so filter never leaves ghost-blank rows
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    tr.style.display = '';
+  });
+  // Un-hide ALL cells — then re-apply column visibility below
+  table.querySelectorAll('tbody tr td').forEach(td => {
+    td.style.display = '';
+  });
+
+  // Apply column visibility per WS_COLS index
+  const allThs = table.querySelectorAll('thead tr th');
   WS_COLS.forEach((col, i) => {
     const thIdx = i + 2; // offset: col 0=del, col 1=#
     const visible = col.sticky || wsVisibleCols.includes(col.id);
-    // Hide/show header
-    const th = table.querySelectorAll('thead tr th')[thIdx];
-    if (th) th.style.display = visible ? '' : 'none';
-    // Hide/show all body cells in this column
-    table.querySelectorAll(`tbody tr td:nth-child(${thIdx+1})`).forEach(td => {
+    if (allThs[thIdx]) allThs[thIdx].style.display = visible ? '' : 'none';
+    table.querySelectorAll(`tbody tr td:nth-child(${thIdx + 1})`).forEach(td => {
       td.style.display = visible ? '' : 'none';
     });
   });
@@ -6609,8 +6649,8 @@ function renderWSOrders(){
       <td><input class="inline-edit" value="${(o.notes||'').replace(/"/g,'&quot;')}" style="min-width:170px" onchange="updateWSOrder('${o.id}','notes',this.value)" placeholder="Notes..."></td>
     </tr>`;
   }).join('');
-  // Apply column visibility after rendering
-  requestAnimationFrame(() => wsApplyColVisibility());
+  // Apply column visibility after rendering — must be synchronous so TDs exist in DOM
+  wsApplyColVisibility();
 }
 
 function updateWSOrder(id,field,value){
@@ -6698,6 +6738,9 @@ function addManualWSOrder(){
     informed:'N',shipmentDelay:'',notes:''
   };
   wsOrders.unshift(o);
+  // Reset sort so newest order shows at top
+  wsSortCol=null; wsSortDir=1;
+  document.querySelectorAll('.ws-sort-th').forEach(th=>th.classList.remove('asc','desc'));
   saveWS();updateWSBadge();renderWSOrders();
   pushWSOrderToSheets(o);
   toast('New order row added — fill in the details','info');
@@ -8871,6 +8914,8 @@ function doImport(){
       baseSales.unshift(bs);count++;
     });
     saveBS();
+    // Reset sort so imported rows show at top
+    if(typeof bsSortCol !== 'undefined'){ bsSortCol=null; bsSortDir=1; document.querySelectorAll('#tab-base-sale thead th.sort-th').forEach(th=>th.classList.remove('asc','desc')); }
     if(typeof renderBaseSale==='function')renderBaseSale();
     toast(`Imported ${count} sale record${count!==1?'s':''} ✓`,'success');
 
@@ -9750,6 +9795,23 @@ switchTab = function(tab) {
       const table = document.querySelector('#ws-order-table')?.closest('table');
       if (table && !table.id) table.id = 'ws-main-table';
       initEditableHeaders('ws-main-table');
+
+      // Self-heal: validate wsVisibleCols against current WS_COLS every time tab opens
+      // This fixes stale localStorage prefs that cause rows to appear blank after a filter
+      const validIds = WS_COLS.map(c => c.id);
+      if (wsVisibleCols && wsVisibleCols.length > 0) {
+        const cleaned = wsVisibleCols.filter(id => validIds.includes(id));
+        if (cleaned.length !== wsVisibleCols.length) {
+          wsVisibleCols = cleaned.length > 0 ? cleaned : WS_COLS.filter(c => c.default).map(c => c.id);
+          saveWSColPrefs();
+        }
+      } else {
+        wsVisibleCols = WS_COLS.filter(c => c.default).map(c => c.id);
+        saveWSColPrefs();
+      }
+      // Re-render so filter pills reflect correct rows and column visibility is clean
+      renderWSOrders();
+      wsApplyColVisibility();
     }
   }, 200);
 };
@@ -13094,6 +13156,370 @@ renderAR = function() {
 })();
 
 // ══════════════════════════════════════════════════════════
+</script>
+
+<!-- ================================================================
+     ASN UNIVERSAL ROW DRAG + HEADER EDIT FIX  (v39 addition)
+     • Fixes doubled column-label text in Base Sale (and all tabs)
+     • Makes every table row draggable to reorder (in all tabs)
+     • Syncs drag-reorder back to baseSales / wsOrders / leads arrays
+     ================================================================ -->
+<style>
+/* ── Row drag styles ─── */
+tr.rdrag-src { opacity: .35; }
+tr.rdrag-over { outline: 2px solid var(--accent) !important; background: var(--accent-glow) !important; }
+.rdrag-grip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 18px; cursor: grab; color: var(--text-dim);
+  font-size: 11px; opacity: 0; transition: opacity .12s;
+  vertical-align: middle; flex-shrink: 0; margin-right: 4px;
+  user-select: none; pointer-events: auto;
+}
+tr:hover .rdrag-grip { opacity: .7; }
+tr.rdrag-src .rdrag-grip { opacity: 0; }
+/* Ensure del-cell grip doesn't double with existing del content */
+td.del-cell .rdrag-grip { display: none; }
+</style>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  FIX 1 — makeHeaderEditable: eliminate duplicate col-label-text spans
+//  This was causing "Job # Job #" doubling on Base Sale and other tabs
+//  whenever customHeaders had a saved rename.
+// ════════════════════════════════════════════════════════════
+(function() {
+  const _origMHE = makeHeaderEditable;
+  makeHeaderEditable = function(th, tableId, colIndex) {
+    _origMHE(th, tableId, colIndex);
+    // De-dup: keep only the FIRST .col-label-text span
+    const spans = th.querySelectorAll('.col-label-text');
+    if (spans.length > 1) {
+      for (let i = 1; i < spans.length; i++) spans[i].remove();
+    }
+  };
+})();
+
+// Also run a one-time cleanup for tables already initialised
+setTimeout(function() {
+  document.querySelectorAll('thead th').forEach(function(th) {
+    const spans = th.querySelectorAll('.col-label-text');
+    if (spans.length > 1) {
+      for (let i = 1; i < spans.length; i++) spans[i].remove();
+    }
+  });
+}, 1500);
+
+
+// ════════════════════════════════════════════════════════════
+//  FIX 2 — Universal Row Drag-to-Reorder for all table tabs
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Initialise drag-to-reorder on every <tr> inside `tbody`.
+ * Safe to call multiple times — skips rows already initialised.
+ */
+function _rdInitRows(tbody) {
+  if (!tbody) return;
+  tbody.querySelectorAll('tr').forEach(function(tr) {
+    if (tr.querySelector('.empty-state')) return;
+    if (tr.getAttribute('data-rdrag-init')) return;
+    tr.setAttribute('data-rdrag-init', '1');
+    tr.setAttribute('draggable', 'true');
+
+    // Add a subtle grip icon to the first NON-delete cell
+    var gripCell = null;
+    for (var i = 0; i < tr.cells.length; i++) {
+      if (!tr.cells[i].classList.contains('del-cell')) { gripCell = tr.cells[i]; break; }
+    }
+    if (gripCell && !gripCell.querySelector('.rdrag-grip')) {
+      var g = document.createElement('span');
+      g.className = 'rdrag-grip';
+      g.textContent = '⠿';
+      g.title = 'Drag to reorder row';
+      gripCell.insertBefore(g, gripCell.firstChild);
+    }
+
+    tr.addEventListener('dragstart', function(e) {
+      e.stopPropagation();
+      tr.classList.add('rdrag-src');
+      e.dataTransfer.effectAllowed = 'move';
+      // Store the row's position at drag-start
+      var rows = Array.from(tbody.rows);
+      e.dataTransfer.setData('text/rdrag-idx', String(rows.indexOf(tr)));
+    });
+
+    tr.addEventListener('dragend', function() {
+      tr.classList.remove('rdrag-src');
+      tbody.querySelectorAll('tr.rdrag-over').forEach(function(r) { r.classList.remove('rdrag-over'); });
+    });
+
+    tr.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      tbody.querySelectorAll('tr.rdrag-over').forEach(function(r) { r.classList.remove('rdrag-over'); });
+      tr.classList.add('rdrag-over');
+    });
+
+    tr.addEventListener('dragleave', function() { tr.classList.remove('rdrag-over'); });
+
+    tr.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      tr.classList.remove('rdrag-over');
+      var fromIdx = parseInt(e.dataTransfer.getData('text/rdrag-idx'), 10);
+      var rows = Array.from(tbody.rows);
+      var toIdx = rows.indexOf(tr);
+      if (isNaN(fromIdx) || fromIdx === toIdx || fromIdx >= rows.length) return;
+      var srcRow = rows[fromIdx];
+      if (!srcRow) return;
+      if (fromIdx < toIdx) tbody.insertBefore(srcRow, tr.nextSibling);
+      else tbody.insertBefore(srcRow, tr);
+      _rdSyncArrayOrder(tbody);
+      toast('Row reordered ✓', 'info', 900);
+    });
+  });
+}
+
+/**
+ * After a row drag, sync the backing data array to match the new DOM order.
+ * Covers: baseSales (data-bs-id), wsOrders (data-ws-id), leads (data-lead-id).
+ * For tables without IDs (Net Info, How Found, Pipeline list) we do visual-only.
+ */
+function _rdSyncArrayOrder(tbody) {
+  // ── baseSales ──
+  var bsRows = Array.from(tbody.querySelectorAll('tr[data-bs-id]'));
+  if (bsRows.length && bsRows.length === baseSales.length) {
+    var bsIds = bsRows.map(function(r) { return r.dataset.bsId; });
+    var reordered = bsIds.map(function(id) { return baseSales.find(function(s) { return s.id === id; }); }).filter(Boolean);
+    if (reordered.length === baseSales.length) {
+      baseSales.length = 0;
+      reordered.forEach(function(s) { baseSales.push(s); });
+      if (typeof saveBS === 'function') saveBS();
+    }
+    return;
+  }
+  // ── wsOrders ──
+  var wsRows = Array.from(tbody.querySelectorAll('tr[data-ws-id]'));
+  if (wsRows.length) {
+    var wsIds = wsRows.map(function(r) { return r.dataset.wsId; });
+    var reorderedWS = wsIds.map(function(id) { return wsOrders.find(function(o) { return o.id === id; }); }).filter(Boolean);
+    if (reorderedWS.length === wsRows.length) {
+      // Only reorder the matched slice (some orders may be filtered)
+      var wsAll = wsOrders.slice();
+      var wsMatched = new Set(wsIds);
+      var wsUnmatched = wsAll.filter(function(o) { return !wsMatched.has(o.id); });
+      wsOrders.length = 0;
+      reorderedWS.forEach(function(o) { wsOrders.push(o); });
+      wsUnmatched.forEach(function(o) { wsOrders.push(o); });
+      if (typeof save === 'function') save();
+    }
+    return;
+  }
+  // ── leads ──
+  var leadRows = Array.from(tbody.querySelectorAll('tr[data-lead-id]'));
+  if (leadRows.length) {
+    var leadIds = leadRows.map(function(r) { return r.dataset.leadId; });
+    var reorderedLeads = leadIds.map(function(id) { return leads.find(function(l) { return l.id === id; }); }).filter(Boolean);
+    if (reorderedLeads.length === leadIds.length) {
+      var allLeads = leads.slice();
+      var matchedSet = new Set(leadIds);
+      var unmatched = allLeads.filter(function(l) { return !matchedSet.has(l.id); });
+      leads.length = 0;
+      reorderedLeads.forEach(function(l) { leads.push(l); });
+      unmatched.forEach(function(l) { leads.push(l); });
+      if (typeof save === 'function') save();
+    }
+  }
+}
+
+/**
+ * Enable row-drag on a table or tbody element.
+ * Attaches a MutationObserver so it auto-re-inits when rows are re-rendered.
+ */
+function makeRowsDraggable(tableOrTbody) {
+  if (!tableOrTbody) return;
+  var tbody = (tableOrTbody.tagName === 'TBODY') ? tableOrTbody : tableOrTbody.querySelector('tbody');
+  if (!tbody) return;
+  _rdInitRows(tbody);
+  if (!tbody.getAttribute('data-rdrag-observed')) {
+    tbody.setAttribute('data-rdrag-observed', '1');
+    var obs = new MutationObserver(function() { _rdInitRows(tbody); });
+    obs.observe(tbody, { childList: true });
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════
+//  PATCH RENDER FUNCTIONS — tag rows with data IDs + init drag
+// ════════════════════════════════════════════════════════════
+
+// ── Base Sale ──────────────────────────────────────────────
+(function() {
+  var _prev = renderBaseSale;
+  renderBaseSale = function() {
+    _prev();
+    var tbody = document.getElementById('base-sale-table');
+    if (tbody) makeRowsDraggable(tbody);
+  };
+})();
+
+// ── WS Orders — tag rows with data-ws-id ──────────────────
+(function() {
+  var _prev = renderWSOrders;
+  renderWSOrders = function() {
+    _prev();
+    var tbody = document.getElementById('ws-order-table');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr.ws-order-row').forEach(function(tr) {
+      if (tr.getAttribute('data-ws-id')) return;
+      // Extract id from the delete-button onclick attribute
+      var delBtn = tr.querySelector('.row-del-btn');
+      if (delBtn) {
+        var m = (delBtn.getAttribute('onclick') || '').match(/'([^']+)'/);
+        if (m) tr.setAttribute('data-ws-id', m[1]);
+      }
+    });
+    makeRowsDraggable(tbody);
+  };
+})();
+
+// ── Recent Leads — tag rows with data-lead-id ─────────────
+(function() {
+  var _prev = renderRecentLeads;
+  renderRecentLeads = function() {
+    _prev();
+    var tbody = document.getElementById('recent-leads-table');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(function(tr) {
+      if (tr.querySelector('.empty-state') || tr.getAttribute('data-lead-id')) return;
+      var delBtn = tr.querySelector('.row-del-btn');
+      if (delBtn) {
+        var m = (delBtn.getAttribute('onclick') || '').match(/'([^']+)'/);
+        if (m) tr.setAttribute('data-lead-id', m[1]);
+      }
+    });
+    makeRowsDraggable(tbody);
+  };
+})();
+
+// ── Net Info ───────────────────────────────────────────────
+(function() {
+  var _prev = renderNetInfo;
+  renderNetInfo = function() {
+    _prev();
+    var tbody = document.getElementById('net-info-table');
+    if (tbody) makeRowsDraggable(tbody);
+  };
+})();
+
+// ── How Found ──────────────────────────────────────────────
+(function() {
+  var _prev = renderHowFound;
+  renderHowFound = function() {
+    _prev();
+    var tbody = document.getElementById('hf-table');
+    if (tbody) makeRowsDraggable(tbody);
+  };
+})();
+
+// ── Pipeline list ──────────────────────────────────────────
+(function() {
+  var _prev = renderPipelineList;
+  renderPipelineList = function() {
+    _prev();
+    var tbody = document.getElementById('pipeline-list-table');
+    if (tbody) makeRowsDraggable(tbody);
+  };
+})();
+
+// ── TMS tables (custom + enhanced existing) ───────────────
+(function() {
+  var _prev = tmsInitTab;
+  tmsInitTab = function(tabId) {
+    _prev(tabId);
+    setTimeout(function() {
+      var panel = document.getElementById('tab-' + tabId);
+      if (!panel) return;
+      panel.querySelectorAll('table').forEach(function(tbl) {
+        makeRowsDraggable(tbl);
+      });
+    }, 350);
+  };
+})();
+
+// ── AP / AR / inventory tables ─────────────────────────────
+(function() {
+  var apRenderers = [
+    function() { var t = document.querySelector('#ap-tracking-content table'); if (t) makeRowsDraggable(t); },
+    function() { var t = document.querySelector('#ar-table'); if (t) makeRowsDraggable(t); },
+    function() { var t = document.querySelector('#pts-table');  if (t) makeRowsDraggable(t); },
+  ];
+  // Hook switchTab to enable drag when AP/AR/Inventory tabs are activated
+  var _prev = switchTab;
+  switchTab = function(tab) {
+    _prev(tab);
+    setTimeout(function() {
+      if (tab === 'ap-tracking' || tab === 'ar-tracking' || tab === 'inventory') {
+        apRenderers.forEach(function(fn) { try { fn(); } catch(e) {} });
+      }
+      // Also cover any tab we might have missed
+      var panel = document.getElementById('tab-' + tab);
+      if (panel) {
+        panel.querySelectorAll('table').forEach(function(tbl) {
+          makeRowsDraggable(tbl);
+        });
+      }
+    }, 400);
+  };
+})();
+
+
+// ════════════════════════════════════════════════════════════
+//  BOOTSTRAP — apply to the initially active tab + all visible tables
+// ════════════════════════════════════════════════════════════
+setTimeout(function() {
+  // Fix any existing doubled headers on the DOM right now
+  document.querySelectorAll('thead th').forEach(function(th) {
+    var spans = th.querySelectorAll('.col-label-text');
+    if (spans.length > 1) {
+      for (var i = 1; i < spans.length; i++) spans[i].remove();
+    }
+  });
+
+  // Apply row drag to every table currently rendered on the page
+  document.querySelectorAll('table').forEach(function(tbl) {
+    try { makeRowsDraggable(tbl); } catch(e) {}
+  });
+}, 1600);
+
+// ════════════════════════════════════════════════════════════
+//  COLUMN DRAG FIX — ensure ALL existing table headers
+//  (including Base Sale's static headers) get drag enabled
+//  via enhanceExistingTable on first visit.
+//  Also ensures right-click → Remove Column works everywhere.
+// ════════════════════════════════════════════════════════════
+(function() {
+  // When Base Sale tab opens, explicitly call enhanceExistingTable
+  // if it hasn't been init'd yet, so the TMS toolbar appears and
+  // columns become draggable + right-click-removable.
+  var _prev = switchTab;
+  switchTab = function(tab) {
+    _prev(tab);
+    if (tab === 'base-sale') {
+      setTimeout(function() {
+        var table = document.getElementById('base-sale-table');
+        if (table) {
+          var tbl = table.closest('table');
+          if (tbl && !tbl.getAttribute('data-tms-init')) {
+            enhanceExistingTable(tbl, 'base-sale');
+          }
+          // Also re-init col drag on all headers (picks up del header too)
+          if (tbl) initColDragForTable(tbl);
+        }
+      }, 250);
+    }
+  };
+})();
+
 </script>
 </body>
 </html>
