@@ -3034,7 +3034,7 @@ async function cloudLoad() {
   else if (READ_KEY) headers['X-Access-Key'] = READ_KEY;
 
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10000);
+  const timer = setTimeout(() => ctrl.abort(), 20000); // 20 second timeout
   try {
     const res = await fetch('https://api.jsonbin.io/v3/b/'+BIN_ID+'/latest', { headers, signal: ctrl.signal });
     clearTimeout(timer);
@@ -3058,8 +3058,39 @@ async function cloudLoad() {
     renderAll();
   } catch(e) {
     clearTimeout(timer);
+    // If aborted (timeout) or fetch blocked, retry once before giving up
+    const isAbort = e.name === 'AbortError' || (e.message && e.message.toLowerCase().includes('abort'));
+    if (isAbort) {
+      // Retry once with a fresh controller
+      try {
+        showCloudStatus('loading','☁ Retrying…');
+        const res2 = await fetch('https://api.jsonbin.io/v3/b/'+BIN_ID+'/latest', { headers });
+        if (!res2.ok) { const b = await res2.text(); throw new Error('HTTP '+res2.status+': '+b.slice(0,100)); }
+        const json2 = await res2.json();
+        _cloudData       = json2.record || {};
+        leads            = _cloudData.leads            || [];
+        estimates        = _cloudData.estimates        || [];
+        invoices         = _cloudData.invoices         || [];
+        baseSales        = _cloudData.baseSales        || [];
+        wsOrders         = _cloudData.wsOrders         || [];
+        polesInventory   = _cloudData.polesInventory   || JSON.parse(JSON.stringify(DEFAULT_POLE_TYPES));
+        extPoles         = _cloudData.extPoles         || [];
+        installRows      = _cloudData.installRows      || [];
+        polesShipOverlay = _cloudData.polesShipOverlay || {};
+        ptsHidden        = _cloudData.ptsHidden        || [];
+        accessUsers      = _cloudData.accessUsers      || JSON.parse(localStorage.getItem('asn_access_users')||'[]');
+        apVendors        = _cloudData.apVendors        || JSON.parse(localStorage.getItem('asn_ap_vendors')||'[]');
+        arJobs           = _cloudData.arJobs           || JSON.parse(localStorage.getItem('asn_ar_jobs')||'[]');
+        showCloudStatus('ok','☁ Synced ✓');
+        renderAll();
+        return;
+      } catch(e2) {
+        // Retry also failed — fall through to local
+      }
+    }
     showCloudStatus('error','☁ Load failed');
-    toast('Cloud load failed: '+e.message+' — showing local data','error',6000);
+    const msg = isAbort ? 'Connection timed out — check your internet and refresh' : e.message;
+    toast('Cloud failed: '+msg+' — showing local data','error',6000);
     loadFromLocal();
     renderAll();
   }
