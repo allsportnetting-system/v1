@@ -926,14 +926,6 @@
         <button class="btn btn-sm btn-primary" onclick="saveMethodApiKey()">Save</button>
       </div>
       <div style="margin-top:6px;font-size:10px;color:var(--text-dim)">Key is stored locally in your browser only.</div>
-      <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
-        <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4;font-size:12px"><b>Proxy URL (required for CRM to work)</b><br>Paste your Cloudflare Worker URL here. This is needed to connect to Method CRM from the browser.</div>
-        <div class="api-key-row">
-          <input type="text" id="method-proxy-url-input" placeholder="https://your-worker.workers.dev" style="font-size:11px" value="">
-          <button class="btn btn-sm btn-primary" onclick="saveMethodProxyUrl()">Save</button>
-        </div>
-        <div style="margin-top:4px;font-size:10px;color:var(--text-dim)" id="proxy-url-status">Not configured — see setup guide</div>
-      </div>
     </div>
   </div>
 </aside>
@@ -2986,12 +2978,6 @@ let estimates = [];
 let invoices = [];
 let baseSales = [];
 let methodApiKey = localStorage.getItem('asn_method_api_key')||'';
-// ===== METHOD CRM PROXY =====
-// All Method CRM calls go through this proxy to avoid CORS browser blocks.
-// Deploy the Cloudflare Worker from the setup guide and paste its URL here.
-function getProxyUrl(){
-  return localStorage.getItem('asn_method_proxy_url') || '';
-}
 let selectedLeadId=null, selectedSource='websearch', selectedHow=null, unsaved=false;
 
 const STAGES=['new','contacted','qualified','proposal','followup','closed','declined','dormant'];
@@ -3648,18 +3634,7 @@ function switchTab(tab){
   if(tab==='invoice')renderInvoice();
   if(tab==='base-sale')renderBaseSale();
   if(tab==='purchase-order')renderPurchaseOrders();
-  if(tab==='ws-order'){
-    // Heal stale col prefs before rendering
-    const _validWsIds = WS_COLS.map(c => c.id);
-    if (wsVisibleCols && wsVisibleCols.length > 0) {
-      const _cleaned = wsVisibleCols.filter(id => _validWsIds.includes(id));
-      if (_cleaned.length === 0) { wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id); saveWSColPrefs(); }
-      else if (_cleaned.length !== wsVisibleCols.length) { wsVisibleCols = _cleaned; saveWSColPrefs(); }
-    } else {
-      wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id); saveWSColPrefs();
-    }
-    renderWSOrders();checkWSDueDates();wsRenderColGrid();
-  }
+  if(tab==='ws-order'){renderWSOrders();checkWSDueDates();wsRenderColGrid();}
   if(tab==='inventory'){renderPolesInventory();renderPolesToShip();renderExtPoles();renderInstallRows();scanOrdersForInstall();renderInstallRows();updateInvStats();}
   if(tab==='ap-tracking'){loadAP();renderAP();}
   if(tab==='ar-tracking'){renderAR();}
@@ -3855,23 +3830,9 @@ function markUnsaved(){unsaved=true}
 function toggleCrmConfig(){
   const panel=document.getElementById('crm-config-panel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open')){
-    if(methodApiKey) document.getElementById('method-api-key-input').value=methodApiKey;
-    const savedProxy=localStorage.getItem('asn_method_proxy_url')||'';
-    if(savedProxy){
-      document.getElementById('method-proxy-url-input').value=savedProxy;
-      document.getElementById('proxy-url-status').textContent='✓ Proxy URL configured';
-    }
+  if(panel.classList.contains('open')&&methodApiKey){
+    document.getElementById('method-api-key-input').value=methodApiKey;
   }
-}
-function saveMethodProxyUrl(){
-  const val=document.getElementById('method-proxy-url-input').value.trim();
-  if(!val){toast('Please enter a proxy URL','error');return;}
-  localStorage.setItem('asn_method_proxy_url',val);
-  // Update the in-memory variable
-  window._methodProxyUrlUpdated=val;
-  document.getElementById('proxy-url-status').textContent='✓ Proxy URL saved';
-  toast('Proxy URL saved ✓','success');
 }
 function saveMethodApiKey(){
   const val=document.getElementById('method-api-key-input').value.trim();
@@ -3898,23 +3859,18 @@ function initCrmKeyState(){
 let _pendingLead=null; // holds lead object while modal is open
 
 async function checkMethodCRMDuplicate(email){
-  // Live lookup via Method CRM API — routed through proxy to avoid CORS
-  if(!methodApiKey||!METHOD_PROXY_URL)return null;
+  // Live lookup via Method CRM API (contacts endpoint)
+  // Returns matching contact object or null
+  if(!methodApiKey)return null;
   try{
-    const res=await fetch(getProxyUrl(),{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        action:'GET',
-        endpoint:`contacts?filter=email eq '${email}'`,
-        apiKey:methodApiKey
-      })
+    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(email)}'`,{
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'}
     });
     if(!res.ok)return null;
     const data=await res.json();
     const items=data.value||data.items||data.contacts||[];
     if(items.length>0)return items[0];
-  }catch(e){/* proxy unreachable — fall back to local check only */}
+  }catch(e){/* network or CORS — fall back to local check only */}
   return null;
 }
 
@@ -4018,14 +3974,12 @@ function dupProceedUpdateCRM(){
 }
 
 async function updateMethodContact(lead){
-  if(!methodApiKey||!METHOD_PROXY_URL) return;
+  if(!methodApiKey) return;
   simulateSync('Updating Method CRM contact…');
   try{
     // First find the contact ID by email
-    const res=await fetch(METHOD_PROXY_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'GET',endpoint:`contacts?filter=email eq '${lead.email}'`,apiKey:methodApiKey})
+    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(lead.email)}'`,{
+      headers:{'Authorization':'Bearer '+methodApiKey}
     });
     if(!res.ok){toast('Could not find Method contact to update','error',3000);return;}
     const data=await res.json();
@@ -4037,10 +3991,10 @@ async function updateMethodContact(lead){
       Email:lead.email, Phone:lead.phone||'',
       BillingAddressLine1:lead.address||''
     };
-    const patchRes=await fetch(METHOD_PROXY_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'PATCH',endpoint:`contacts/${contactId}`,apiKey:methodApiKey,payload:patch})
+    const patchRes=await fetch(`https://app.method.me/api/v1/contacts/${contactId}`,{
+      method:'PATCH',
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
+      body:JSON.stringify(patch)
     });
     if(patchRes.ok){
       toast(`Method CRM contact updated ✓`,'success');
@@ -4069,11 +4023,6 @@ async function createMethodContact(lead){
     document.getElementById('sync-label').textContent='Synced';
     return;
   }
-  if(!METHOD_PROXY_URL){
-    toast('Method CRM proxy not configured — lead saved locally','error',4000);
-    document.getElementById('sync-label').textContent='Synced';
-    return;
-  }
   simulateSync('Creating Method CRM contact…');
   try{
     const payload={
@@ -4086,10 +4035,10 @@ async function createMethodContact(lead){
       LeadSource: lead.source||'',
       Notes: lead.notes||''
     };
-    const res=await fetch(METHOD_PROXY_URL,{
+    const res=await fetch('https://app.method.me/api/v1/contacts',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'POST',endpoint:'contacts',apiKey:methodApiKey,payload})
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
     });
     if(res.ok){
       const data=await res.json();
@@ -4106,7 +4055,7 @@ async function createMethodContact(lead){
     }
   }catch(e){
     console.warn('Method CRM error:',e.message);
-    toast('Lead saved — Method CRM unreachable. Check proxy URL in settings.','error',4000);
+    toast('Lead saved — Method CRM unreachable (CORS? Check API key)','error',4000);
     document.getElementById('sync-label').textContent='Synced';
   }
 }
@@ -6401,9 +6350,9 @@ function saveWSColPrefs() {
 
 function wsSetStatusFilter(status) {
   wsStatusFilter = status;
-  // Update pill active states — match only the ws-order tab pills (data-s), not CL pills (data-cl-s)
-  document.querySelectorAll('#tab-ws-order .ws-status-pill[data-s]').forEach(p => {
-    p.classList.toggle('active', p.dataset.s === status);
+  // Update pill active states for WS Order tab only (not Cold Leads pills)
+  document.querySelectorAll('#tab-ws-order .ws-status-pill').forEach(p => {
+    if ('s' in p.dataset) p.classList.toggle('active', p.dataset.s === status);
   });
   renderWSOrders();
 }
@@ -6463,34 +6412,24 @@ function wsSaveCurrentView() {
 function wsApplyColVisibility() {
   const table = document.querySelector('#ws-order-table')?.closest('table');
   if (!table) return;
-
-  // Validate stored prefs: strip any IDs no longer in WS_COLS (avoids stale prefs hiding all rows)
-  const validIds = WS_COLS.map(c => c.id);
-  if (wsVisibleCols && wsVisibleCols.length > 0) {
-    wsVisibleCols = wsVisibleCols.filter(id => validIds.includes(id));
-  }
-  // If nothing left after pruning, reset to defaults
-  if (!wsVisibleCols || wsVisibleCols.length === 0) {
+  // Safety: if wsVisibleCols is empty or has stale IDs, reset to defaults
+  const validIds = new Set(WS_COLS.map(c => c.id));
+  const filtered = (wsVisibleCols || []).filter(id => validIds.has(id));
+  if (filtered.length === 0) {
     wsVisibleCols = WS_COLS.filter(c => c.default).map(c => c.id);
     saveWSColPrefs();
+  } else if (filtered.length !== (wsVisibleCols || []).length) {
+    wsVisibleCols = filtered;
+    saveWSColPrefs();
   }
-
-  // Un-hide every row and cell first so filter never leaves ghost-blank rows
-  table.querySelectorAll('tbody tr').forEach(tr => {
-    tr.style.display = '';
-  });
-  // Un-hide ALL cells — then re-apply column visibility below
-  table.querySelectorAll('tbody tr td').forEach(td => {
-    td.style.display = '';
-  });
-
-  // Apply column visibility per WS_COLS index
-  const allThs = table.querySelectorAll('thead tr th');
   WS_COLS.forEach((col, i) => {
     const thIdx = i + 2; // offset: col 0=del, col 1=#
     const visible = col.sticky || wsVisibleCols.includes(col.id);
-    if (allThs[thIdx]) allThs[thIdx].style.display = visible ? '' : 'none';
-    table.querySelectorAll(`tbody tr td:nth-child(${thIdx + 1})`).forEach(td => {
+    // Hide/show header
+    const th = table.querySelectorAll('thead tr th')[thIdx];
+    if (th) th.style.display = visible ? '' : 'none';
+    // Hide/show all body cells in this column
+    table.querySelectorAll(`tbody tr td:nth-child(${thIdx+1})`).forEach(td => {
       td.style.display = visible ? '' : 'none';
     });
   });
@@ -6543,6 +6482,16 @@ function wsMatchesSearch(o, q){
 }
 
 function renderWSOrders(){
+  // Guard: ensure wsVisibleCols is always valid before building rows
+  if (!wsVisibleCols || wsVisibleCols.length === 0) {
+    wsVisibleCols = WS_COLS.filter(c => c.default).map(c => c.id);
+    saveWSColPrefs();
+  } else {
+    const _vids = new Set(WS_COLS.map(c => c.id));
+    const _ok = wsVisibleCols.filter(id => _vids.has(id));
+    if (_ok.length === 0) { wsVisibleCols = WS_COLS.filter(c => c.default).map(c => c.id); saveWSColPrefs(); }
+    else if (_ok.length !== wsVisibleCols.length) { wsVisibleCols = _ok; saveWSColPrefs(); }
+  }
   const tbody=document.getElementById('ws-order-table');
   if(!wsOrders.length){tbody.innerHTML=`<tr><td colspan="27"><div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-title">No WS orders yet</div><div class="empty-sub">Upload an Excel/CSV above or click "+ Add Order"</div></div></td></tr>`;
     const cnt=document.getElementById('ws-result-count');if(cnt)cnt.textContent='0 orders';return;}
@@ -9835,23 +9784,6 @@ switchTab = function(tab) {
       const table = document.querySelector('#ws-order-table')?.closest('table');
       if (table && !table.id) table.id = 'ws-main-table';
       initEditableHeaders('ws-main-table');
-
-      // Self-heal: validate wsVisibleCols against current WS_COLS every time tab opens
-      // This fixes stale localStorage prefs that cause rows to appear blank after a filter
-      const validIds = WS_COLS.map(c => c.id);
-      if (wsVisibleCols && wsVisibleCols.length > 0) {
-        const cleaned = wsVisibleCols.filter(id => validIds.includes(id));
-        if (cleaned.length !== wsVisibleCols.length) {
-          wsVisibleCols = cleaned.length > 0 ? cleaned : WS_COLS.filter(c => c.default).map(c => c.id);
-          saveWSColPrefs();
-        }
-      } else {
-        wsVisibleCols = WS_COLS.filter(c => c.default).map(c => c.id);
-        saveWSColPrefs();
-      }
-      // Re-render so filter pills reflect correct rows and column visibility is clean
-      renderWSOrders();
-      wsApplyColVisibility();
     }
   }, 200);
 };
@@ -13530,6 +13462,32 @@ setTimeout(function() {
     try { makeRowsDraggable(tbl); } catch(e) {}
   });
 }, 1600);
+
+// ── WS Order: one-time startup col-prefs heal ────────────────
+// Clears any stale localStorage column prefs so filter views always show data
+(function wsStartupHeal() {
+  try {
+    var saved = localStorage.getItem('asn_ws_col_prefs');
+    if (!saved) return;
+    var parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) { localStorage.removeItem('asn_ws_col_prefs'); return; }
+    // typeof WS_COLS check — may not be defined yet at this call time
+    if (typeof WS_COLS === 'undefined') return;
+    var validIds = new Set(WS_COLS.map(function(c) { return c.id; }));
+    var cleaned = parsed.filter(function(id) { return validIds.has(id); });
+    if (cleaned.length === 0) {
+      // All stale — nuke it so wsVisibleCols resets to defaults next render
+      localStorage.removeItem('asn_ws_col_prefs');
+      if (typeof wsVisibleCols !== 'undefined') {
+        wsVisibleCols = WS_COLS.filter(function(c) { return c.default; }).map(function(c) { return c.id; });
+      }
+    } else if (cleaned.length !== parsed.length) {
+      // Partial stale — save cleaned version
+      localStorage.setItem('asn_ws_col_prefs', JSON.stringify(cleaned));
+      if (typeof wsVisibleCols !== 'undefined') wsVisibleCols = cleaned;
+    }
+  } catch(e) {}
+})();
 
 // ════════════════════════════════════════════════════════════
 //  COLUMN DRAG FIX — ensure ALL existing table headers
