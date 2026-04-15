@@ -3486,6 +3486,18 @@ function renderAll() {
   updateARBadge();
   initCrmKeyState();
   initDynamicControls();
+  // Always render WS Orders so table is populated regardless of which tab is active
+  try {
+    const _validWsIds = WS_COLS.map(c => c.id);
+    if (!wsVisibleCols || wsVisibleCols.length === 0) {
+      wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id); saveWSColPrefs();
+    } else {
+      const _cleaned = wsVisibleCols.filter(id => _validWsIds.includes(id));
+      if (_cleaned.length === 0) { wsVisibleCols = WS_COLS.filter(c=>c.default).map(c=>c.id); saveWSColPrefs(); }
+      else if (_cleaned.length !== wsVisibleCols.length) { wsVisibleCols = _cleaned; saveWSColPrefs(); }
+    }
+    renderWSOrders(); checkWSDueDates(); wsRenderColGrid();
+  } catch(e) { console.warn('renderAll wsOrders:', e); }
   const activeTab = document.querySelector('.nav-item.active');
   if (activeTab && activeTab.dataset.tab !== 'base-leads') {
     switchTab(activeTab.dataset.tab);
