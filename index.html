@@ -879,7 +879,7 @@
     <div class="nav-item" data-tab="net-info"><span class="icon">⊞</span> Lead Net Info<span class="badge badge-amber" id="ni-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="est-followup"><span class="icon">📋</span> Estimate Follow-Up<span class="badge badge-purple" id="ef-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="invoice"><span class="icon">🧾</span> Invoice<span class="badge badge-orange" id="inv-badge" style="display:none">0</span></div>
-    <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Base Sale<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
+    <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Job Order List / Base Sale<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="purchase-order"><span class="icon">🧾</span> Purchase Order<span class="badge badge-amber" id="po-badge" style="display:none">0</span></div>
     <div class="nav-label" style="margin-top:8px">Orders & Stock</div>
     <div class="nav-item" data-tab="ws-order"><span class="icon">🛒</span> WS Order<span class="badge badge-amber" id="ws-badge" style="display:none">0</span></div>
@@ -1489,7 +1489,7 @@
     <!-- BASE SALE -->
     <div class="tab-panel" id="tab-base-sale">
       <div class="section-header">
-        <div><div class="section-title">Base Sale Records</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
+        <div><div class="section-title">Job Order List / Base Sale Records</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn-export-tab" onclick="openBaseSaleImport()">↓ Import</button>
           <button class="btn-export-tab" onclick="openTabExport('base-sale')">↑ Export</button>
@@ -1499,7 +1499,7 @@
         <table>
           <thead><tr>
             <th class="sort-th" onclick="sortBS('jobNumber')">Job #<span class="sort-arrow"></span></th>
-            <th class="sort-th" onclick="sortBS('customerName')">Full Name / Company<span class="sort-arrow"></span></th>
+            <th class="sort-th" onclick="sortBS('customerName')">Customer Name<span class="sort-arrow"></span></th>
             <th class="sort-th" onclick="sortBS('status')">Status<span class="sort-arrow"></span></th>
             <th>Description</th>
             <th class="sort-th" onclick="sortBS('amount')">Amount<span class="sort-arrow"></span></th>
@@ -3602,7 +3602,7 @@ const PAGE_TITLES={
   'net-info':['Lead Net Info','Net specs — mark Estimate Done to trigger follow-up workflow'],
   'est-followup':['Estimate Follow-Up','Track sent estimates and automatic follow-up intervals'],
   'invoice':['Invoice','Track invoice status, payments, and follow-up schedule'],
-  'base-sale':['Base Sale','Completed sales — auto-populated when invoice is paid'],
+  'base-sale':['Job Order List / Base Sale','Completed sales — auto-populated when invoice is paid'],
   'purchase-order':['Purchase Orders','Auto-generated POs from Base Sale records · Editable · PDF & Excel export'],
   'how-found':['How Did They Find Us','Marketing source and keyword analytics'],
   'ws-order':['WS Order','Website orders — paste from sheet, auto-extract name & due date'],
@@ -5312,17 +5312,28 @@ function renderBaseSale(){
     <tr data-bs-id="${bs.id}">
       <td><input type="text" class="inline-edit" value="${(bs.jobNumber||'').replace(/"/g,'&quot;')}" placeholder="Job #" style="min-width:60px;font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:12px" onchange="updateBS('${bs.id}','jobNumber',this.value)"></td>
       <td style="min-width:160px">
-        <input type="text" class="inline-edit" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;font-weight:500;margin-bottom:3px" onchange="updateBS('${bs.id}','customerName',this.value)">
-        <input type="text" class="inline-edit" value="${companyVal.replace(/"/g,'&quot;')}" placeholder="Company (optional)" style="width:100%;font-size:11px;color:var(--text-muted)" onchange="updateBS('${bs.id}','company',this.value)">
+        <input type="text" class="inline-edit" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;font-weight:500" onchange="updateBS('${bs.id}','customerName',this.value)">
       </td>
       <td>
         <select class="inline-edit" style="min-width:110px;padding:5px 8px;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);color:${statusColor};font-weight:600" onchange="updateBS('${bs.id}','status',this.value);renderBaseSale()">
           ${statusOpts}
         </select>
       </td>
-      <td style="min-width:200px">
-        <input type="text" class="inline-edit" value="${descLine1.replace(/"/g,'&quot;')}" placeholder="Netting type · Dimension" style="width:100%;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:3px" onchange="(function(el){const l2=el.closest('td').querySelector('.bs-desc-line2');updateBS('${bs.id}','description',el.value+(l2&&l2.value?'\n'+l2.value:''))})(this)">
-        <input type="text" class="inline-edit bs-desc-line2" value="${descLine2.replace(/"/g,'&quot;')}" placeholder="Pole size · Coating" style="width:100%;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" onchange="(function(el){const l1=el.closest('td').querySelector('input:not(.bs-desc-line2)');updateBS('${bs.id}','description',(l1?l1.value:'')+'\n'+el.value)})(this)">
+      <td style="min-width:220px;max-width:280px">
+        <div class="bs-note-wrap" style="background:var(--surface-raised);border:1px solid var(--border);border-radius:6px;padding:7px 9px;position:relative;cursor:pointer" onclick="this.querySelector('.bs-note-editor').style.display=this.querySelector('.bs-note-editor').style.display==='none'?'block':'none';this.querySelector('.bs-note-view').style.display=this.querySelector('.bs-note-view').style.display==='none'?'flex':'none'">
+          <div class="bs-note-view" style="display:flex;flex-direction:column;gap:4px">
+            ${descLine1?`<div style="display:flex;align-items:flex-start;gap:5px"><span style="font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;margin-top:1px;min-width:38px">NET</span><span style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;line-height:1.4">${descLine1.replace(/</g,'&lt;')}</span></div>`:`<div style="font-size:11px;color:var(--text-dim);font-style:italic">No netting info</div>`}
+            ${descLine2?`<div style="display:flex;align-items:flex-start;gap:5px"><span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;margin-top:1px;min-width:38px">POLE</span><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;line-height:1.4">${descLine2.replace(/</g,'&lt;')}</span></div>`:''}
+            <span style="position:absolute;top:5px;right:6px;font-size:9px;color:var(--text-dim)">✎</span>
+          </div>
+          <div class="bs-note-editor" style="display:none" onclick="event.stopPropagation()">
+            <div style="font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Netting Info</div>
+            <input type="text" class="inline-edit" value="${descLine1.replace(/"/g,'&quot;')}" placeholder="Netting type · Dimension" style="width:100%;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:6px" onchange="(function(el){const l2=el.closest('.bs-note-editor').querySelector('.bs-desc-line2');updateBS('${bs.id}','description',el.value+(l2&&l2.value?'\n'+l2.value:''));const view=el.closest('.bs-note-wrap').querySelector('.bs-note-view');view.querySelectorAll('span[style*=DM\\ Mono]')[0]&&(view.querySelectorAll('span[style*=DM\\ Mono]')[0].textContent=el.value)})(this)">
+            <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Pole Info</div>
+            <input type="text" class="inline-edit bs-desc-line2" value="${descLine2.replace(/"/g,'&quot;')}" placeholder="Pole size · Coating" style="width:100%;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" onchange="(function(el){const l1=el.closest('.bs-note-editor').querySelector('input:not(.bs-desc-line2)');updateBS('${bs.id}','description',(l1?l1.value:'')+'\n'+el.value)})(this)">
+            <div style="text-align:right;margin-top:6px"><button style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:var(--accent);color:#fff;cursor:pointer" onclick="const w=this.closest('.bs-note-wrap');w.querySelector('.bs-note-editor').style.display='none';w.querySelector('.bs-note-view').style.display='flex';renderBaseSale()">Done</button></div>
+          </div>
+        </div>
       </td>
       <td><input type="text" class="inline-edit" value="${amountVal.replace(/"/g,'&quot;')}" placeholder="e.g. $8,500" style="min-width:90px;color:var(--green);font-weight:600" onchange="updateBS('${bs.id}','amount',this.value);updateBS('${bs.id}','totalSale',this.value)"></td>
       <td>
