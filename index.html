@@ -504,14 +504,14 @@
   .inv-block-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--navy-light);border:1px solid var(--border);border-bottom:none;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
   .inv-block-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
   .poles-inventory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:18px;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);background:var(--surface)}
-  /* Stats row */
-  .inv-stats-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-  .inv-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;flex:1;min-width:120px}
+  /* Stats row — collapsed into inline pills in the top bar */
+  .inv-stats-row{display:none}
+  .inv-stat-card{display:none}
   .inv-stat-icon{font-size:22px;flex-shrink:0}
   .inv-stat-val{font-size:22px;font-weight:300;color:var(--text);line-height:1}
   .inv-stat-lbl{font-size:10px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted);margin-top:3px}
-  #invs-oos-card.has-oos{border-color:var(--red);background:rgba(239,68,68,0.06)}
-  #invs-oos-card.has-oos .inv-stat-val{color:var(--red)}
+  .inv-stat-pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--text)}
+  #invs-oos-card.has-oos{border-color:var(--red)!important;background:rgba(239,68,68,0.06)!important}
   .pole-stock-card{background:var(--navy-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;transition:border-color 0.15s}
   .pole-stock-card:hover{border-color:var(--accent)}
   .pole-stock-type{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2121,53 +2121,23 @@
     <!-- INVENTORY / INSTALL / SHIP POLES TAB -->
     <div class="tab-panel" id="tab-inventory">
 
-      <div class="section-header" style="margin-bottom:12px">
-        <div><div class="section-title">Inventory / Poles</div></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-export-tab" onclick="openTabExport('inventory')">↑ Export</button>
+      <!-- Top bar: title + export + stats inline -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">📦 Inventory / Poles</div>
+          <!-- Stats inline pills -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="inv-stat-pill">📦 <span id="invs-types">0</span> <span style="color:var(--text-muted)">Types</span></span>
+            <span class="inv-stat-pill" id="invs-oos-card"><span style="color:var(--red)" id="invs-oos">0</span> <span style="color:var(--text-muted)">OOS</span></span>
+            <span class="inv-stat-pill">🚚 <span id="invs-ship">0</span> <span style="color:var(--text-muted)">To Ship</span></span>
+            <span class="inv-stat-pill">📏 <span id="invs-ext">0</span> <span style="color:var(--text-muted)">Ext.</span></span>
+            <span class="inv-stat-pill">🔧 <span id="invs-install">0</span> <span style="color:var(--text-muted)">Install</span></span>
+          </div>
         </div>
+        <button class="btn-export-tab" onclick="openTabExport('inventory')">↑ Export</button>
       </div>
 
-      <!-- ── SUMMARY STATS ROW ── -->
-      <div class="inv-stats-row" id="inv-stats-row">
-        <div class="inv-stat-card">
-          <div class="inv-stat-icon">📦</div>
-          <div>
-            <div class="inv-stat-val" id="invs-types">0</div>
-            <div class="inv-stat-lbl">Pole Types</div>
-          </div>
-        </div>
-        <div class="inv-stat-card" id="invs-oos-card">
-          <div class="inv-stat-icon">🔴</div>
-          <div>
-            <div class="inv-stat-val" id="invs-oos">0</div>
-            <div class="inv-stat-lbl">Out of Stock</div>
-          </div>
-        </div>
-        <div class="inv-stat-card">
-          <div class="inv-stat-icon">🚚</div>
-          <div>
-            <div class="inv-stat-val" id="invs-ship">0</div>
-            <div class="inv-stat-lbl">To Ship</div>
-          </div>
-        </div>
-        <div class="inv-stat-card">
-          <div class="inv-stat-icon">📏</div>
-          <div>
-            <div class="inv-stat-val" id="invs-ext">0</div>
-            <div class="inv-stat-lbl">Ext. Poles</div>
-          </div>
-        </div>
-        <div class="inv-stat-card">
-          <div class="inv-stat-icon">🔧</div>
-          <div>
-            <div class="inv-stat-val" id="invs-install">0</div>
-            <div class="inv-stat-lbl">For Install</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── SECTION 1: POLES INVENTORY (always visible) ── -->
+      <!-- ── TABLE 1: POLES INVENTORY ── -->
       <div class="inv-block">
         <div class="inv-block-head">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2211,8 +2181,8 @@
         </div>
       </div>
 
-      <!-- ══ POLES SUB-TABS ══ -->
-      <div style="margin-top:20px">
+      <!-- ── TABLE 2: SUB-TABS (Poles to Ship / Ext Poles / For Install) ── -->
+      <div style="margin-top:24px">
         <!-- Sub-tab bar -->
         <div class="inv-sub-tab-bar" id="inv-sub-tab-bar">
           <button class="inv-sub-tab active" data-subtab="pts" onclick="switchInvSubTab('pts',this)">🚚 Poles to Ship</button>
