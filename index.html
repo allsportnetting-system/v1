@@ -603,6 +603,16 @@
   /* INV SHEETS PANEL */
   .inv-sheets-panel{background:var(--navy);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;display:none}
   .inv-sheets-panel.open{display:block}
+  /* ── Inventory sub-tabs ── */
+  .inv-sub-tab-bar{display:flex;gap:0;border-bottom:none;flex-wrap:nowrap;overflow-x:auto}
+  .inv-sub-tab{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:9px 18px;border:1px solid var(--border);border-bottom:none;background:var(--navy-light);color:var(--text-muted);cursor:pointer;transition:all .15s;white-space:nowrap;border-radius:var(--radius) var(--radius) 0 0;margin-right:3px;position:relative;top:1px}
+  .inv-sub-tab:hover{background:var(--surface-hover);color:var(--text)}
+  .inv-sub-tab.active{background:var(--surface);color:var(--text);border-bottom-color:var(--surface);z-index:2;font-weight:600}
+  .inv-sub-tab.active[data-subtab="pts"]{border-top:2px solid var(--teal)}
+  .inv-sub-tab.active[data-subtab="ext"]{border-top:2px solid var(--accent)}
+  .inv-sub-tab.active[data-subtab="install"]{border-top:2px solid var(--purple)}
+  .inv-sub-panel{display:none}
+  .inv-sub-panel.active{display:block}
 
   /* ===== EF / INV FILTER + VIEW BAR ===== */
   .ef-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
@@ -879,7 +889,7 @@
     <div class="nav-item" data-tab="net-info"><span class="icon">⊞</span> Lead Net Info<span class="badge badge-amber" id="ni-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="est-followup"><span class="icon">📋</span> Estimate Follow-Up<span class="badge badge-purple" id="ef-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="invoice"><span class="icon">🧾</span> Invoice<span class="badge badge-orange" id="inv-badge" style="display:none">0</span></div>
-    <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Job Order List / Base Sale<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
+    <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Base Sale<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="purchase-order"><span class="icon">🧾</span> Purchase Order<span class="badge badge-amber" id="po-badge" style="display:none">0</span></div>
     <div class="nav-label" style="margin-top:8px">Orders & Stock</div>
     <div class="nav-item" data-tab="ws-order"><span class="icon">🛒</span> WS Order<span class="badge badge-amber" id="ws-badge" style="display:none">0</span></div>
@@ -1489,7 +1499,7 @@
     <!-- BASE SALE -->
     <div class="tab-panel" id="tab-base-sale">
       <div class="section-header">
-        <div><div class="section-title">Job Order List / Base Sale Records</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
+        <div><div class="section-title">Base Sale Records</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn-export-tab" onclick="openBaseSaleImport()">↓ Import</button>
           <button class="btn-export-tab" onclick="openTabExport('base-sale')">↑ Export</button>
@@ -1499,7 +1509,7 @@
         <table>
           <thead><tr>
             <th class="sort-th" onclick="sortBS('jobNumber')">Job #<span class="sort-arrow"></span></th>
-            <th class="sort-th" onclick="sortBS('customerName')">Customer Name<span class="sort-arrow"></span></th>
+            <th class="sort-th" onclick="sortBS('customerName')">Full Name / Company<span class="sort-arrow"></span></th>
             <th class="sort-th" onclick="sortBS('status')">Status<span class="sort-arrow"></span></th>
             <th>Description</th>
             <th class="sort-th" onclick="sortBS('amount')">Amount<span class="sort-arrow"></span></th>
@@ -2157,7 +2167,7 @@
         </div>
       </div>
 
-      <!-- ── SECTION 1: POLES INVENTORY ── -->
+      <!-- ── SECTION 1: POLES INVENTORY (always visible) ── -->
       <div class="inv-block">
         <div class="inv-block-head">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2172,7 +2182,6 @@
             <button class="btn btn-sm btn-primary" onclick="savePoleInventory()">💾 Save</button>
           </div>
         </div>
-        <!-- Google Sheets panel for Poles Inventory -->
         <div class="inv-sheets-panel" id="inv-pi-sheets-panel">
           <div class="sheets-status-row">
             <div class="sheets-dot" id="inv-pi-sheets-dot"></div>
@@ -2180,7 +2189,7 @@
           </div>
           <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.5">Connect a Google Sheet webhook to back up Poles Inventory data.</div>
           <input type="text" id="inv-pi-sheets-url" placeholder="https://script.google.com/macros/s/..." style="font-family:'DM Sans',sans-serif;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);width:100%;outline:none;margin-bottom:4px">
-          <button class="sheets-btn go" onclick="saveInvPISheetsWebhook()">💾 Save & Test</button>
+          <button class="sheets-btn go" onclick="saveInvPISheetsWebhook()">💾 Save &amp; Test</button>
           <button class="sheets-btn" onclick="pushInvPIToSheets()" style="margin-top:4px">↑ Push Inventory Now</button>
         </div>
         <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
@@ -2202,133 +2211,148 @@
         </div>
       </div>
 
-      <!-- ── SECTION 2: POLES TO SHIP ── -->
-      <div class="inv-block" style="margin-top:24px">
-        <div class="inv-block-head">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <div class="inv-block-title">🚚 Poles to Ship</div>
-              <span class="ct-badge" style="background:var(--green-dim);color:var(--green);border-color:rgba(34,197,94,0.3)">Auto from Paid Orders · Poles Only</span>
-            </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Filters WS Orders &amp; Base Sales for pole items (ft units) · Parses System Type &amp; Mount Type · All fields editable · Click column header to sort</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <button class="btn btn-sm" onclick="openPolesToShipImport()">↓ Import</button>
-            <button class="btn btn-sm" id="inv-pts-sheets-btn" onclick="toggleInvPTSSheetsPanel()">📊 Google Sheets</button>
-            <button class="btn btn-sm" onclick="pushPTSToSheets()">↑ Push to Sheets</button>
-          </div>
+      <!-- ══ POLES SUB-TABS ══ -->
+      <div style="margin-top:28px">
+        <!-- Sub-tab bar -->
+        <div class="inv-sub-tab-bar" id="inv-sub-tab-bar">
+          <button class="inv-sub-tab active" data-subtab="pts" onclick="switchInvSubTab('pts',this)">🚚 Poles to Ship</button>
+          <button class="inv-sub-tab" data-subtab="ext" onclick="switchInvSubTab('ext',this)">📏 3' Extension Poles to Ship Out Manual</button>
+          <button class="inv-sub-tab" data-subtab="install" onclick="switchInvSubTab('install',this)">🔧 For Install</button>
         </div>
-        <!-- Google Sheets panel for Poles to Ship -->
-        <div class="inv-sheets-panel" id="inv-pts-sheets-panel">
-          <div class="sheets-status-row">
-            <div class="sheets-dot" id="inv-pts-sheets-dot"></div>
-            <span id="inv-pts-sheets-status" style="color:var(--text-muted);font-size:11px">Not connected</span>
-          </div>
-          <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.5">Connect a Google Sheet to sync Poles to Ship records. Each row is pushed when status or tracking changes.</div>
-          <input type="text" id="inv-pts-sheets-url" placeholder="https://script.google.com/macros/s/..." style="font-family:'DM Sans',sans-serif;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);width:100%;outline:none;margin-bottom:4px">
-          <button class="sheets-btn go" onclick="saveInvPTSSheetsWebhook()">💾 Save & Test</button>
-          <button class="sheets-btn" onclick="pushPTSToSheets()" style="margin-top:4px">↑ Push All Pole Orders Now</button>
-        </div>
-        <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
-          <table style="min-width:1600px" id="pts-table">
-            <thead><tr>
-              <th class="del-cell" style="position:sticky;left:0;z-index:3;background:var(--navy-light)" title="Delete row"></th>
-              <th class="sort-th" data-col="source" onclick="sortPTS('source')" style="min-width:120px;position:sticky;left:32px;z-index:3;background:var(--navy-light)">Source<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="name" onclick="sortPTS('name')" style="min-width:150px;position:sticky;left:152px;z-index:3;background:var(--navy-light);border-right:2px solid var(--border)">Name<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="systemType" onclick="sortPTS('systemType')" style="min-width:140px">System Type<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="mountType" onclick="sortPTS('mountType')" style="min-width:130px">Mount Type<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="description" onclick="sortPTS('description')" style="min-width:190px">Description<br><span style="font-weight:400;color:var(--text-dim);font-size:9px">Netting · Dimension mix</span><span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="coating" onclick="sortPTS('coating')" style="min-width:115px">Coating<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="qty" onclick="sortPTS('qty')" style="min-width:60px;text-align:center">Qty<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="poleStatus" onclick="sortPTS('poleStatus')" style="min-width:165px">Status<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="bizDays" onclick="sortPTS('bizDays')" style="min-width:110px;text-align:center">Days Unshipped<br><span style="font-weight:400;color:var(--text-dim);font-size:9px">(biz days)</span><span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="dateOrdered" onclick="sortPTS('dateOrdered')" style="min-width:115px">Date Ordered<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="vendorDate" onclick="sortPTS('vendorDate')" style="min-width:115px">Vendor Date<span class="sort-arrow"></span></th>
-              <th class="sort-th" data-col="shipped" onclick="sortPTS('shipped')" style="min-width:85px;text-align:center">Shipped<span class="sort-arrow"></span></th>
-              <th style="min-width:170px">Install Notes</th>
-              <th class="sort-th" data-col="trackingNumber" onclick="sortPTS('trackingNumber')" style="min-width:200px">Tracking Number<span class="sort-arrow"></span></th>
-              <th style="min-width:160px">Remarks</th>
-            </tr></thead>
-            <tbody id="poles-to-ship-table">
-              <tr><td colspan="16"><div class="empty-state" style="padding:32px"><div class="empty-icon">🚚</div><div class="empty-title">No pole orders yet</div><div class="empty-sub">Paid Base Sales and active WS Orders with pole items appear here automatically</div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- ── SECTION 3: 3ft EXTENSION POLES ── -->
-      <div class="inv-block" style="margin-top:24px">
-        <div class="inv-block-head">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="inv-block-title">📏 3' Extension Poles to Ship Out</div>
-              <span class="ct-badge">Manual</span>
+        <!-- ── SUB-PANEL: Poles to Ship ── -->
+        <div class="inv-sub-panel active" id="inv-sub-pts">
+          <div class="inv-block" style="border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg);border-top:none">
+            <div class="inv-block-head">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div class="inv-block-title">🚚 Poles to Ship</div>
+                  <span class="ct-badge" style="background:var(--green-dim);color:var(--green);border-color:rgba(34,197,94,0.3)">Auto from Paid Orders · Poles Only</span>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Filters WS Orders &amp; Base Sales for pole items · All fields editable · Click column header to sort</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <button class="btn btn-sm" onclick="openPolesToShipImport()">↓ Import CSV/Excel</button>
+                <button class="btn btn-sm" id="inv-pts-sheets-btn" onclick="toggleInvPTSSheetsPanel()">📊 Google Sheets</button>
+                <button class="btn btn-sm" onclick="pushPTSToSheets()">↑ Push to Sheets</button>
+              </div>
             </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Track 3-foot extension pole shipments — add rows manually</div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-sm" onclick="openExtPolesImport()">↓ Import</button>
-            <button class="btn btn-sm btn-primary" onclick="addExtPoleRow()">+ Add Row</button>
+            <div class="inv-sheets-panel" id="inv-pts-sheets-panel">
+              <div class="sheets-status-row">
+                <div class="sheets-dot" id="inv-pts-sheets-dot"></div>
+                <span id="inv-pts-sheets-status" style="color:var(--text-muted);font-size:11px">Not connected</span>
+              </div>
+              <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.5">Connect a Google Sheet to sync Poles to Ship records.</div>
+              <input type="text" id="inv-pts-sheets-url" placeholder="https://script.google.com/macros/s/..." style="font-family:'DM Sans',sans-serif;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);width:100%;outline:none;margin-bottom:4px">
+              <button class="sheets-btn go" onclick="saveInvPTSSheetsWebhook()">💾 Save &amp; Test</button>
+              <button class="sheets-btn" onclick="pushPTSToSheets()" style="margin-top:4px">↑ Push All Pole Orders Now</button>
+            </div>
+            <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+              <table style="min-width:1600px" id="pts-table">
+                <thead><tr>
+                  <th class="del-cell" style="position:sticky;left:0;z-index:3;background:var(--navy-light)" title="Delete row"></th>
+                  <th class="sort-th" data-col="source" onclick="sortPTS('source')" style="min-width:120px;position:sticky;left:32px;z-index:3;background:var(--navy-light)">Source<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="name" onclick="sortPTS('name')" style="min-width:150px;position:sticky;left:152px;z-index:3;background:var(--navy-light);border-right:2px solid var(--border)">Name<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="systemType" onclick="sortPTS('systemType')" style="min-width:140px">System Type<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="mountType" onclick="sortPTS('mountType')" style="min-width:130px">Mount Type<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="description" onclick="sortPTS('description')" style="min-width:190px">Description<br><span style="font-weight:400;color:var(--text-dim);font-size:9px">Netting · Dimension mix</span><span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="coating" onclick="sortPTS('coating')" style="min-width:115px">Coating<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="qty" onclick="sortPTS('qty')" style="min-width:60px;text-align:center">Qty<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="poleStatus" onclick="sortPTS('poleStatus')" style="min-width:165px">Status<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="bizDays" onclick="sortPTS('bizDays')" style="min-width:110px;text-align:center">Days Unshipped<br><span style="font-weight:400;color:var(--text-dim);font-size:9px">(biz days)</span><span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="dateOrdered" onclick="sortPTS('dateOrdered')" style="min-width:115px">Date Ordered<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="vendorDate" onclick="sortPTS('vendorDate')" style="min-width:115px">Vendor Date<span class="sort-arrow"></span></th>
+                  <th class="sort-th" data-col="shipped" onclick="sortPTS('shipped')" style="min-width:85px;text-align:center">Shipped<span class="sort-arrow"></span></th>
+                  <th style="min-width:170px">Install Notes</th>
+                  <th class="sort-th" data-col="trackingNumber" onclick="sortPTS('trackingNumber')" style="min-width:200px">Tracking Number<span class="sort-arrow"></span></th>
+                  <th style="min-width:160px">Remarks</th>
+                </tr></thead>
+                <tbody id="poles-to-ship-table">
+                  <tr><td colspan="16"><div class="empty-state" style="padding:32px"><div class="empty-icon">🚚</div><div class="empty-title">No pole orders yet</div><div class="empty-sub">Paid Base Sales and active WS Orders with pole items appear here automatically</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
-          <table style="min-width:800px">
-            <thead><tr>
-              <th style="min-width:140px">Name</th>
-              <th style="min-width:110px">Coating</th>
-              <th style="min-width:58px;text-align:center">Qty</th>
-              <th style="min-width:78px;text-align:center">Shipped</th>
-              <th style="min-width:120px">Date Ordered</th>
-              <th style="min-width:170px">Remarks</th>
-              <th style="min-width:36px"></th>
-            </tr></thead>
-            <tbody id="ext-poles-table">
-              <tr><td colspan="7"><div class="empty-state" style="padding:24px"><div class="empty-icon">📏</div><div class="empty-title">No extension pole rows yet</div><div class="empty-sub">Click "+ Add Row" to add one</div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- ── SECTION 4: FOR INSTALL ── -->
-      <div class="inv-block" style="margin-top:24px">
-        <div class="inv-block-head">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="inv-block-title">🔧 For Install</div>
-              <span class="ct-badge" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(167,139,250,0.3)">Auto from orders with install notes</span>
+        <!-- ── SUB-PANEL: 3ft Extension Poles ── -->
+        <div class="inv-sub-panel" id="inv-sub-ext" style="display:none">
+          <div class="inv-block" style="border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg);border-top:none">
+            <div class="inv-block-head">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="inv-block-title">📏 3' Extension Poles to Ship Out</div>
+                  <span class="ct-badge">Manual</span>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Track 3-foot extension pole shipments — add rows manually or import</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <button class="btn btn-sm" onclick="openExtPolesImport()">↓ Import CSV/Excel</button>
+                <button class="btn btn-sm btn-primary" onclick="addExtPoleRow()">+ Add Row</button>
+              </div>
             </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Auto-added when an order notes mention installation · Manually add below</div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-sm" onclick="openInstallImport()">↓ Import</button>
-            <button class="btn btn-sm btn-primary" onclick="addInstallRow()">+ Add Row</button>
+            <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+              <table style="min-width:800px" id="ext-poles-table-wrap">
+                <thead><tr>
+                  <th style="min-width:140px">Name</th>
+                  <th style="min-width:110px">Coating</th>
+                  <th style="min-width:58px;text-align:center">Qty</th>
+                  <th style="min-width:78px;text-align:center">Shipped</th>
+                  <th style="min-width:120px">Date Ordered</th>
+                  <th style="min-width:170px">Remarks</th>
+                  <th style="min-width:36px"></th>
+                </tr></thead>
+                <tbody id="ext-poles-table">
+                  <tr><td colspan="7"><div class="empty-state" style="padding:24px"><div class="empty-icon">📏</div><div class="empty-title">No extension pole rows yet</div><div class="empty-sub">Click "+ Add Row" to add one</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
-          <table style="min-width:1350px">
-            <thead><tr>
-              <th style="min-width:140px">Name</th>
-              <th style="min-width:160px">Description</th>
-              <th style="min-width:110px">Coating</th>
-              <th style="min-width:58px;text-align:center">Qty</th>
-              <th style="min-width:200px">Address</th>
-              <th style="min-width:130px">Contact</th>
-              <th style="min-width:110px;text-align:center">Install Sheet</th>
-              <th style="min-width:120px">Date Ordered</th>
-              <th style="min-width:170px">Remarks</th>
-              <th style="min-width:36px"></th>
-            </tr></thead>
-            <tbody id="install-table">
-              <tr><td colspan="10"><div class="empty-state" style="padding:24px"><div class="empty-icon">🔧</div><div class="empty-title">No install orders yet</div><div class="empty-sub">Orders with install notes auto-appear here, or click "+ Add Row"</div></div></td></tr>
-            </tbody>
-          </table>
+
+        <!-- ── SUB-PANEL: For Install ── -->
+        <div class="inv-sub-panel" id="inv-sub-install" style="display:none">
+          <div class="inv-block" style="border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg);border-top:none">
+            <div class="inv-block-head">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="inv-block-title">🔧 For Install</div>
+                  <span class="ct-badge" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(167,139,250,0.3)">Auto from orders with install notes</span>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Auto-added when an order notes mention installation · Manually add below</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <button class="btn btn-sm" onclick="openInstallImport()">↓ Import CSV/Excel</button>
+                <button class="btn btn-sm btn-primary" onclick="addInstallRow()">+ Add Row</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+              <table style="min-width:1350px" id="install-table-wrap">
+                <thead><tr>
+                  <th style="min-width:140px">Name</th>
+                  <th style="min-width:160px">Description</th>
+                  <th style="min-width:110px">Coating</th>
+                  <th style="min-width:58px;text-align:center">Qty</th>
+                  <th style="min-width:200px">Address</th>
+                  <th style="min-width:130px">Contact</th>
+                  <th style="min-width:110px;text-align:center">Install Sheet</th>
+                  <th style="min-width:120px">Date Ordered</th>
+                  <th style="min-width:170px">Remarks</th>
+                  <th style="min-width:36px"></th>
+                </tr></thead>
+                <tbody id="install-table">
+                  <tr><td colspan="10"><div class="empty-state" style="padding:24px"><div class="empty-icon">🔧</div><div class="empty-title">No install orders yet</div><div class="empty-sub">Orders with install notes auto-appear here, or click "+ Add Row"</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+
+      </div><!-- end poles sub-tabs -->
 
       <div class="tab-footer">
         <div class="tab-footer-left">
-          <button class="btn-clear" onclick="confirmClear('inventory','asn_poles_inv','Poles Inventory (resets to defaults)')">🗑 Clear Inventory Data</button>
-          
+          <button class="btn-clear" onclick="confirmClear('inventory','asn_poles_inv','Poles Inventory (resets to defaults')">🗑 Clear Inventory Data</button>
         </div>
         <div class="tab-footer-right">
           <span class="autosave-pill"><span class="as-dot"></span> Autosaved</span>
@@ -3602,7 +3626,7 @@ const PAGE_TITLES={
   'net-info':['Lead Net Info','Net specs — mark Estimate Done to trigger follow-up workflow'],
   'est-followup':['Estimate Follow-Up','Track sent estimates and automatic follow-up intervals'],
   'invoice':['Invoice','Track invoice status, payments, and follow-up schedule'],
-  'base-sale':['Job Order List / Base Sale','Completed sales — auto-populated when invoice is paid'],
+  'base-sale':['Base Sale','Completed sales — auto-populated when invoice is paid'],
   'purchase-order':['Purchase Orders','Auto-generated POs from Base Sale records · Editable · PDF & Excel export'],
   'how-found':['How Did They Find Us','Marketing source and keyword analytics'],
   'ws-order':['WS Order','Website orders — paste from sheet, auto-extract name & due date'],
@@ -5312,28 +5336,17 @@ function renderBaseSale(){
     <tr data-bs-id="${bs.id}">
       <td><input type="text" class="inline-edit" value="${(bs.jobNumber||'').replace(/"/g,'&quot;')}" placeholder="Job #" style="min-width:60px;font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:12px" onchange="updateBS('${bs.id}','jobNumber',this.value)"></td>
       <td style="min-width:160px">
-        <input type="text" class="inline-edit" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;font-weight:500" onchange="updateBS('${bs.id}','customerName',this.value)">
+        <input type="text" class="inline-edit" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;font-weight:500;margin-bottom:3px" onchange="updateBS('${bs.id}','customerName',this.value)">
+        <input type="text" class="inline-edit" value="${companyVal.replace(/"/g,'&quot;')}" placeholder="Company (optional)" style="width:100%;font-size:11px;color:var(--text-muted)" onchange="updateBS('${bs.id}','company',this.value)">
       </td>
       <td>
         <select class="inline-edit" style="min-width:110px;padding:5px 8px;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);color:${statusColor};font-weight:600" onchange="updateBS('${bs.id}','status',this.value);renderBaseSale()">
           ${statusOpts}
         </select>
       </td>
-      <td style="min-width:220px;max-width:280px">
-        <div class="bs-note-wrap" style="background:var(--surface-raised);border:1px solid var(--border);border-radius:6px;padding:7px 9px;position:relative;cursor:pointer" onclick="this.querySelector('.bs-note-editor').style.display=this.querySelector('.bs-note-editor').style.display==='none'?'block':'none';this.querySelector('.bs-note-view').style.display=this.querySelector('.bs-note-view').style.display==='none'?'flex':'none'">
-          <div class="bs-note-view" style="display:flex;flex-direction:column;gap:4px">
-            ${descLine1?`<div style="display:flex;align-items:flex-start;gap:5px"><span style="font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;margin-top:1px;min-width:38px">NET</span><span style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;line-height:1.4">${descLine1.replace(/</g,'&lt;')}</span></div>`:`<div style="font-size:11px;color:var(--text-dim);font-style:italic">No netting info</div>`}
-            ${descLine2?`<div style="display:flex;align-items:flex-start;gap:5px"><span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;margin-top:1px;min-width:38px">POLE</span><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;line-height:1.4">${descLine2.replace(/</g,'&lt;')}</span></div>`:''}
-            <span style="position:absolute;top:5px;right:6px;font-size:9px;color:var(--text-dim)">✎</span>
-          </div>
-          <div class="bs-note-editor" style="display:none" onclick="event.stopPropagation()">
-            <div style="font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Netting Info</div>
-            <input type="text" class="inline-edit" value="${descLine1.replace(/"/g,'&quot;')}" placeholder="Netting type · Dimension" style="width:100%;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:6px" onchange="(function(el){const l2=el.closest('.bs-note-editor').querySelector('.bs-desc-line2');updateBS('${bs.id}','description',el.value+(l2&&l2.value?'\n'+l2.value:''));const view=el.closest('.bs-note-wrap').querySelector('.bs-note-view');view.querySelectorAll('span[style*=DM\\ Mono]')[0]&&(view.querySelectorAll('span[style*=DM\\ Mono]')[0].textContent=el.value)})(this)">
-            <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Pole Info</div>
-            <input type="text" class="inline-edit bs-desc-line2" value="${descLine2.replace(/"/g,'&quot;')}" placeholder="Pole size · Coating" style="width:100%;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" onchange="(function(el){const l1=el.closest('.bs-note-editor').querySelector('input:not(.bs-desc-line2)');updateBS('${bs.id}','description',(l1?l1.value:'')+'\n'+el.value)})(this)">
-            <div style="text-align:right;margin-top:6px"><button style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:var(--accent);color:#fff;cursor:pointer" onclick="const w=this.closest('.bs-note-wrap');w.querySelector('.bs-note-editor').style.display='none';w.querySelector('.bs-note-view').style.display='flex';renderBaseSale()">Done</button></div>
-          </div>
-        </div>
+      <td style="min-width:200px">
+        <input type="text" class="inline-edit" value="${descLine1.replace(/"/g,'&quot;')}" placeholder="Netting type · Dimension" style="width:100%;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:3px" onchange="(function(el){const l2=el.closest('td').querySelector('.bs-desc-line2');updateBS('${bs.id}','description',el.value+(l2&&l2.value?'\n'+l2.value:''))})(this)">
+        <input type="text" class="inline-edit bs-desc-line2" value="${descLine2.replace(/"/g,'&quot;')}" placeholder="Pole size · Coating" style="width:100%;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" onchange="(function(el){const l1=el.closest('td').querySelector('input:not(.bs-desc-line2)');updateBS('${bs.id}','description',(l1?l1.value:'')+'\n'+el.value)})(this)">
       </td>
       <td><input type="text" class="inline-edit" value="${amountVal.replace(/"/g,'&quot;')}" placeholder="e.g. $8,500" style="min-width:90px;color:var(--green);font-weight:600" onchange="updateBS('${bs.id}','amount',this.value);updateBS('${bs.id}','totalSale',this.value)"></td>
       <td>
@@ -9736,8 +9749,7 @@ switchTab = function(tab) {
     if (tab === 'inventory') {
       initEditableHeaders('poles-inventory-table');
       initEditableHeaders('pts-table');
-      // Also ext-poles and install tables
-      makeSortableTable('ext-poles-table-container');
+      // ext-poles and install are handled via switchInvSubTab
     }
     if (tab === 'net-info') {
       addDeleteToNetInfo();
@@ -13433,6 +13445,8 @@ function makeRowsDraggable(tableOrTbody) {
       panel.querySelectorAll('table').forEach(function(tbl) {
         // Skip WS order table from row drag init via tmsInitTab - handled by renderWSOrders wrapper
         if (tbl.querySelector('tbody#ws-order-table') || tbl.id === 'ws-preview-table') return;
+        // ext-poles and install are enhanced explicitly via switchInvSubTab
+        if (tbl.id === 'ext-poles-table-wrap' || tbl.id === 'install-table-wrap') return;
         makeRowsDraggable(tbl);
       });
     }, 350);
@@ -13535,6 +13549,78 @@ setTimeout(function() {
           if (tbl) initColDragForTable(tbl);
         }
       }, 250);
+    }
+  };
+})();
+
+
+// ════════════════════════════════════════════════════════════
+//  INVENTORY SUB-TABS  (🚚 Poles to Ship | 📏 Ext Poles | 🔧 Install)
+// ════════════════════════════════════════════════════════════
+
+function switchInvSubTab(name, btn) {
+  // Update tab buttons
+  document.querySelectorAll('#inv-sub-tab-bar .inv-sub-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Show/hide panels
+  document.querySelectorAll('.inv-sub-panel').forEach(p => {
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
+  const panel = document.getElementById('inv-sub-' + name);
+  if (panel) {
+    panel.style.display = '';
+    panel.classList.add('active');
+  }
+
+  // Re-render the active sub-panel + TMS init for drag/edit
+  setTimeout(function() {
+    if (name === 'pts') {
+      renderPolesToShip();
+      var t = document.getElementById('pts-table');
+      if (t) { initColDragForTable(t); initEditableHeaders('pts-table'); makeRowsDraggable(t); }
+    }
+    if (name === 'ext') {
+      renderExtPoles();
+      var t = document.getElementById('ext-poles-table-wrap');
+      if (t) {
+        if (!t.getAttribute('data-tms-init')) enhanceExistingTable(t, 'inventory');
+        initColDragForTable(t);
+        initEditableHeaders('ext-poles-table-wrap');
+        makeRowsDraggable(t);
+      }
+    }
+    if (name === 'install') {
+      renderInstallRows();
+      var t = document.getElementById('install-table-wrap');
+      if (t) {
+        if (!t.getAttribute('data-tms-init')) enhanceExistingTable(t, 'inventory');
+        initColDragForTable(t);
+        initEditableHeaders('install-table-wrap');
+        makeRowsDraggable(t);
+      }
+    }
+  }, 80);
+}
+
+// On inventory tab open — init the active sub-tab (default: pts)
+(function() {
+  var _prev = switchTab;
+  switchTab = function(tab) {
+    _prev(tab);
+    if (tab === 'inventory') {
+      setTimeout(function() {
+        // Init poles inventory table TMS
+        var piTable = document.getElementById('poles-inventory-table');
+        if (piTable && !piTable.getAttribute('data-tms-init')) enhanceExistingTable(piTable, 'inventory');
+        if (piTable) { initColDragForTable(piTable); initEditableHeaders('poles-inventory-table'); makeRowsDraggable(piTable); }
+
+        // Init whichever sub-panel is currently active
+        var activeBtn = document.querySelector('#inv-sub-tab-bar .inv-sub-tab.active');
+        var activeName = activeBtn ? activeBtn.dataset.subtab : 'pts';
+        switchInvSubTab(activeName, activeBtn);
+      }, 200);
     }
   };
 })();
