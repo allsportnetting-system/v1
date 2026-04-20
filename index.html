@@ -1501,6 +1501,7 @@
       <div class="section-header">
         <div><div class="section-title">Job Ordered List</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
         <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm btn-primary" onclick="addManualBSRow()">+ Add Row</button>
           <button class="btn-export-tab" onclick="openBaseSaleImport()">↓ Import</button>
           <button class="btn-export-tab" onclick="openTabExport('base-sale')">↑ Export</button>
         </div>
@@ -9622,6 +9623,56 @@ function deleteBaseSale(id) {
   baseSales = baseSales.filter(x => x.id !== id);
   saveBS(); renderBaseSale(); updateBadges();
   toast(`Sale record deleted`, 'info');
+}
+
+function addManualBSRow() {
+  const now = Date.now();
+  const bs = {
+    id: 'bs_manual_' + now,
+    invoiceId: null, estimateId: null, leadId: null,
+    jobNumber: genJobNum ? genJobNum() : '',
+    customerName: '',
+    company: '',
+    status: 'pending',
+    description: '',
+    amount: '', totalSale: '',
+    netPrice: '', polesPrice: '',
+    category: '',
+    jobType: '',
+    location: '',
+    vendor: '',
+    salesOrderPO: '',
+    dateOrdered: fmtDate ? fmtDate(now) : '',
+    shippingOut: '', estimatedShipOut: '',
+    trackingNumber: '',
+    remarks: '', notes: '',
+    dimensions: '', coatingType: '',
+    poleOnly: false,
+    datePaid: now, datePaidText: '',
+    email: '', phone: '',
+    _manual: true
+  };
+  baseSales.unshift(bs);
+  saveBS();
+  updateBadges();
+  // Reset sort so new row shows at top
+  if (typeof bsSortCol !== 'undefined') {
+    bsSortCol = null; bsSortDir = 1;
+    document.querySelectorAll('#tab-base-sale thead th.sort-th').forEach(th => th.classList.remove('asc','desc'));
+  }
+  renderBaseSale();
+  // Scroll to top of table and focus first editable field of new row
+  setTimeout(function() {
+    const tbody = document.getElementById('base-sale-table');
+    if (!tbody) return;
+    const firstRow = tbody.querySelector('tr[data-bs-id]');
+    if (firstRow) {
+      firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const firstInput = firstRow.querySelector('input.inline-edit');
+      if (firstInput) firstInput.focus();
+    }
+  }, 80);
+  toast('New row added at top ✓', 'success', 1800);
 }
 
 // Patch renderHowFound to add delete buttons
