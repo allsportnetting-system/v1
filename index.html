@@ -959,12 +959,25 @@
       <span id="crm-key-icon">⚙</span> <span id="crm-key-label">Configure Method API Key</span>
     </button>
     <div class="crm-config-panel" id="crm-config-panel">
-      <div style="color:var(--text-muted);margin-bottom:6px;line-height:1.4">Paste your Method CRM API key — used for live duplicate detection on every lead submit.</div>
+      <div style="color:var(--text-muted);margin-bottom:8px;line-height:1.4">Method CRM API key — for live duplicate detection and auto-creating contacts.</div>
       <div class="api-key-row">
         <input type="password" id="method-api-key-input" placeholder="method_xxxxxxxxxxxx" value="">
         <button class="btn btn-sm btn-primary" onclick="saveMethodApiKey()">Save</button>
       </div>
-      <div style="margin-top:6px;font-size:10px;color:var(--text-dim)">Key is stored locally in your browser only.</div>
+      <div style="margin-top:10px;color:var(--text-muted);font-size:11px;margin-bottom:4px;font-weight:600">CORS PROXY URL <span style="font-weight:400;color:var(--text-dim)">(required for GitHub Pages)</span></div>
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;line-height:1.5">
+        Browsers block direct calls to Method's API from GitHub Pages (CORS). Paste your Cloudflare Worker URL below — or deploy the one-click worker from the instructions.<br>
+        <span style="color:var(--amber)">Leave blank only if you host this file on the same domain as Method.</span>
+      </div>
+      <div class="api-key-row">
+        <input type="text" id="method-proxy-url-input" placeholder="https://your-worker.workers.dev" value="" style="font-size:11px">
+        <button class="btn btn-sm" onclick="saveMethodProxyUrl()" style="white-space:nowrap">Save</button>
+      </div>
+      <div style="margin-top:6px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="testMethodConnection()" style="font-size:11px;flex:1">🔌 Test Connection</button>
+      </div>
+      <div id="method-test-result" style="margin-top:6px;font-size:10px;display:none"></div>
+      <div style="margin-top:6px;font-size:10px;color:var(--text-dim)">Keys stored locally in your browser only.</div>
     </div>
   </div>
 </aside>
@@ -2621,10 +2634,17 @@
 <script>
 // ===== CLOUD STORAGE CONFIG =====
 const _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
-const JSONBIN_BIN_ID    = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
-const JSONBIN_READ_KEY  = localStorage.getItem('asn_read_key')  || '';
-const JSONBIN_MASTER_KEY= localStorage.getItem('asn_master_key')|| '';
-const JSONBIN_URL = () => `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+// FIX v50: Read keys dynamically at call-time so they work after saveAllCloudConfig()
+// without needing a page reload, and so GitHub Pages / fresh browsers pick up keys
+// entered via the ☁ Cloud Setup modal.
+const JSONBIN_BIN_ID     = _EMBEDDED_BIN_ID; // kept for legacy references; real value read below
+function _getBinId()     { return localStorage.getItem('asn_bin_id')     || _EMBEDDED_BIN_ID; }
+function _getReadKey()   { return localStorage.getItem('asn_read_key')   || ''; }
+function _getMasterKey() { return localStorage.getItem('asn_master_key') || ''; }
+// Shim legacy const references so existing code still compiles
+Object.defineProperty(window, 'JSONBIN_READ_KEY',   { get: _getReadKey   });
+Object.defineProperty(window, 'JSONBIN_MASTER_KEY', { get: _getMasterKey });
+const JSONBIN_URL = () => `https://api.jsonbin.io/v3/b/${_getBinId()}`;
 
 // ===== URL PARAMS =====
 const URL_PARAMS = new URLSearchParams(window.location.search);
@@ -3067,7 +3087,18 @@ let leads = [];
 let estimates = [];
 let invoices = [];
 let baseSales = [];
-let methodApiKey = localStorage.getItem('asn_method_api_key')||'';
+let methodApiKey   = localStorage.getItem('asn_method_api_key') || '';
+// Optional CORS proxy prefix — set via the CRM config panel if Method API calls fail due to CORS.
+// Leave blank to call Method directly (works if Method ever allows your domain).
+// Format: full URL of your proxy, e.g. https://your-worker.workers.dev/method-proxy
+let methodProxyUrl = localStorage.getItem('asn_method_proxy_url') || '';
+function methodFetch(path, opts) {
+  // Route all Method API calls through proxy if configured, otherwise direct.
+  const base = methodProxyUrl
+    ? methodProxyUrl.replace(/\/$/, '') + path
+    : 'https://app.method.me' + path;
+  return fetch(base, opts);
+}
 let selectedLeadId=null, selectedSource='websearch', selectedHow=null, unsaved=false;
 
 const STAGES=['new','contacted','qualified','proposal','followup','closed','declined','dormant'];
@@ -3083,9 +3114,9 @@ let _saveTimer = null;
 let _cloudData = {}; // full cloud state object
 
 async function cloudLoad() {
-  const BIN_ID     = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
-  const MASTER_KEY = localStorage.getItem('asn_master_key')|| '';
-  const READ_KEY   = localStorage.getItem('asn_read_key')  || '';
+  const BIN_ID     = _getBinId();
+  const MASTER_KEY = _getMasterKey();
+  const READ_KEY   = _getReadKey();
 
   function loadFromLocal() {
     leads            = JSON.parse(localStorage.getItem('asn_leads')||'[]');
@@ -3112,7 +3143,7 @@ async function cloudLoad() {
   else if (READ_KEY) headers['X-Access-Key'] = READ_KEY;
 
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10000);
+  const timer = setTimeout(() => ctrl.abort('timeout'), 20000);
   try {
     const res = await fetch('https://api.jsonbin.io/v3/b/'+BIN_ID+'/latest', { headers, signal: ctrl.signal });
     clearTimeout(timer);
@@ -3137,7 +3168,14 @@ async function cloudLoad() {
   } catch(e) {
     clearTimeout(timer);
     showCloudStatus('error','☁ Load failed');
-    toast('Cloud load failed: '+e.message+' — showing local data','error',6000);
+    // Distinguish common error types for clearer user guidance
+    let msg = e.message || String(e);
+    if (msg.includes('403') || msg.includes('Forbidden')) {
+      msg = 'HTTP 403 — invalid or missing API key. Open ☁ Cloud Setup to re-enter your keys.';
+    } else if (e.name === 'AbortError' || msg.includes('abort') || msg.includes('timeout')) {
+      msg = 'Request timed out — check your internet connection or JSONBin status.';
+    }
+    toast('☁ Cloud load failed: ' + msg + ' — showing local data', 'error', 8000);
     loadFromLocal();
     renderAll();
   }
@@ -3165,11 +3203,10 @@ async function cloudSave() {
   localStorage.setItem('asn_ap_vendors', JSON.stringify(apVendors));
   localStorage.setItem('asn_ar_jobs', JSON.stringify(arJobs));
 
-  const _SAVE_BIN  = localStorage.getItem('asn_bin_id')    || _EMBEDDED_BIN_ID;
-  const _SAVE_KEY  = localStorage.getItem('asn_master_key')|| '';
-  if (!_SAVE_BIN || !_SAVE_KEY) { _flashAutosave(); return; }
-  if (false) {
-    // No write key — changes saved locally only
+  const _SAVE_BIN  = _getBinId();
+  const _SAVE_KEY  = _getMasterKey();
+  if (!_SAVE_BIN || !_SAVE_KEY) {
+    // No write key — warn once and save locally only
     showCloudStatus('error', '⚠ No write key — local only');
     if (!window._warnedNoKey) {
       window._warnedNoKey = true;
@@ -3191,7 +3228,11 @@ async function cloudSave() {
     _flashAutosave();
   } catch(e) {
     showCloudStatus('error','☁ Save failed');
-    toast('Cloud save failed — data kept locally','error',4000);
+    let msg = e.message || String(e);
+    if (msg.includes('403') || msg.includes('Forbidden')) {
+      msg = 'HTTP 403 — master key is wrong or expired. Open ☁ Cloud Setup to fix it.';
+    }
+    toast('Push failed: ' + msg + ' — data kept locally', 'error', 6000);
   }
 }
 
@@ -3425,8 +3466,12 @@ function saveAllCloudConfig() {
   const banner = document.getElementById('cloud-setup-banner');
   if (banner) banner.remove();
 
-  toast('✅ Cloud connected! Reloading now…', 'success', 2500);
-  setTimeout(() => location.reload(), 2000);
+  // Reset the no-key warning flag so save works immediately
+  window._warnedNoKey = false;
+
+  toast('✅ Cloud connected! Loading data now…', 'success', 3000);
+  // Re-load cloud data immediately using the new keys (no page reload needed)
+  cloudLoad();
 }
 
 // Keep saveMasterKey as alias for backwards compat
@@ -3929,8 +3974,12 @@ function markUnsaved(){unsaved=true}
 function toggleCrmConfig(){
   const panel=document.getElementById('crm-config-panel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open')&&methodApiKey){
-    document.getElementById('method-api-key-input').value=methodApiKey;
+  if(panel.classList.contains('open')){
+    if(methodApiKey) document.getElementById('method-api-key-input').value=methodApiKey;
+    if(methodProxyUrl) document.getElementById('method-proxy-url-input').value=methodProxyUrl;
+    // Hide test result on open
+    const tr=document.getElementById('method-test-result');
+    if(tr){tr.style.display='none';}
   }
 }
 function saveMethodApiKey(){
@@ -3938,19 +3987,59 @@ function saveMethodApiKey(){
   if(!val){toast('Please enter an API key','error');return;}
   methodApiKey=val;
   localStorage.setItem('asn_method_api_key',val);
-  document.getElementById('crm-config-panel').classList.remove('open');
-  const btn=document.getElementById('crm-settings-toggle');
-  btn.classList.add('configured');
   document.getElementById('crm-key-icon').textContent='✓';
   document.getElementById('crm-key-label').textContent='Method API Key Saved';
   toast('Method CRM API key saved ✓','success');
+}
+function saveMethodProxyUrl(){
+  const val=document.getElementById('method-proxy-url-input').value.trim().replace(/\/$/,'');
+  methodProxyUrl=val;
+  if(val) localStorage.setItem('asn_method_proxy_url',val);
+  else localStorage.removeItem('asn_method_proxy_url');
+  toast(val ? 'Proxy URL saved ✓ — Method calls will route through your worker' : 'Proxy URL cleared — calling Method directly','success');
+}
+async function testMethodConnection(){
+  const resultEl=document.getElementById('method-test-result');
+  resultEl.style.display='block';
+  resultEl.style.color='var(--text-muted)';
+  resultEl.textContent='⏳ Testing connection…';
+  if(!methodApiKey){
+    resultEl.style.color='var(--red)';
+    resultEl.textContent='✗ No API key set — paste your key above first.';
+    return;
+  }
+  try{
+    const res=await methodFetch('/api/v1/contacts?$top=1',{
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'}
+    });
+    if(res.ok){
+      const data=await res.json();
+      resultEl.style.color='var(--green)';
+      resultEl.textContent='✓ Connected! Method API is working'+(methodProxyUrl?' via proxy':' directly')+'.';
+    } else {
+      const txt=await res.text().catch(()=>'');
+      resultEl.style.color='var(--red)';
+      if(res.status===401||res.status===403){
+        resultEl.textContent='✗ HTTP '+res.status+' — API key is invalid or expired. Check your Method account.';
+      } else {
+        resultEl.textContent='✗ HTTP '+res.status+' — '+txt.slice(0,100);
+      }
+    }
+  }catch(e){
+    resultEl.style.color='var(--red)';
+    if(e.name==='TypeError'||e.message.toLowerCase().includes('fetch')||e.message.toLowerCase().includes('cors')){
+      resultEl.textContent='✗ CORS/Network error — '+(methodProxyUrl?'proxy URL may be wrong or worker is down.':'no proxy configured. Add a Proxy URL above.');
+    } else {
+      resultEl.textContent='✗ Error: '+e.message;
+    }
+  }
 }
 function initCrmKeyState(){
   if(methodApiKey){
     const btn=document.getElementById('crm-settings-toggle');
     btn.classList.add('configured');
     document.getElementById('crm-key-icon').textContent='✓';
-    document.getElementById('crm-key-label').textContent='Method API Key Saved';
+    document.getElementById('crm-key-label').textContent='Method API Key Saved'+(methodProxyUrl?' + Proxy':'');
   }
 }
 
@@ -3962,14 +4051,21 @@ async function checkMethodCRMDuplicate(email){
   // Returns matching contact object or null
   if(!methodApiKey)return null;
   try{
-    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(email)}'`,{
+    // OData filter must NOT encode the spaces/quotes — just the email value itself
+    const emailVal = email.replace(/'/g,"''"); // escape single quotes for OData
+    const res=await methodFetch(`/api/v1/contacts?filter=email eq '${emailVal}'`,{
       headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'}
     });
-    if(!res.ok)return null;
+    if(!res.ok){
+      console.warn('Method duplicate check failed:',res.status, await res.text().catch(()=>''));
+      return null;
+    }
     const data=await res.json();
-    const items=data.value||data.items||data.contacts||[];
+    const items=data.value||data.items||data.contacts||data.data||[];
     if(items.length>0)return items[0];
-  }catch(e){/* network or CORS — fall back to local check only */}
+  }catch(e){
+    console.warn('Method CRM check error (likely CORS — configure proxy in CRM settings):',e.message);
+  }
   return null;
 }
 
@@ -4076,21 +4172,27 @@ async function updateMethodContact(lead){
   if(!methodApiKey) return;
   simulateSync('Updating Method CRM contact…');
   try{
-    // First find the contact ID by email
-    const res=await fetch(`https://app.method.me/api/v1/contacts?filter=email eq '${encodeURIComponent(lead.email)}'`,{
-      headers:{'Authorization':'Bearer '+methodApiKey}
+    // Find the contact ID by email
+    const emailVal = (lead.email||'').replace(/'/g,"''");
+    const res=await methodFetch(`/api/v1/contacts?filter=email eq '${emailVal}'`,{
+      headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'}
     });
-    if(!res.ok){toast('Could not find Method contact to update','error',3000);return;}
+    if(!res.ok){
+      const errText=await res.text().catch(()=>'');
+      console.warn('Method find contact failed:',res.status,errText);
+      toast('Method CRM: could not find contact ('+res.status+') — lead saved locally','error',4000);
+      return;
+    }
     const data=await res.json();
-    const items=data.value||data.items||data.contacts||[];
-    if(!items.length){toast('Method contact not found for update','error',3000);return;}
-    const contactId=items[0].RecordID||items[0].id;
+    const items=data.value||data.items||data.contacts||data.data||[];
+    if(!items.length){toast('Method contact not found for this email — lead saved locally','error',3000);return;}
+    const contactId=items[0].RecordID||items[0].id||items[0].ID;
     const patch={
       FirstName:lead.first, LastName:lead.last,
       Email:lead.email, Phone:lead.phone||'',
       BillingAddressLine1:lead.address||''
     };
-    const patchRes=await fetch(`https://app.method.me/api/v1/contacts/${contactId}`,{
+    const patchRes=await methodFetch(`/api/v1/contacts/${contactId}`,{
       method:'PATCH',
       headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
       body:JSON.stringify(patch)
@@ -4099,10 +4201,17 @@ async function updateMethodContact(lead){
       toast(`Method CRM contact updated ✓`,'success');
       showCloudStatus('ok','☁ Synced ✓');
     } else {
-      toast('Method CRM update failed — lead saved locally','error',3000);
+      const errText=await patchRes.text().catch(()=>'');
+      console.warn('Method PATCH failed:',patchRes.status,errText);
+      toast('Method CRM update failed ('+patchRes.status+') — lead saved locally','error',3000);
     }
   }catch(e){
-    toast('Method CRM update error: '+e.message,'error',3000);
+    console.warn('Method CRM update error:',e.message);
+    if(e.message.toLowerCase().includes('cors')||e.message.toLowerCase().includes('fetch')||e.message.toLowerCase().includes('network')){
+      toast('Method CRM: CORS blocked — configure proxy URL in CRM settings','error',5000);
+    } else {
+      toast('Method CRM update error: '+e.message,'error',3000);
+    }
   }
 }
 function _commitLead(lead,syncToCRM){
@@ -4134,7 +4243,7 @@ async function createMethodContact(lead){
       LeadSource: lead.source||'',
       Notes: lead.notes||''
     };
-    const res=await fetch('https://app.method.me/api/v1/contacts',{
+    const res=await methodFetch('/api/v1/contacts',{
       method:'POST',
       headers:{'Authorization':'Bearer '+methodApiKey,'Content-Type':'application/json'},
       body:JSON.stringify(payload)
@@ -4143,19 +4252,23 @@ async function createMethodContact(lead){
       const data=await res.json();
       // Store Method contact ID on lead for future updates
       const idx=leads.findIndex(l=>l.id===lead.id);
-      if(idx>=0){leads[idx].methodContactId=data.RecordID||data.id||'';save();}
+      if(idx>=0){leads[idx].methodContactId=data.RecordID||data.id||data.ID||'';leads[idx].crmSynced=true;save();}
       showCloudStatus('ok','☁ Synced ✓');
       toast(`"${lead.first} ${lead.last}" created in Method CRM ✓`,'success');
     } else {
-      const errText=await res.text();
-      console.warn('Method CRM create failed:',errText);
-      toast(`Lead saved — Method CRM sync failed (${res.status})`,'error',4000);
-      document.getElementById('sync-label').textContent='Synced';
+      const errText=await res.text().catch(()=>'');
+      console.warn('Method CRM create failed:',res.status,errText);
+      toast(`Lead saved — Method CRM sync failed (${res.status}): ${errText.slice(0,80)}`,'error',5000);
+      document.getElementById('sync-label').textContent='CRM failed';
     }
   }catch(e){
     console.warn('Method CRM error:',e.message);
-    toast('Lead saved — Method CRM unreachable (CORS? Check API key)','error',4000);
-    document.getElementById('sync-label').textContent='Synced';
+    if(e.message.toLowerCase().includes('cors')||e.message.toLowerCase().includes('fetch')||e.message.toLowerCase().includes('network')||e.name==='TypeError'){
+      toast('Lead saved — Method CRM blocked by CORS. Configure Proxy URL in ⚙ CRM settings.','error',6000);
+    } else {
+      toast('Lead saved — Method CRM error: '+e.message,'error',4000);
+    }
+    document.getElementById('sync-label').textContent='CRM failed';
   }
 }
 function renderRecentLeads(){
