@@ -238,13 +238,6 @@
   #base-sale-table input[type="date"].inline-edit::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
   #base-sale-table .bs-track-link { display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);text-decoration:none;white-space:nowrap; }
   #base-sale-table .bs-track-link:hover { text-decoration:underline; }
-  /* hide number spinners for pcs fields */
-  #base-sale-table input.bs-num-nets::-webkit-outer-spin-button,
-  #base-sale-table input.bs-num-nets::-webkit-inner-spin-button,
-  #base-sale-table input.bs-num-poles::-webkit-outer-spin-button,
-  #base-sale-table input.bs-num-poles::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
-  #base-sale-table input.bs-num-nets,
-  #base-sale-table input.bs-num-poles { -moz-appearance:textfield; }
   /* TAB-LEVEL VIEW-ONLY ENFORCEMENT (toggled via body class) */
   body.tab-view-only .field input, body.tab-view-only .field select, body.tab-view-only .field textarea,
   body.tab-view-only .dp-field input, body.tab-view-only .dp-field select, body.tab-view-only .dp-field textarea,
@@ -896,7 +889,7 @@
     <div class="nav-item" data-tab="net-info"><span class="icon">⊞</span> Lead Net Info<span class="badge badge-amber" id="ni-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="est-followup"><span class="icon">📋</span> Estimate Follow-Up<span class="badge badge-purple" id="ef-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="invoice"><span class="icon">🧾</span> Invoice<span class="badge badge-orange" id="inv-badge" style="display:none">0</span></div>
-    <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Base Sale<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
+    <div class="nav-item" data-tab="base-sale"><span class="icon">💰</span> Job Ordered List<span class="badge badge-green" id="bs-badge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="purchase-order"><span class="icon">🧾</span> Purchase Order<span class="badge badge-amber" id="po-badge" style="display:none">0</span></div>
     <div class="nav-label" style="margin-top:8px">Orders & Stock</div>
     <div class="nav-item" data-tab="ws-order"><span class="icon">🛒</span> WS Order<span class="badge badge-amber" id="ws-badge" style="display:none">0</span></div>
@@ -1022,7 +1015,7 @@
             <input type="checkbox" id="f-pole-only" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer">
             <div>
               <label for="f-pole-only" style="font-size:12px;font-weight:500;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer">Pole Order Only</label>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">When paid → auto-routes to Base Sale &amp; Inventory / Poles tab</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">When paid → auto-routes to Job Ordered List &amp; Inventory / Poles tab</div>
             </div>
           </div>
           <div class="field form-full">
@@ -1506,7 +1499,7 @@
     <!-- BASE SALE -->
     <div class="tab-panel" id="tab-base-sale">
       <div class="section-header">
-        <div><div class="section-title">Base Sale Records</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
+        <div><div class="section-title">Job Ordered List</div><div class="section-sub">Auto-populated when Invoice is Paid · All fields editable inline · Tracking links are clickable</div></div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn-export-tab" onclick="openBaseSaleImport()">↓ Import</button>
           <button class="btn-export-tab" onclick="openTabExport('base-sale')">↑ Export</button>
@@ -1516,7 +1509,7 @@
         <table>
           <thead><tr>
             <th class="sort-th" onclick="sortBS('jobNumber')">Job #<span class="sort-arrow"></span></th>
-            <th class="sort-th" onclick="sortBS('customerName')">Full Name / Company<span class="sort-arrow"></span></th>
+            <th class="sort-th" onclick="sortBS('customerName')">Full Name<span class="sort-arrow"></span></th>
             <th class="sort-th" onclick="sortBS('status')">Status<span class="sort-arrow"></span></th>
             <th>Description</th>
             <th class="sort-th" onclick="sortBS('amount')">Amount<span class="sort-arrow"></span></th>
@@ -1551,7 +1544,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Purchase Orders</div>
-          <div class="section-sub">Auto-generated from Base Sale records · Editable · Export to PDF or Excel</div>
+          <div class="section-sub">Auto-generated from Job Ordered List records · Editable · Export to PDF or Excel</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-sm" onclick="openAddPOModal()" style="background:var(--accent);border-color:var(--accent);color:white">+ New PO</button>
@@ -1568,7 +1561,7 @@
             <th>Ship To</th><th>Status</th><th>Actions</th>
           </tr></thead>
           <tbody id="po-table-body">
-            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No Purchase Orders yet</div><div class="empty-sub">POs are created automatically when a Base Sale is saved, or click "+ New PO"</div></div></td></tr>
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No Purchase Orders yet</div><div class="empty-sub">POs are created automatically when a Job Order is saved, or click "+ New PO"</div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -1807,7 +1800,7 @@
       <div class="section-header" style="margin-bottom:14px">
         <div>
           <div class="section-title">Cold Leads — Email Campaign Tracker</div>
-          <div class="section-sub">Import contacts · auto-match purchases in WS Orders &amp; Base Sales · track conversion per campaign</div>
+          <div class="section-sub">Import contacts · auto-match purchases in WS Orders &amp; Job Orders · track conversion per campaign</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-sm btn-primary" onclick="openCLImportModal()">↓ Import CSV / Excel</button>
@@ -2266,7 +2259,7 @@
                 <th style="min-width:160px">Remarks</th>
               </tr></thead>
               <tbody id="poles-to-ship-table">
-                <tr><td colspan="16"><div class="empty-state" style="padding:32px"><div class="empty-icon">🚚</div><div class="empty-title">No pole orders yet</div><div class="empty-sub">Paid Base Sales and active WS Orders with pole items appear here automatically</div></div></td></tr>
+                <tr><td colspan="16"><div class="empty-state" style="padding:32px"><div class="empty-icon">🚚</div><div class="empty-title">No pole orders yet</div><div class="empty-sub">Paid Job Orders and active WS Orders with pole items appear here automatically</div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -2449,7 +2442,7 @@
       </div>
       <div class="field form-full" style="flex-direction:row;align-items:center;gap:10px;padding:10px 14px;background:var(--navy-light);border-radius:var(--radius);border:1px solid var(--border)">
         <input type="checkbox" id="em-pole-only" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer">
-        <label for="em-pole-only" style="font-size:12px;font-weight:500;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer">Pole Order Only — routes to Base Sale &amp; Inventory / Poles when paid</label>
+        <label for="em-pole-only" style="font-size:12px;font-weight:500;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer">Pole Order Only — routes to Job Ordered List &amp; Inventory / Poles when paid</label>
       </div>
       <div class="field">
         <label>Assigned To</label>
@@ -2757,7 +2750,7 @@ const ALL_TABS = [
   { id: 'net-info', label: '⊞ Lead Net Info' },
   { id: 'est-followup', label: '📋 Estimate Follow-Up' },
   { id: 'invoice', label: '🧾 Invoice' },
-  { id: 'base-sale', label: '💰 Base Sale' },
+  { id: 'base-sale', label: '💰 Job Ordered List' },
   { id: 'purchase-order', label: '🧾 Purchase Order' },
   { id: 'ws-order', label: '🛒 WS Order' },
   { id: 'inventory', label: '📦 Inventory / Poles' },
@@ -3143,7 +3136,7 @@ async function pushLocalToCloud() {
     `• ${localWsOrders.length} WS Orders\n` +
     `• ${localEstimates.length} Estimates\n` +
     `• ${localInvoices.length} Invoices\n` +
-    `• ${localBaseSales.length} Base Sales\n\n` +
+    `• ${localBaseSales.length} Job Orders\n\n` +
     `⚠ This will REPLACE whatever is currently in the cloud with your local data.\n` +
     `Make sure you are the owner and this is the most up-to-date copy.`
   );
@@ -3466,7 +3459,7 @@ function checkLocalDataMigration() {
         <span style="font-size:20px">📤</span>
         <div>
           <div style="font-weight:600;margin-bottom:2px">Local data detected — your cloud is empty or out of date</div>
-          <div style="font-size:11px;opacity:0.85">Found ${localLeads.length} leads, ${localWsOrders.length} WS orders, ${localBs.length} base sales in this browser. Push to cloud so everyone sees it.</div>
+          <div style="font-size:11px;opacity:0.85">Found ${localLeads.length} leads, ${localWsOrders.length} WS orders, ${localBs.length} job orders in this browser. Push to cloud so everyone sees it.</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0">
@@ -3595,14 +3588,14 @@ const PAGE_TITLES={
   'net-info':['Lead Net Info','Net specs — mark Estimate Done to trigger follow-up workflow'],
   'est-followup':['Estimate Follow-Up','Track sent estimates and automatic follow-up intervals'],
   'invoice':['Invoice','Track invoice status, payments, and follow-up schedule'],
-  'base-sale':['Base Sale','Completed sales — auto-populated when invoice is paid'],
-  'purchase-order':['Purchase Orders','Auto-generated POs from Base Sale records · Editable · PDF & Excel export'],
+  'base-sale':['Job Ordered List','Completed sales — auto-populated when invoice is paid'],
+  'purchase-order':['Purchase Orders','Auto-generated POs from Job Ordered List · Editable · PDF & Excel export'],
   'how-found':['How Did They Find Us','Marketing source and keyword analytics'],
   'ws-order':['WS Order','Website orders — paste from sheet, auto-extract name & due date'],
   'inventory':['Inventory / Install / Ship Poles','Poles stock management and pole orders to ship'],
   'ap-tracking':['Accounts Payable','Track vendor bills, aging, payments and outstanding balances'],
   'ar-tracking':['Accounts Receivable','Track customer payments, sub contractor payables, and job balances'],
-  'cold-leads':['Cold Leads — Email Campaign Tracker','Import contacts · auto-match against WS Orders & Base Sales · track conversions']
+  'cold-leads':['Cold Leads — Email Campaign Tracker','Import contacts · auto-match against WS Orders & Job Orders · track conversions']
 };
 
 document.querySelectorAll('.nav-item').forEach(item=>{
@@ -5042,7 +5035,7 @@ function _legacy_renderInvoice(){
     }).join(''):'';
 
     const statusSection=(inv.status==='paid'||inv.status==='declined')?
-      `<div class="auto-arrow"><span>${inv.status==='paid'?'→':'✗'}</span> ${inv.status==='paid'?'Invoice Paid! Sale recorded in Base Sale. <a href="#" onclick="switchTab(\'base-sale\');return false">View Base Sale</a>':'Invoice Declined — lead moved to Declined in Pipeline.'}</div>`:`
+      `<div class="auto-arrow"><span>${inv.status==='paid'?'→':'✗'}</span> ${inv.status==='paid'?'Invoice Paid! Sale recorded in Job Ordered List. <a href="#" onclick="switchTab(\'base-sale\');return false">View Job Ordered List</a>':'Invoice Declined — lead moved to Declined in Pipeline.'}</div>`:`
       <div style="margin-bottom:16px">
         <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">Invoice Status</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -5140,7 +5133,7 @@ function setInvStatus(invId,status){
   } else if(status==='paid'){
     inv.paidDate=now;
     inv.history.push({ts:now,event:'Invoice paid by customer'});
-    toast('Invoice Paid → Creating Base Sale record 🎉','success');
+    toast('Invoice Paid → Creating Job Order record 🎉','success');
     // Auto-move pipeline lead to Accepted Won
     const paidLead=leads.find(x=>x.id===inv.leadId);
     if(paidLead&&paidLead.stage!=='closed'){
@@ -5175,12 +5168,7 @@ function setInvStatus(invId,status){
         totalSale:inv.totalAmount||'',
         datePaid:now,datePaidText:'',estimatedShipOut:'',
         notes:'',
-        email:inv.email||'',phone:inv.phone||'',
-        // description sub-fields for 6-field at-a-glance cell
-        numNets:'',numPoles:'',
-        netTypeSub:inv.netType||l?.netType||'',
-        netDimSub:inv.netDimensions||l?.netDimensions||'',
-        poleSizeSub:l?.poleDimensions||''
+        email:inv.email||'',phone:inv.phone||''
       };
       baseSales.unshift(bs);saveBS();updateBadges();
       // Reset sort so new sale shows at top
@@ -5247,26 +5235,6 @@ function buildBSDescription(inv,l){
   return [line1,line2].filter(Boolean).join('\n');
 }
 
-// updateBSDesc — rebuilds bs.description from the 6 inline sub-fields in the description cell
-function updateBSDesc(bsId,tdEl){
-  const bs=baseSales.find(s=>s.id===bsId);if(!bs)return;
-  const numNets=(tdEl.querySelector('.bs-num-nets')?.value||'').trim();
-  const netType=(tdEl.querySelector('.bs-net-type')?.value||'').trim();
-  const netDim=(tdEl.querySelector('.bs-net-dim')?.value||'').trim();
-  const numPoles=(tdEl.querySelector('.bs-num-poles')?.value||'').trim();
-  const poleSize=(tdEl.querySelector('.bs-pole-size')?.value||'').trim();
-  const coating=(tdEl.querySelector('.bs-coating')?.value||'').trim();
-  // Persist sub-fields
-  bs.numNets=numNets; bs.numPoles=numPoles;
-  bs.netTypeSub=netType; bs.netDimSub=netDim;
-  bs.poleSizeSub=poleSize; bs.coatingType=coating;
-  // Build merged description string (NET line \n POLE line)
-  const netParts=[]; if(numNets)netParts.push(numNets+' pcs'); if(netType)netParts.push(netType); if(netDim)netParts.push(netDim);
-  const poleParts=[]; if(numPoles)poleParts.push(numPoles+' pcs'); if(poleSize)poleParts.push(poleSize); if(coating)poleParts.push(coating);
-  bs.description=[netParts.join(' · '),poleParts.join(' · ')].filter(Boolean).join('\n');
-  saveBS();
-}
-
 function extractCityStateZip(address){
   if(!address)return'';
   const parts=address.split(',').map(s=>s.trim()).filter(Boolean);
@@ -5316,19 +5284,12 @@ function renderBaseSale(){
     const dateOrderedVal=bs.dateOrdered||bs.datePaidText||fmtDate(bs.datePaid)||'';
     // Shipping Out: date input
     const shipOutVal=bs.shippingOut||bs.estimatedShipOut||'';
-    // Description — 6-field at-a-glance: numNets · netType · netDim | numPoles · poleSize · coating
-    const _lead=leads.find(lx=>lx.id===bs.leadId)||{};
+    // Description — split into two display lines: [0] netting+dim, [1] pole+coating
     const descRaw=bs.description||(bs.dimensions?(bs.dimensions+(bs.coatingType?' · '+bs.coatingType:'')):'');
     const descLines=descRaw.split('\n');
-    const _line1=descLines[0]||'';
-    const _line2=descLines[1]||'';
-    // Resolve each sub-field — prefer stored bs fields, fall back to lead, then parse description
-    const _numNets=(bs.numNets||'').toString().replace(/"/g,'&quot;');
-    const _numPoles=(bs.numPoles||'').toString().replace(/"/g,'&quot;');
-    const _netType=(bs.netTypeSub||_lead.netType||_line1.split(' · ')[0]||'').replace(/"/g,'&quot;');
-    const _netDim=(bs.netDimSub||_lead.netDimensions||_line1.split(' · ').slice(1).join(' · ')||'').replace(/"/g,'&quot;');
-    const _poleSize=(bs.poleSizeSub||_lead.poleDimensions||_line2.split(' · ')[0]||'').replace(/"/g,'&quot;');
-    const _coating=(bs.coatingType||_line2.split(' · ').slice(1).join(' · ')||'').replace(/"/g,'&quot;');
+    const descLine1=descLines[0]||'';
+    const descLine2=descLines[1]||'';
+    const descVal=descRaw; // keep full value for inline edit
     // Full name / company
     const nameVal=bs.customerName||'';
     const companyVal=bs.company||'';
@@ -5337,31 +5298,15 @@ function renderBaseSale(){
     <tr data-bs-id="${bs.id}">
       <td><input type="text" class="inline-edit" value="${(bs.jobNumber||'').replace(/"/g,'&quot;')}" placeholder="Job #" style="min-width:60px;font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:12px" onchange="updateBS('${bs.id}','jobNumber',this.value)"></td>
       <td style="min-width:160px">
-        <input type="text" class="inline-edit" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;font-weight:500;margin-bottom:3px" onchange="updateBS('${bs.id}','customerName',this.value)">
-        <input type="text" class="inline-edit" value="${companyVal.replace(/"/g,'&quot;')}" placeholder="Company (optional)" style="width:100%;font-size:11px;color:var(--text-muted)" onchange="updateBS('${bs.id}','company',this.value)">
+        <input type="text" class="inline-edit" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="Full name" style="width:100%;font-weight:500" onchange="updateBS('${bs.id}','customerName',this.value)">
       </td>
       <td>
         <select class="inline-edit" style="min-width:110px;padding:5px 8px;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);color:${statusColor};font-weight:600" onchange="updateBS('${bs.id}','status',this.value);renderBaseSale()">
           ${statusOpts}
         </select>
       </td>
-      <td style="min-width:260px;padding:6px 8px">
-        <!-- NET row -->
-        <div style="display:flex;align-items:center;gap:3px;margin-bottom:5px">
-          <span style="font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(45,126,247,0.25);border-radius:4px;padding:1px 5px;flex-shrink:0;min-width:28px;text-align:center">NET</span>
-          <input type="number" class="inline-edit bs-num-nets" value="${_numNets}" placeholder="#" min="0" title="# pcs of net" style="width:38px;text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--accent);padding:3px 4px;flex-shrink:0" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
-          <span style="font-size:9px;color:var(--text-dim);flex-shrink:0">pcs</span>
-          <input type="text" class="inline-edit bs-net-type" value="${_netType}" placeholder="Net type" title="Net type" style="flex:1.2;min-width:0;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
-          <input type="text" class="inline-edit bs-net-dim" value="${_netDim}" placeholder="Net dim" title="Net dimension" style="flex:1;min-width:0;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
-        </div>
-        <!-- POLE row -->
-        <div style="display:flex;align-items:center;gap:3px">
-          <span style="font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--text-muted);background:var(--surface-raised);border:1px solid var(--border);border-radius:4px;padding:1px 4px;flex-shrink:0;min-width:28px;text-align:center">POLE</span>
-          <input type="number" class="inline-edit bs-num-poles" value="${_numPoles}" placeholder="#" min="0" title="# pcs of poles" style="width:38px;text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-muted);padding:3px 4px;flex-shrink:0" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
-          <span style="font-size:9px;color:var(--text-dim);flex-shrink:0">pcs</span>
-          <input type="text" class="inline-edit bs-pole-size" value="${_poleSize}" placeholder="Pole size" title="Pole size" style="flex:1.2;min-width:0;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
-          <input type="text" class="inline-edit bs-coating" value="${_coating}" placeholder="Coating" title="Coating type" style="flex:1;min-width:0;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
-        </div>
+      <td style="min-width:220px">
+        <textarea class="inline-edit" placeholder="Order description — netting type, dimensions, pole size, coating…" style="width:100%;font-size:11px;color:var(--text);font-family:'DM Mono',monospace;resize:vertical;min-height:60px;line-height:1.55;padding:6px 8px;border-radius:var(--radius);border:1px solid var(--border);background:var(--input-bg);outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onchange="updateBS('${bs.id}','description',this.value)">${descVal.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
       </td>
       <td><input type="text" class="inline-edit" value="${amountVal.replace(/"/g,'&quot;')}" placeholder="e.g. $8,500" style="min-width:90px;color:var(--green);font-weight:600" onchange="updateBS('${bs.id}','amount',this.value);updateBS('${bs.id}','totalSale',this.value)"></td>
       <td>
@@ -5623,7 +5568,7 @@ const TAB_EXPORT_META = {
   'net-info':    { title:'Lead Net Info',        sub:'Export net specs and pole dimensions' },
   'est-followup':{ title:'Estimate Follow-Ups', sub:'Export estimate follow-up tracker records' },
   'invoice':     { title:'Invoices',             sub:'Export all invoice records' },
-  'base-sale':   { title:'Base Sale Records',    sub:'Export paid base sale records' },
+  'base-sale':   { title:'Job Ordered List',    sub:'Export paid base sale records' },
   'how-found':   { title:'How Did They Find Us', sub:'Export source / keyword attribution data' },
   'ws-order':    { title:'WS Orders',            sub:'Export all wholesale/WS order records' },
   'inventory':   { title:'Inventory / Poles',    sub:'Export poles inventory and poles-to-ship data' },
@@ -5713,7 +5658,7 @@ const TAB_EXPORT_SCHEMA = {
     ]
   },
   'base-sale': {
-    label:'Base Sale Records', filename:'asn_base_sales', sheetName:'Base Sales',
+    label:'Job Ordered List', filename:'asn_base_sales', sheetName:'Base Sales',
     getData:()=>baseSales,
     cols:[
       {key:'jobNum',      header:'Job #',               get:bs=>bs.jobNumber||''},
@@ -7204,7 +7149,7 @@ function renderPolesToShip(){
   }
 
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="16"><div class="empty-state" style="padding:32px"><div class="empty-icon">🚚</div><div class="empty-title">No pole orders yet</div><div class="empty-sub">Paid Base Sales with pole items and WS Orders with pole SKUs/dimensions appear here automatically</div></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="16"><div class="empty-state" style="padding:32px"><div class="empty-icon">🚚</div><div class="empty-title">No pole orders yet</div><div class="empty-sub">Paid Job Orders with pole items and WS Orders with pole SKUs/dimensions appear here automatically</div></div></td></tr>`;
     return;
   }
 
@@ -8366,7 +8311,7 @@ const IMPORT_FIELDS = {
     ]
   },
   'base-sale': {
-    title: '↓ Import Base Sale Records',
+    title: '↓ Import Job Ordered List Records',
     desc: 'Map your columns to sale fields. Only <strong>Customer Name</strong> is required.',
     required: ['customerName'],
     fields: [
@@ -9284,7 +9229,7 @@ renderInvoice=function(){
       </div>`;
     }).join(''):'';
     const statusSection=(inv.status==='paid'||inv.status==='declined')?
-      `<div class="auto-arrow"><span>${inv.status==='paid'?'→':'✗'}</span> ${inv.status==='paid'?'Invoice Paid! Sale recorded in Base Sale. <a href="#" onclick="switchTab(\'base-sale\');return false">View Base Sale</a>':'Invoice Declined — lead moved to Declined in Pipeline.'}</div>`:`
+      `<div class="auto-arrow"><span>${inv.status==='paid'?'→':'✗'}</span> ${inv.status==='paid'?'Invoice Paid! Sale recorded in Job Ordered List. <a href="#" onclick="switchTab(\'base-sale\');return false">View Job Ordered List</a>':'Invoice Declined — lead moved to Declined in Pipeline.'}</div>`:`
       <div style="margin-bottom:16px">
         <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">Invoice Status</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -11778,7 +11723,7 @@ function renderPurchaseOrders() {
   const tbody = document.getElementById('po-table-body');
   if (!tbody) return;
   if (!purchaseOrders.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No Purchase Orders yet</div><div class="empty-sub">POs are created automatically when a Base Sale is saved, or click "+ New PO"</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No Purchase Orders yet</div><div class="empty-sub">POs are created automatically when a Job Order is saved, or click "+ New PO"</div></div></td></tr>`;
     return;
   }
   tbody.innerHTML = purchaseOrders.map(po => {
