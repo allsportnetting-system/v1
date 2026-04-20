@@ -772,6 +772,14 @@
   .ap-ph-table td{padding:8px 12px;border-bottom:1px solid var(--border-light);vertical-align:middle}
   .ap-ph-table tr:last-child td{border-bottom:none}
   .ap-ph-table tr:hover td{background:rgba(22,163,74,0.04)}
+  /* AR INLINE EDITING */
+  #ar-table input[type="text"],#ar-table input:not([type]),#ar-table input[type="date"]{font-family:'DM Sans',sans-serif;font-size:12px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);outline:none;width:100%;padding:2px 0;transition:all 0.15s;cursor:pointer}
+  #ar-table input:hover{border-bottom-color:var(--border)}
+  #ar-table input:focus{border-bottom-color:var(--accent);background:var(--accent-glow);border-radius:2px;padding:2px 4px;cursor:text}
+  #ar-table select{font-family:'DM Sans',sans-serif;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:3px 6px;color:var(--text);outline:none;cursor:pointer;transition:border-color 0.15s}
+  #ar-table select:focus{border-color:var(--accent)}
+  #ar-table td{vertical-align:middle}
+
   .ap-ph-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 
   /* Dropbox link input */
@@ -11586,9 +11594,20 @@ function renderAR(){
   }
 
   const rowStyle='border-bottom:1px solid var(--border-light)';
-  const tdR='padding:8px 10px;text-align:right;font-family:"DM Mono",monospace;font-size:12px;color:var(--text)';
-  const tdL='padding:8px 10px;text-align:left;font-size:12px;color:var(--text)';
-  const tdM='padding:8px 10px;text-align:left;color:var(--text-muted);font-size:11px';
+  const inStyle='font-family:\'DM Sans\',sans-serif;font-size:12px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);outline:none;width:100%;padding:2px 0;transition:border-color 0.15s;cursor:pointer;min-width:80px';
+  const inMonoStyle=inStyle+'font-family:\'DM Mono\',monospace;text-align:right;';
+  const inDateStyle='font-family:\'DM Sans\',sans-serif;font-size:11px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text-muted);outline:none;width:100%;padding:2px 0;transition:border-color 0.15s;cursor:pointer;min-width:100px';
+  const selStyle='font-family:\'DM Sans\',sans-serif;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:3px 6px;color:var(--text);outline:none;cursor:pointer;width:100%;min-width:110px';
+
+  // Helper: editable text input cell
+  const inp=(jid,field,val,mono=false,placeholder='')=>`<input style="${mono?inMonoStyle:inStyle}" value="${String(val||'').replace(/"/g,'&quot;')}" placeholder="${placeholder}" onchange="arUpdate('${jid}','${field}',this.value)" onfocus="this.style.borderBottomColor='var(--accent)';this.style.background='var(--accent-glow)';this.style.paddingLeft='4px'" onblur="this.style.borderBottomColor='transparent';this.style.background='transparent';this.style.paddingLeft='0'">`;
+  // Helper: editable date input cell
+  const dateInp=(jid,field,val)=>`<input type="date" style="${inDateStyle}" value="${val||''}" onchange="arUpdate('${jid}','${field}',this.value)" onfocus="this.style.borderBottomColor='var(--accent)'" onblur="this.style.borderBottomColor='transparent'">`;
+  // Helper: select dropdown
+  const sel=(jid,field,options,val,colorFn)=>{
+    const opts=options.map(o=>`<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('');
+    return`<select style="${selStyle}${colorFn?';'+colorFn(val):''}" onchange="arUpdate('${jid}','${field}',this.value);arUpdateRowStyle(this,'${jid}','${field}')">${opts}</select>`;
+  };
 
   tbody.innerHTML=filtered.map(j=>{
     const contract=arParseMoney(j.totalContractPrice);
@@ -11604,33 +11623,58 @@ function renderAR(){
     const subConGross=subConCarry-subConCost;
     const paidToSub=arParseMoney(j.paidToSubCon);
     const subBal=Math.max(0,subConCost-paidToSub);
-    const rowBg=j.paymentStatus==='Fully Paid'?'background:rgba(22,163,74,0.03)':j.paymentStatus==='In Progress'?'background:rgba(251,146,60,0.04)':'';
-    return`<tr style="${rowBg};${rowStyle}" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='${j.paymentStatus==='Fully Paid'?'rgba(22,163,74,0.03)':j.paymentStatus==='In Progress'?'rgba(251,146,60,0.04)':''}'">
-      <td style="${tdM}">${arFmtDate(j.date)||'—'}</td>
-      <td style="${tdM}">${arFmtDate(j.installIIDate)||'—'}</td>
-      <td style="${tdM}">${arFmtDate(j.dateJobCompleted)||'—'}</td>
-      <td style="${tdL}"><span style="font-size:11px;padding:2px 8px;border-radius:8px;background:var(--accent-glow);color:var(--accent);font-weight:500">${j.jobType||'—'}</span></td>
-      <td style="${tdL};font-weight:500">${j.customerName||'—'}</td>
-      <td style="${tdR};background:rgba(45,126,247,0.04);font-weight:600">${j.totalContractPrice?arFmt(contract):'—'}</td>
-      <td style="${tdR}">${j.initialPayment?arFmt(initial):'—'}</td>
-      <td style="${tdR};background:rgba(255,100,0,0.04);color:var(--orange)">${contract&&initial?arFmt(remaining):'—'}</td>
-      <td style="${tdR}">${j.partialPayment1?arFmt(pp1):'—'}</td>
-      <td style="${tdR}">${j.partialPayment2?arFmt(pp2):'—'}</td>
-      <td style="${tdR}">${j.partialPayment3?arFmt(pp3):'—'}</td>
-      <td style="${tdR};background:rgba(45,126,247,0.04);color:var(--accent);font-weight:600">${arFmt(custPaid)}</td>
-      <td style="${tdL}"><span style="font-size:11px;color:var(--text-muted)">${j.paymentMethod||'—'}</span></td>
-      <td style="${tdR};background:rgba(220,38,38,0.04);color:var(--red);font-weight:600">${custBal>0?arFmt(custBal):'<span style=color:var(--green)>—</span>'}</td>
-      <td style="padding:8px 10px">${arStatusBadge(j.paymentStatus)}</td>
-      <td style="${tdL};border-left:2px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.03);font-weight:500">${j.subConName||'—'}</td>
-      <td style="${tdR}">${j.subConCost?arFmt(subConCost):'—'}</td>
-      <td style="${tdR}">${j.subConCarry?arFmt(subConCarry):'—'}</td>
-      <td style="${tdR};${subConGross>0?'color:var(--green)':subConGross<0?'color:var(--red)':''}">${(j.subConCost||j.subConCarry)?arFmt(subConGross):'—'}</td>
-      <td style="${tdR}">${j.paidToSubCon?arFmt(paidToSub):'—'}</td>
-      <td style="${tdR};background:rgba(220,38,38,0.04);${subBal>0?'color:var(--red);font-weight:600':''}">${subBal>0?arFmt(subBal):'<span style=color:var(--green)>—</span>'}</td>
-      <td style="${tdL};font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">${j.invoiceNum||'—'}</td>
-      <td style="padding:8px 10px">${arStatusBadge(j.status||j.paymentStatus)}</td>
-      <td style="padding:8px 10px;text-align:center;white-space:nowrap">
-        <button onclick="openEditARJob('${j.id}')" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(45,126,247,0.35);background:var(--accent-glow);color:var(--accent);cursor:pointer;margin-right:4px">Edit</button>
+    const rowBg=j.paymentStatus==='Fully Paid'?'rgba(22,163,74,0.03)':j.paymentStatus==='In Progress'?'rgba(251,146,60,0.04)':'';
+
+    // Status select color helper
+    const statusColor=v=>({
+      'Fully Paid':'border-color:rgba(22,163,74,0.5);color:var(--green)',
+      'Partially Paid':'border-color:rgba(217,119,6,0.5);color:var(--amber)',
+      'Unpaid':'border-color:rgba(220,38,38,0.5);color:var(--red)',
+      'In Progress':'border-color:rgba(234,88,12,0.5);color:var(--orange)',
+    }[v]||'');
+
+    return`<tr data-ar-id="${j.id}" style="background:${rowBg};${rowStyle}" onmouseover="if(!this.dataset.noHover)this.style.background='var(--surface-hover)'" onmouseout="this.style.background='${rowBg}'">
+      <td style="padding:6px 8px">${dateInp(j.id,'date',j.date)}</td>
+      <td style="padding:6px 8px">${dateInp(j.id,'installIIDate',j.installIIDate)}</td>
+      <td style="padding:6px 8px">${dateInp(j.id,'dateJobCompleted',j.dateJobCompleted)}</td>
+      <td style="padding:6px 8px">
+        <select style="${selStyle}" onchange="arUpdate('${j.id}','jobType',this.value)">
+          ${['Small Job','Big Job'].map(o=>`<option ${j.jobType===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:6px 8px">${inp(j.id,'customerName',j.customerName,false,'Customer name')}</td>
+      <td style="padding:6px 8px;background:rgba(45,126,247,0.04)">${inp(j.id,'totalContractPrice',j.totalContractPrice,true,'$0.00')}</td>
+      <td style="padding:6px 8px">${inp(j.id,'initialPayment',j.initialPayment,true,'$0.00')}</td>
+      <td style="padding:6px 8px;background:rgba(255,100,0,0.04);font-family:'DM Mono',monospace;font-size:12px;text-align:right;color:var(--orange)">${contract&&initial?arFmt(remaining):'—'}</td>
+      <td style="padding:6px 8px">${inp(j.id,'partialPayment1',j.partialPayment1,true,'$0.00')}</td>
+      <td style="padding:6px 8px">${inp(j.id,'partialPayment2',j.partialPayment2,true,'$0.00')}</td>
+      <td style="padding:6px 8px">${inp(j.id,'partialPayment3',j.partialPayment3,true,'$0.00')}</td>
+      <td style="padding:6px 8px;background:rgba(45,126,247,0.04);font-family:'DM Mono',monospace;font-size:12px;text-align:right;color:var(--accent);font-weight:600">${arFmt(custPaid)}</td>
+      <td style="padding:6px 8px">
+        <select style="${selStyle}" onchange="arUpdate('${j.id}','paymentMethod',this.value)">
+          <option value="">— Method —</option>
+          ${AR_PAYMENT_METHODS.map(m=>`<option ${j.paymentMethod===m?'selected':''}>${m}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:6px 8px;background:rgba(220,38,38,0.04);font-family:'DM Mono',monospace;font-size:12px;text-align:right;${custBal>0?'color:var(--red);font-weight:600':'color:var(--green)'}">${custBal>0?arFmt(custBal):'✓'}</td>
+      <td style="padding:6px 8px">
+        <select style="${selStyle};${statusColor(j.paymentStatus)}" onchange="arUpdate('${j.id}','paymentStatus',this.value);this.style.cssText=this.style.cssText;arRefreshStatusStyle(this)">
+          ${AR_STATUSES.map(s=>`<option ${j.paymentStatus===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:6px 8px;border-left:2px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.03)">${inp(j.id,'subConName',j.subConName,false,'Sub-con name')}</td>
+      <td style="padding:6px 8px">${inp(j.id,'subConCost',j.subConCost,true,'$0.00')}</td>
+      <td style="padding:6px 8px">${inp(j.id,'subConCarry',j.subConCarry,true,'$0.00')}</td>
+      <td style="padding:6px 8px;font-family:'DM Mono',monospace;font-size:12px;text-align:right;${subConGross>0?'color:var(--green)':subConGross<0?'color:var(--red)':''}">${(j.subConCost||j.subConCarry)?arFmt(subConGross):'—'}</td>
+      <td style="padding:6px 8px">${inp(j.id,'paidToSubCon',j.paidToSubCon,true,'$0.00')}</td>
+      <td style="padding:6px 8px;background:rgba(220,38,38,0.04);font-family:'DM Mono',monospace;font-size:12px;text-align:right;${subBal>0?'color:var(--red);font-weight:600':'color:var(--green)'}">${subBal>0?arFmt(subBal):'✓'}</td>
+      <td style="padding:6px 8px">${inp(j.id,'invoiceNum',j.invoiceNum,false,'INV-')}</td>
+      <td style="padding:6px 8px">
+        <select style="${selStyle};${statusColor(j.status||j.paymentStatus)}" onchange="arUpdate('${j.id}','status',this.value);arRefreshStatusStyle(this)">
+          ${AR_STATUSES.map(s=>`<option ${(j.status||j.paymentStatus)===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:6px 8px;text-align:center;white-space:nowrap">
         <button onclick="deleteARJob('${j.id}')" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(220,38,38,0.3);background:var(--red-dim);color:var(--red);cursor:pointer">Del</button>
       </td>
     </tr>`;
@@ -11660,6 +11704,84 @@ function renderAR(){
   document.getElementById('ar-foot-paid-sub').textContent=arFmt(sumFn('paidToSubCon'));
   const subbal=filtered.reduce((s,j)=>s+Math.max(0,arParseMoney(j.subConCost)-arParseMoney(j.paidToSubCon)),0);
   document.getElementById('ar-foot-sub-bal').textContent=arFmt(subbal);
+}
+
+
+// ── Inline-edit helper for AR rows ────────────────────────
+function arUpdate(jobId, field, value) {
+  const job = arJobs.find(j => j.id === jobId);
+  if (!job) return;
+  job[field] = value;
+
+  const contract = arParseMoney(job.totalContractPrice);
+  const initial  = arParseMoney(job.initialPayment);
+  const pp1      = arParseMoney(job.partialPayment1);
+  const pp2      = arParseMoney(job.partialPayment2);
+  const pp3      = arParseMoney(job.partialPayment3);
+  const custPaid = arParseMoney(job.customerPaidToDate) || (initial + pp1 + pp2 + pp3);
+  const custBal  = Math.max(0, contract - custPaid);
+  const subCost  = arParseMoney(job.subConCost);
+  const subCarry = arParseMoney(job.subConCarry);
+  const paidSub  = arParseMoney(job.paidToSubCon);
+  const subBal   = Math.max(0, subCost - paidSub);
+  const subGross = subCarry - subCost;
+  job.customerBalanceDue = String(custBal);
+  job.balanceDueToSubCon = String(subBal);
+
+  saveAR();
+  updateARBadge();
+
+  // Soft-refresh derived display cells without full re-render
+  const row = document.querySelector('tr[data-ar-id="' + jobId + '"]');
+  if (row) {
+    const cells = row.querySelectorAll('td');
+    if (cells[7])  { cells[7].textContent = (contract && initial) ? arFmt(contract - initial) : '—'; }
+    if (cells[11]) { cells[11].textContent = arFmt(custPaid); }
+    if (cells[13]) { cells[13].textContent = custBal > 0 ? arFmt(custBal) : '✓'; cells[13].style.color = custBal > 0 ? 'var(--red)' : 'var(--green)'; cells[13].style.fontWeight = custBal > 0 ? '600' : ''; }
+    if (cells[18]) { cells[18].textContent = (job.subConCost || job.subConCarry) ? arFmt(subGross) : '—'; cells[18].style.color = subGross > 0 ? 'var(--green)' : subGross < 0 ? 'var(--red)' : ''; }
+    if (cells[20]) { cells[20].textContent = subBal > 0 ? arFmt(subBal) : '✓'; cells[20].style.color = subBal > 0 ? 'var(--red)' : 'var(--green)'; cells[20].style.fontWeight = subBal > 0 ? '600' : ''; }
+    if (field === 'paymentStatus') {
+      const bg = value === 'Fully Paid' ? 'rgba(22,163,74,0.03)' : value === 'In Progress' ? 'rgba(251,146,60,0.04)' : '';
+      row.style.background = bg;
+      row.onmouseout = function(){ this.style.background = bg; };
+    }
+  }
+
+  // Refresh footer totals & summary bar
+  const el = id => document.getElementById(id);
+  const sumFn = key => arJobs.reduce((s,j) => s + arParseMoney(j[key]), 0);
+  const totCP = arJobs.reduce((s,j) => { const ip=arParseMoney(j.initialPayment); const pp=arParseMoney(j.partialPayment1)+arParseMoney(j.partialPayment2)+arParseMoney(j.partialPayment3); return s+(arParseMoney(j.customerPaidToDate)||ip+pp); }, 0);
+  const totCB = arJobs.reduce((s,j) => s + Math.max(0, arParseMoney(j.totalContractPrice) - (arParseMoney(j.customerPaidToDate)||arParseMoney(j.initialPayment)+arParseMoney(j.partialPayment1)+arParseMoney(j.partialPayment2)+arParseMoney(j.partialPayment3))), 0);
+  const gp    = arJobs.reduce((s,j) => s + (arParseMoney(j.subConCarry) - arParseMoney(j.subConCost)), 0);
+  const sb    = arJobs.reduce((s,j) => s + Math.max(0, arParseMoney(j.subConCost) - arParseMoney(j.paidToSubCon)), 0);
+  if(el('ar-foot-contract'))     el('ar-foot-contract').textContent     = arFmt(sumFn('totalContractPrice'));
+  if(el('ar-foot-initial'))      el('ar-foot-initial').textContent      = arFmt(sumFn('initialPayment'));
+  if(el('ar-foot-pp1'))          el('ar-foot-pp1').textContent          = arFmt(sumFn('partialPayment1'));
+  if(el('ar-foot-pp2'))          el('ar-foot-pp2').textContent          = arFmt(sumFn('partialPayment2'));
+  if(el('ar-foot-pp3'))          el('ar-foot-pp3').textContent          = arFmt(sumFn('partialPayment3'));
+  if(el('ar-foot-paid'))         el('ar-foot-paid').textContent         = arFmt(totCP);
+  if(el('ar-foot-custbal'))      el('ar-foot-custbal').textContent      = arFmt(totCB);
+  if(el('ar-foot-subcon-cost'))  el('ar-foot-subcon-cost').textContent  = arFmt(sumFn('subConCost'));
+  if(el('ar-foot-subcon-carry')) el('ar-foot-subcon-carry').textContent = arFmt(sumFn('subConCarry'));
+  if(el('ar-foot-subcon-profit'))el('ar-foot-subcon-profit').textContent= arFmt(gp);
+  if(el('ar-foot-paid-sub'))     el('ar-foot-paid-sub').textContent     = arFmt(sumFn('paidToSubCon'));
+  if(el('ar-foot-sub-bal'))      el('ar-foot-sub-bal').textContent      = arFmt(sb);
+  if(el('ar-total-contract'))    el('ar-total-contract').textContent    = arFmt(sumFn('totalContractPrice'));
+  if(el('ar-total-received'))    el('ar-total-received').textContent    = arFmt(totCP);
+  if(el('ar-total-balance'))     el('ar-total-balance').textContent     = arFmt(totCB);
+  if(el('ar-total-subcon'))      el('ar-total-subcon').textContent      = arFmt(sumFn('subConCost'));
+  if(el('ar-sub-balance'))       el('ar-sub-balance').textContent       = arFmt(sb);
+}
+
+function arRefreshStatusStyle(sel) {
+  const map = {
+    'Fully Paid':    'border-color:rgba(22,163,74,0.5);color:var(--green)',
+    'Partially Paid':'border-color:rgba(217,119,6,0.5);color:var(--amber)',
+    'Unpaid':        'border-color:rgba(220,38,38,0.5);color:var(--red)',
+    'In Progress':   'border-color:rgba(234,88,12,0.5);color:var(--orange)',
+  };
+  const base = "font-family:'DM Sans',sans-serif;font-size:11px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);padding:3px 6px;outline:none;cursor:pointer;width:100%;min-width:110px;";
+  sel.style.cssText = base + (map[sel.value] || 'color:var(--text)');
 }
 
 function arModalHTML(job,title){
