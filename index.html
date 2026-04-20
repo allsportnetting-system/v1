@@ -238,6 +238,13 @@
   #base-sale-table input[type="date"].inline-edit::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
   #base-sale-table .bs-track-link { display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);text-decoration:none;white-space:nowrap; }
   #base-sale-table .bs-track-link:hover { text-decoration:underline; }
+  /* hide number spinners for pcs fields */
+  #base-sale-table input.bs-num-nets::-webkit-outer-spin-button,
+  #base-sale-table input.bs-num-nets::-webkit-inner-spin-button,
+  #base-sale-table input.bs-num-poles::-webkit-outer-spin-button,
+  #base-sale-table input.bs-num-poles::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  #base-sale-table input.bs-num-nets,
+  #base-sale-table input.bs-num-poles { -moz-appearance:textfield; }
   /* TAB-LEVEL VIEW-ONLY ENFORCEMENT (toggled via body class) */
   body.tab-view-only .field input, body.tab-view-only .field select, body.tab-view-only .field textarea,
   body.tab-view-only .dp-field input, body.tab-view-only .dp-field select, body.tab-view-only .dp-field textarea,
@@ -5168,7 +5175,12 @@ function setInvStatus(invId,status){
         totalSale:inv.totalAmount||'',
         datePaid:now,datePaidText:'',estimatedShipOut:'',
         notes:'',
-        email:inv.email||'',phone:inv.phone||''
+        email:inv.email||'',phone:inv.phone||'',
+        // description sub-fields for 6-field at-a-glance cell
+        numNets:'',numPoles:'',
+        netTypeSub:inv.netType||l?.netType||'',
+        netDimSub:inv.netDimensions||l?.netDimensions||'',
+        poleSizeSub:l?.poleDimensions||''
       };
       baseSales.unshift(bs);saveBS();updateBadges();
       // Reset sort so new sale shows at top
@@ -5235,6 +5247,26 @@ function buildBSDescription(inv,l){
   return [line1,line2].filter(Boolean).join('\n');
 }
 
+// updateBSDesc — rebuilds bs.description from the 6 inline sub-fields in the description cell
+function updateBSDesc(bsId,tdEl){
+  const bs=baseSales.find(s=>s.id===bsId);if(!bs)return;
+  const numNets=(tdEl.querySelector('.bs-num-nets')?.value||'').trim();
+  const netType=(tdEl.querySelector('.bs-net-type')?.value||'').trim();
+  const netDim=(tdEl.querySelector('.bs-net-dim')?.value||'').trim();
+  const numPoles=(tdEl.querySelector('.bs-num-poles')?.value||'').trim();
+  const poleSize=(tdEl.querySelector('.bs-pole-size')?.value||'').trim();
+  const coating=(tdEl.querySelector('.bs-coating')?.value||'').trim();
+  // Persist sub-fields
+  bs.numNets=numNets; bs.numPoles=numPoles;
+  bs.netTypeSub=netType; bs.netDimSub=netDim;
+  bs.poleSizeSub=poleSize; bs.coatingType=coating;
+  // Build merged description string (NET line \n POLE line)
+  const netParts=[]; if(numNets)netParts.push(numNets+' pcs'); if(netType)netParts.push(netType); if(netDim)netParts.push(netDim);
+  const poleParts=[]; if(numPoles)poleParts.push(numPoles+' pcs'); if(poleSize)poleParts.push(poleSize); if(coating)poleParts.push(coating);
+  bs.description=[netParts.join(' · '),poleParts.join(' · ')].filter(Boolean).join('\n');
+  saveBS();
+}
+
 function extractCityStateZip(address){
   if(!address)return'';
   const parts=address.split(',').map(s=>s.trim()).filter(Boolean);
@@ -5284,12 +5316,19 @@ function renderBaseSale(){
     const dateOrderedVal=bs.dateOrdered||bs.datePaidText||fmtDate(bs.datePaid)||'';
     // Shipping Out: date input
     const shipOutVal=bs.shippingOut||bs.estimatedShipOut||'';
-    // Description — split into two display lines: [0] netting+dim, [1] pole+coating
+    // Description — 6-field at-a-glance: numNets · netType · netDim | numPoles · poleSize · coating
+    const _lead=leads.find(lx=>lx.id===bs.leadId)||{};
     const descRaw=bs.description||(bs.dimensions?(bs.dimensions+(bs.coatingType?' · '+bs.coatingType:'')):'');
     const descLines=descRaw.split('\n');
-    const descLine1=descLines[0]||'';
-    const descLine2=descLines[1]||'';
-    const descVal=descRaw; // keep full value for inline edit
+    const _line1=descLines[0]||'';
+    const _line2=descLines[1]||'';
+    // Resolve each sub-field — prefer stored bs fields, fall back to lead, then parse description
+    const _numNets=(bs.numNets||'').toString().replace(/"/g,'&quot;');
+    const _numPoles=(bs.numPoles||'').toString().replace(/"/g,'&quot;');
+    const _netType=(bs.netTypeSub||_lead.netType||_line1.split(' · ')[0]||'').replace(/"/g,'&quot;');
+    const _netDim=(bs.netDimSub||_lead.netDimensions||_line1.split(' · ').slice(1).join(' · ')||'').replace(/"/g,'&quot;');
+    const _poleSize=(bs.poleSizeSub||_lead.poleDimensions||_line2.split(' · ')[0]||'').replace(/"/g,'&quot;');
+    const _coating=(bs.coatingType||_line2.split(' · ').slice(1).join(' · ')||'').replace(/"/g,'&quot;');
     // Full name / company
     const nameVal=bs.customerName||'';
     const companyVal=bs.company||'';
@@ -5306,9 +5345,23 @@ function renderBaseSale(){
           ${statusOpts}
         </select>
       </td>
-      <td style="min-width:200px">
-        <input type="text" class="inline-edit" value="${descLine1.replace(/"/g,'&quot;')}" placeholder="Netting type · Dimension" style="width:100%;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:3px" onchange="(function(el){const l2=el.closest('td').querySelector('.bs-desc-line2');updateBS('${bs.id}','description',el.value+(l2&&l2.value?'\n'+l2.value:''))})(this)">
-        <input type="text" class="inline-edit bs-desc-line2" value="${descLine2.replace(/"/g,'&quot;')}" placeholder="Pole size · Coating" style="width:100%;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" onchange="(function(el){const l1=el.closest('td').querySelector('input:not(.bs-desc-line2)');updateBS('${bs.id}','description',(l1?l1.value:'')+'\n'+el.value)})(this)">
+      <td style="min-width:260px;padding:6px 8px">
+        <!-- NET row -->
+        <div style="display:flex;align-items:center;gap:3px;margin-bottom:5px">
+          <span style="font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(45,126,247,0.25);border-radius:4px;padding:1px 5px;flex-shrink:0;min-width:28px;text-align:center">NET</span>
+          <input type="number" class="inline-edit bs-num-nets" value="${_numNets}" placeholder="#" min="0" title="# pcs of net" style="width:38px;text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--accent);padding:3px 4px;flex-shrink:0" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
+          <span style="font-size:9px;color:var(--text-dim);flex-shrink:0">pcs</span>
+          <input type="text" class="inline-edit bs-net-type" value="${_netType}" placeholder="Net type" title="Net type" style="flex:1.2;min-width:0;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
+          <input type="text" class="inline-edit bs-net-dim" value="${_netDim}" placeholder="Net dim" title="Net dimension" style="flex:1;min-width:0;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
+        </div>
+        <!-- POLE row -->
+        <div style="display:flex;align-items:center;gap:3px">
+          <span style="font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--text-muted);background:var(--surface-raised);border:1px solid var(--border);border-radius:4px;padding:1px 4px;flex-shrink:0;min-width:28px;text-align:center">POLE</span>
+          <input type="number" class="inline-edit bs-num-poles" value="${_numPoles}" placeholder="#" min="0" title="# pcs of poles" style="width:38px;text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-muted);padding:3px 4px;flex-shrink:0" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
+          <span style="font-size:9px;color:var(--text-dim);flex-shrink:0">pcs</span>
+          <input type="text" class="inline-edit bs-pole-size" value="${_poleSize}" placeholder="Pole size" title="Pole size" style="flex:1.2;min-width:0;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
+          <input type="text" class="inline-edit bs-coating" value="${_coating}" placeholder="Coating" title="Coating type" style="flex:1;min-width:0;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;padding:3px 5px" onchange="updateBSDesc('${bs.id}',this.closest('td'))">
+        </div>
       </td>
       <td><input type="text" class="inline-edit" value="${amountVal.replace(/"/g,'&quot;')}" placeholder="e.g. $8,500" style="min-width:90px;color:var(--green);font-weight:600" onchange="updateBS('${bs.id}','amount',this.value);updateBS('${bs.id}','totalSale',this.value)"></td>
       <td>
