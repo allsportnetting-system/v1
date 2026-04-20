@@ -6849,8 +6849,22 @@ function updateInvStats(){
   if(oosCard){oosCard.classList.toggle('has-oos',oos>0);}
   const oosBadge=document.getElementById('inv-oos-badge');
   if(oosBadge){oosBadge.textContent=oos+' out of stock';oosBadge.style.display=oos>0?'':'none';}
-  // Poles to ship count
-  const shipCount=baseSales.length+wsOrders.filter(o=>o.status!=='cancelled').length;
+  // Poles to ship count — count only rows that actually appear in the PTS table
+  // (mirrors the filter logic in renderPolesToShip)
+  let shipCount=0;
+  baseSales.forEach(bs=>{
+    if(ptsHidden.includes(bs.id))return;
+    const l=leads.find(x=>x.id===bs.leadId);
+    const dimText=bs.dimensions||l?.poleDimensions||'';
+    if(!bs.poleOnly && !isPoleItem('','',dimText,'') && !bs.coatingType)return;
+    shipCount++;
+  });
+  wsOrders.filter(o=>o.status!=='cancelled').forEach(o=>{
+    if(ptsHidden.includes(o.id))return;
+    const hasPole=o.items&&o.items.some(it=>isPoleItem(it.sku||'',it.netting||'',it.dimensions||'',it.description||''));
+    if(!hasPole&&!o.poleOnly)return;
+    shipCount++;
+  });
   document.getElementById('invs-ship').textContent=shipCount;
   // Ext poles
   document.getElementById('invs-ext').textContent=extPoles.length;
