@@ -2633,18 +2633,19 @@
 </div>
 <script>
 // ===== CLOUD STORAGE CONFIG =====
-const _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
-// FIX v50: Read keys dynamically at call-time so they work after saveAllCloudConfig()
-// without needing a page reload, and so GitHub Pages / fresh browsers pick up keys
-// entered via the ☁ Cloud Setup modal.
-const JSONBIN_BIN_ID     = _EMBEDDED_BIN_ID; // kept for legacy references; real value read below
+// Use var (NOT const) — const variables are non-configurable and cannot be shimmed.
+// Every fetch call reads keys fresh via the getter functions below so keys entered
+// in the ☁ Cloud Setup modal work immediately without any page reload.
+var _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
 function _getBinId()     { return localStorage.getItem('asn_bin_id')     || _EMBEDDED_BIN_ID; }
 function _getReadKey()   { return localStorage.getItem('asn_read_key')   || '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa'; }
 function _getMasterKey() { return localStorage.getItem('asn_master_key') || '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC'; }
-// Shim legacy const references so existing code still compiles
-Object.defineProperty(window, 'JSONBIN_READ_KEY',   { get: _getReadKey   });
-Object.defineProperty(window, 'JSONBIN_MASTER_KEY', { get: _getMasterKey });
-const JSONBIN_URL = () => `https://api.jsonbin.io/v3/b/${_getBinId()}`;
+// These vars exist only for legacy guard checks (if !JSONBIN_BIN_ID etc.)
+// All actual fetch calls use the getter functions above directly.
+var JSONBIN_BIN_ID     = _EMBEDDED_BIN_ID;
+var JSONBIN_READ_KEY   = '';
+var JSONBIN_MASTER_KEY = '';
+var JSONBIN_URL        = function() { return 'https://api.jsonbin.io/v3/b/' + _getBinId(); };
 
 // ===== URL PARAMS =====
 const URL_PARAMS = new URLSearchParams(window.location.search);
@@ -2657,7 +2658,9 @@ let CURRENT_USER = null; // set after login
 let IS_VIEW_ONLY = false; // set after login based on user role
 let ALLOWED_TABS = 'all'; // set after login
 let TAB_PERMS = {}; // { tabId: 'edit'|'view'|'hidden' } — per-tab access, populated after login
-const OWNER_EMAIL_KEY = 'asn_owner_email';
+// ===== PASSWORD CONSTANTS =====
+const APP_PASSWORD_KEY  = 'asn_app_password';   // owner sets this — stored in localStorage
+const OWNER_EMAIL_KEY   = 'asn_owner_email';
 
 // Extract first name from email (e.g. john.smith@x.com → John)
 function firstNameFromEmail(email) {
@@ -2667,12 +2670,12 @@ function firstNameFromEmail(email) {
   return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
 }
 
-// ===== EMAIL GATE =====
+// ===== PASSWORD GATE =====
 function showEmailGate() {
-  // Blur/hide the main app while gate is shown
   document.querySelector('body > div').style.filter = 'blur(4px)';
   document.querySelector('body > div').style.pointerEvents = 'none';
 
+  const appPwd = localStorage.getItem(APP_PASSWORD_KEY) || '';
   const gate = document.createElement('div');
   gate.id = 'email-gate';
   gate.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)';
@@ -2682,74 +2685,103 @@ function showEmailGate() {
       <div style="font-size:20px;font-weight:600;color:var(--text);margin-bottom:4px">Lead Management</div>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:28px">Sports Netting Systems — Authorized Access Only</div>
 
-      <div style="text-align:left;margin-bottom:16px">
-        <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Your Email Address</label>
-        <input id="gate-email" type="email" placeholder="yourname@email.com" autofocus
+      ${!appPwd ? `<div style="background:var(--amber-dim);border:1px solid rgba(217,119,6,0.35);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:18px;text-align:left">
+        <b>First-time setup:</b> No password has been set yet. Enter any password below to set it as the owner password.
+      </div>` : ''}
+
+      <div style="text-align:left;margin-bottom:12px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Your Name</label>
+        <input id="gate-name" type="text" placeholder="e.g. John" autocomplete="name"
           style="font-family:'DM Sans',sans-serif;font-size:14px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);width:100%;outline:none;transition:border-color 0.15s;box-sizing:border-box"
           onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-          onkeydown="if(event.key==='Enter')tryEmailLogin()">
+          onkeydown="if(event.key==='Enter')document.getElementById('gate-password').focus()">
+      </div>
+      <div style="text-align:left;margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Password</label>
+        <input id="gate-password" type="password" placeholder="${appPwd ? 'Enter your password' : 'Set a new password'}" autocomplete="current-password"
+          style="font-family:'DM Sans',sans-serif;font-size:14px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);width:100%;outline:none;transition:border-color 0.15s;box-sizing:border-box"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')tryPasswordLogin()">
       </div>
       <div id="gate-error" style="display:none;background:var(--red-dim);border:1px solid rgba(220,38,38,0.3);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--red);margin-bottom:14px;text-align:left"></div>
-      <button onclick="tryEmailLogin()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:11px 0;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;width:100%;transition:background 0.15s" onmouseover="this.style.background='#3d8ef8'" onmouseout="this.style.background='var(--accent)'">
+      <button onclick="tryPasswordLogin()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:11px 0;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;width:100%;transition:background 0.15s" onmouseover="this.style.background='#3d8ef8'" onmouseout="this.style.background='var(--accent)'">
         Enter →
       </button>
-      <div style="margin-top:20px;font-size:11px;color:var(--text-dim)">Access is granted by the system owner.<br>Contact your administrator if you need access.</div>
+      <div style="margin-top:20px;font-size:11px;color:var(--text-dim)">Contact your administrator if you don't have the password.</div>
     </div>`;
   document.body.appendChild(gate);
-
-  // Focus the input
-  setTimeout(() => { const inp = document.getElementById('gate-email'); if(inp) inp.focus(); }, 100);
+  setTimeout(() => { const inp = document.getElementById('gate-name'); if(inp) inp.focus(); }, 100);
 }
 
-function tryEmailLogin() {
-  const emailInput = document.getElementById('gate-email');
+function tryPasswordLogin() {
+  const nameEl  = document.getElementById('gate-name');
+  const pwdEl   = document.getElementById('gate-password');
   const errorEl = document.getElementById('gate-error');
-  if (!emailInput) return;
-  const email = emailInput.value.trim().toLowerCase();
+  if (!nameEl || !pwdEl) return;
 
-  if (!email || !email.includes('@')) {
-    errorEl.textContent = 'Please enter a valid email address.';
+  const name = nameEl.value.trim();
+  const pwd  = pwdEl.value;
+
+  errorEl.style.display = 'none';
+
+  if (!name) {
+    errorEl.textContent = 'Please enter your name.';
     errorEl.style.display = 'block';
+    nameEl.focus();
+    return;
+  }
+  if (!pwd) {
+    errorEl.textContent = 'Please enter the password.';
+    errorEl.style.display = 'block';
+    pwdEl.focus();
     return;
   }
 
-  // Anyone who has the master key stored in their browser = owner/manager level
-  const hasMasterKey = !!localStorage.getItem('asn_master_key');
+  const storedPwd = localStorage.getItem(APP_PASSWORD_KEY) || '';
 
-  // Check if this is a registered owner email
-  const ownerEmail = localStorage.getItem(OWNER_EMAIL_KEY) || '';
-  const isOwnerEmail = ownerEmail && email === ownerEmail.toLowerCase();
+  // First-time setup: no password set yet — this person becomes owner
+  if (!storedPwd) {
+    localStorage.setItem(APP_PASSWORD_KEY, pwd);
+    localStorage.setItem(OWNER_EMAIL_KEY, name.toLowerCase());
+    CURRENT_USER = { email: name.toLowerCase(), name, role: 'owner', tabs: 'all', displayRole: 'owner' };
+    grantAccess();
+    toast('Welcome! Password set. You are the owner ✓', 'success', 4000);
+    return;
+  }
 
-  if (isOwnerEmail || hasMasterKey) {
-    // Owner email OR has the master key = full access (owner/manager)
-    const role = isOwnerEmail ? 'owner' : 'manager';
-    CURRENT_USER = { email, name: firstNameFromEmail(email), role: 'owner', tabs: 'all', displayRole: role };
-    // If first login with master key, register as owner
-    if (!ownerEmail) localStorage.setItem(OWNER_EMAIL_KEY, email);
+  // Check owner/manager password (master key users)
+  const hasMasterKey = !!_getMasterKey();
+  if (pwd === storedPwd || hasMasterKey) {
+    const ownerName = localStorage.getItem(OWNER_EMAIL_KEY) || name.toLowerCase();
+    const isOwner = name.toLowerCase() === ownerName.toLowerCase() || !localStorage.getItem(OWNER_EMAIL_KEY);
+    CURRENT_USER = { email: name.toLowerCase(), name, role: 'owner', tabs: 'all', displayRole: isOwner ? 'owner' : 'manager' };
+    if (!localStorage.getItem(OWNER_EMAIL_KEY)) localStorage.setItem(OWNER_EMAIL_KEY, name.toLowerCase());
     grantAccess();
     return;
   }
 
-  // Check cloud access list for regular users
-  const match = accessUsers.find(u => u.email.toLowerCase() === email);
+  // Check per-user passwords from access list
+  const match = accessUsers.find(u => {
+    const nameMatch = u.name && u.name.toLowerCase() === name.toLowerCase();
+    const emailMatch = u.email && u.email.toLowerCase() === name.toLowerCase();
+    const userPwd = u.password || u.pwd || '';
+    return (nameMatch || emailMatch) && userPwd && userPwd === pwd;
+  });
   if (match) {
-    CURRENT_USER = { ...match, name: firstNameFromEmail(email) };
+    CURRENT_USER = { ...match, name: match.name || name };
     grantAccess();
     return;
   }
 
-  // Not found — if app is completely fresh (no owner, no access list), first email becomes owner
-  if (!ownerEmail && accessUsers.length === 0) {
-    localStorage.setItem(OWNER_EMAIL_KEY, email);
-    CURRENT_USER = { email, name: firstNameFromEmail(email), role: 'owner', tabs: 'all' };
-    grantAccess();
-    toast('Welcome! You are the first user and have been set as owner ✓', 'success', 4000);
-    return;
-  }
-
-  errorEl.textContent = 'Access denied — this email is not on the authorized list. Contact the owner to be added.';
+  // Wrong password
+  errorEl.textContent = 'Incorrect password. Contact the owner if you need access.';
   errorEl.style.display = 'block';
+  pwdEl.value = '';
+  pwdEl.focus();
 }
+
+// Keep tryEmailLogin as alias so any leftover calls don't break
+function tryEmailLogin() { tryPasswordLogin(); }
 
 function grantAccess() {
   const gate = document.getElementById('email-gate');
@@ -2892,8 +2924,9 @@ function openAccessManager() {
   modal.id = 'access-manager-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
 
+  const appPwd = localStorage.getItem(APP_PASSWORD_KEY) || '';
+
   const renderUserRows = () => accessUsers.map((u, i) => {
-    // Normalize tabs to object format for rendering
     const tabsObj = normalizeTabsToObj(u.tabs, u.role);
     const tabRows = ALL_TABS.map(t => {
       const level = tabsObj[t.id] || 'hidden';
@@ -2909,15 +2942,20 @@ function openAccessManager() {
     }).join('');
     return `
       <div id="am-user-${i}" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-          <div style="flex:1;min-width:160px">
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.7px">Email</div>
-            <div style="font-size:13px;font-weight:500;color:var(--text)">${u.email}</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-top:1px">Logs in as: <b>${firstNameFromEmail(u.email)}</b></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.7px">Name</div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">${u.name||u.email||'User'}</div>
+          </div>
+          <div style="min-width:140px">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.7px">Password</div>
+            <input type="password" value="${u.password||u.pwd||''}" placeholder="Set password…"
+              style="font-family:'DM Mono',monospace;font-size:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);width:140px;outline:none"
+              oninput="amSetPassword(${i},this.value)">
           </div>
           <div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.7px">Default Role</div>
-            <select onchange="amSetRole(${i},this.value)" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);outline:none" title="Used when All Tabs is selected">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.7px">Role</div>
+            <select onchange="amSetRole(${i},this.value)" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);outline:none">
               <option value="editor" ${u.role==='editor'?'selected':''}>✏ Editor</option>
               <option value="viewer" ${u.role==='viewer'?'selected':''}>👁 Viewer</option>
             </select>
@@ -2933,73 +2971,82 @@ function openAccessManager() {
           </div>
         </div>
         <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;padding:0 8px">${tabRows}</div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light)">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">📎 Share link for this user:</div>
-          <div style="display:flex;gap:6px">
-            <input readonly value="${window.location.href.split('?')[0]}" style="font-family:'DM Mono',monospace;font-size:10px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text-muted);flex:1;outline:none">
-            <button onclick="navigator.clipboard.writeText('${window.location.href.split('?')[0]}');this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)" style="font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 10px;border-radius:6px;border:none;background:var(--accent);color:white;cursor:pointer">Copy</button>
-          </div>
-          <div style="font-size:10px;color:var(--text-dim);margin-top:3px">User will be prompted for their email when they open the link.</div>
-        </div>
       </div>`;
   }).join('');
 
   modal.innerHTML = `
-    <div style="background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;max-width:600px;width:100%;padding:28px;box-shadow:0 32px 80px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto">
+    <div style="background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;max-width:620px;width:100%;padding:28px;box-shadow:0 32px 80px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <div style="font-size:16px;font-weight:600">👥 Access Manager</div>
         <button onclick="document.getElementById('access-manager-modal').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px">✕</button>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Control who can access this app, what they can do, and which tabs they see.</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Control who can access this app, their passwords, and which tabs they can see.</div>
 
-      <!-- Add user row -->
+      <!-- Owner password -->
+      <div style="background:var(--green-dim);border:1px solid rgba(22,163,74,0.3);border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px">👑 Owner / Manager Password <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(you + anyone you share this with)</span></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="am-owner-pwd" type="password" placeholder="Enter new owner password…" value="${appPwd}"
+            style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);flex:1;min-width:180px;outline:none">
+          <button onclick="amSaveOwnerPassword()" style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:none;background:var(--green);color:white;cursor:pointer;white-space:nowrap">Update Password</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:6px">Anyone who knows this password gets full owner access. Share it only with trusted managers.</div>
+      </div>
+
+      <!-- Add team user -->
       <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">+ Add New User</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">+ Add Team Member</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="am-new-email" type="email" placeholder="user@email.com" style="font-family:'DM Sans',sans-serif;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);flex:1;min-width:200px;outline:none" onkeydown="if(event.key==='Enter')amAddUser()">
+          <input id="am-new-name" type="text" placeholder="Name (e.g. Maria)" style="font-family:'DM Sans',sans-serif;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);flex:1;min-width:130px;outline:none">
+          <input id="am-new-pwd" type="password" placeholder="Their password" style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);flex:1;min-width:130px;outline:none" onkeydown="if(event.key==='Enter')amAddUser()">
           <select id="am-new-role" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);outline:none">
-            <option value="editor">✏ Editor (can edit assigned tabs)</option>
-            <option value="viewer">👁 Viewer (read-only assigned tabs)</option>
+            <option value="editor">✏ Editor</option>
+            <option value="viewer">👁 Viewer</option>
           </select>
           <button onclick="amAddUser()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;white-space:nowrap">Add →</button>
         </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:6px">Each team member logs in with their name + their own password and only sees the tabs you allow.</div>
       </div>
 
       <!-- User list -->
-      <div id="am-user-list">${renderUserRows() || '<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:13px">No users added yet. Add an email above to grant access.</div>'}</div>
+      <div id="am-user-list">${renderUserRows() || '<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:13px">No team members yet. Add one above.</div>'}</div>
 
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
         <button onclick="document.getElementById('access-manager-modal').remove()" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">Close</button>
-        <button onclick="amSaveAll()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;border:none;background:var(--green);color:white;cursor:pointer">💾 Save All Access Rules</button>
+        <button onclick="amSaveAll()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;border:none;background:var(--green);color:white;cursor:pointer">💾 Save All</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
 
-  // Store render function for refresh
-  modal._renderUserRows = renderUserRows;
+function amSaveOwnerPassword() {
+  const val = (document.getElementById('am-owner-pwd')?.value || '').trim();
+  if (!val) { toast('Password cannot be empty','error'); return; }
+  localStorage.setItem(APP_PASSWORD_KEY, val);
+  toast('Owner password updated ✓ — share it with your managers','success');
 }
 
 function amRefreshList() {
   const modal = document.getElementById('access-manager-modal');
   if (!modal) return;
-  const list = document.getElementById('am-user-list');
-  if (!list) return;
-  // Re-open fresh
   modal.remove();
   openAccessManager();
 }
 
 function amAddUser() {
-  const email = (document.getElementById('am-new-email').value || '').trim().toLowerCase();
-  const role = document.getElementById('am-new-role').value;
-  if (!email || !email.includes('@')) { toast('Enter a valid email','error'); return; }
-  if (accessUsers.find(u => u.email.toLowerCase() === email)) { toast('This email is already in the list','error'); return; }
-  // Default: all tabs set to 'edit' for editors, 'view' for viewers
+  const name = (document.getElementById('am-new-name')?.value || '').trim();
+  const pwd  = (document.getElementById('am-new-pwd')?.value  || '').trim();
+  const role = document.getElementById('am-new-role')?.value || 'editor';
+  if (!name) { toast('Enter a name for this user','error'); return; }
+  if (!pwd)  { toast('Enter a password for this user','error'); return; }
+  if (accessUsers.find(u => (u.name||'').toLowerCase() === name.toLowerCase())) {
+    toast('A user with this name already exists','error'); return;
+  }
   const defaultLevel = role === 'viewer' ? 'view' : 'edit';
   const tabs = {};
   ALL_TABS.forEach(t => tabs[t.id] = defaultLevel);
-  accessUsers.push({ email, role, tabs });
+  accessUsers.push({ name, email: name.toLowerCase(), password: pwd, role, tabs });
   amRefreshList();
 }
 
@@ -3010,6 +3057,10 @@ function amRemoveUser(i) {
 
 function amSetRole(i, role) {
   if (accessUsers[i]) accessUsers[i].role = role;
+}
+
+function amSetPassword(i, val) {
+  if (accessUsers[i]) accessUsers[i].password = val;
 }
 
 // Normalize any legacy tabs format to { tabId: 'edit'|'view'|'hidden' }
@@ -3025,7 +3076,6 @@ function normalizeTabsToObj(tabs, role) {
     ALL_TABS.forEach(t => obj[t.id] = tabs.includes(t.id) ? defaultLevel : 'hidden');
     return obj;
   }
-  // Already object format
   const obj = {};
   ALL_TABS.forEach(t => obj[t.id] = tabs[t.id] || 'hidden');
   return obj;
@@ -3041,7 +3091,6 @@ function amSetAllTabs(i, level) {
 
 function amSetTabAccess(i, tabId, level) {
   if (!accessUsers[i]) return;
-  // Convert to object format if needed
   if (accessUsers[i].tabs === 'all' || Array.isArray(accessUsers[i].tabs)) {
     accessUsers[i].tabs = normalizeTabsToObj(accessUsers[i].tabs, accessUsers[i].role);
   }
@@ -3050,14 +3099,15 @@ function amSetTabAccess(i, tabId, level) {
 }
 
 async function amSaveAll() {
-  // Save accessUsers into the cloud data
   await cloudSaveAccessUsers();
   toast('Access rules saved ✓', 'success');
   document.getElementById('access-manager-modal').remove();
 }
 
+
+
 async function cloudSaveAccessUsers() {
-  if (!JSONBIN_BIN_ID || !JSONBIN_MASTER_KEY) {
+  if (!_getBinId() || !_getMasterKey()) {
     localStorage.setItem('asn_access_users', JSON.stringify(accessUsers));
     return;
   }
@@ -3071,7 +3121,7 @@ async function cloudSaveAccessUsers() {
     };
     const res = await fetch(JSONBIN_URL(), {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_MASTER_KEY },
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': _getMasterKey() },
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -3244,12 +3294,13 @@ function debouncedSave() {
 
 // ===== MIGRATE LOCAL → CLOUD (one-time data push) =====
 async function pushLocalToCloud() {
-  if (!JSONBIN_BIN_ID || !JSONBIN_READ_KEY) {
-    toast('Cloud not configured yet — paste your Bin ID and Read Key into the HTML file first.', 'error', 5000);
+  if (!_getBinId() || !_getReadKey()) {
+    toast('Cloud not configured yet — click ☁ Cloud and save your Bin ID and Read Key first.', 'error', 5000);
+    openCloudSetup();
     return;
   }
-  if (!JSONBIN_MASTER_KEY) {
-    toast('You need to enter your Write key first — click ☁ Cloud and save your key.', 'error', 5000);
+  if (!_getMasterKey()) {
+    toast('Write key missing — click ☁ Cloud and save your Write key first.', 'error', 5000);
     openCloudSetup();
     return;
   }
@@ -3308,7 +3359,7 @@ async function pushLocalToCloud() {
 
     const res = await fetch(JSONBIN_URL(), {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_MASTER_KEY },
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': _getMasterKey() },
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -3430,9 +3481,15 @@ function openCloudSetup() {
       </div>
 
       <!-- SAVE BUTTON -->
-      <button onclick="saveAllCloudConfig()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:12px 0;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;width:100%;margin-bottom:12px">
+      <button onclick="saveAllCloudConfig()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:12px 0;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;width:100%;margin-bottom:8px">
         💾 Save All &amp; Connect
       </button>
+
+      <!-- TEST BUTTON -->
+      <button onclick="testCloudConnection()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px 0;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;width:100%;margin-bottom:8px">
+        🔌 Test Connection
+      </button>
+      <div id="cloud-test-result" style="display:none;font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center"></div>
 
       <!-- PUSH DATA BUTTON -->
       <button onclick="document.getElementById('cloud-setup-modal').remove();pushLocalToCloud()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 0;border-radius:8px;border:1.5px solid rgba(45,126,247,0.4);background:var(--accent-glow);color:var(--accent);cursor:pointer;width:100%;margin-bottom:16px">
@@ -3476,6 +3533,46 @@ function saveAllCloudConfig() {
 
 // Keep saveMasterKey as alias for backwards compat
 function saveMasterKey() { saveAllCloudConfig(); }
+
+async function testCloudConnection() {
+  const el = document.getElementById('cloud-test-result');
+  if (!el) return;
+  // Read from the input fields in the modal (before saving)
+  const binId     = (document.getElementById('cs-bin-id')?.value     || _getBinId()).trim();
+  const readKey   = (document.getElementById('cs-read-key')?.value   || _getReadKey()).trim();
+  const masterKey = (document.getElementById('cs-master-key')?.value || _getMasterKey()).trim();
+
+  if (!binId || (!readKey && !masterKey)) {
+    el.style.cssText = 'display:block;background:var(--amber-dim);color:var(--amber);font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center';
+    el.textContent = '⚠ Fill in your Bin ID and at least one key first.';
+    return;
+  }
+  el.style.cssText = 'display:block;background:var(--navy-light);color:var(--text-muted);font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center';
+  el.textContent = '⏳ Testing…';
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (masterKey) headers['X-Master-Key'] = masterKey;
+  else headers['X-Access-Key'] = readKey;
+
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers });
+    if (res.ok) {
+      el.style.cssText = 'display:block;background:var(--green-dim);color:var(--green);font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center';
+      el.textContent = '✓ Connected! JSONBin is reachable and your keys work.';
+    } else {
+      const txt = await res.text().catch(() => '');
+      let msg = 'HTTP ' + res.status;
+      if (res.status === 401 || res.status === 403) msg += ' — key is invalid or expired. Re-check in JSONBin dashboard.';
+      else if (res.status === 404) msg += ' — Bin ID not found. Check the ID.';
+      el.style.cssText = 'display:block;background:var(--red-dim);color:var(--red);font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center';
+      el.textContent = '✗ ' + msg;
+    }
+  } catch(e) {
+    el.style.cssText = 'display:block;background:var(--red-dim);color:var(--red);font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center';
+    el.textContent = '✗ Network error: ' + e.message;
+  }
+}
+
 
 function showEditorKeyPrompt() {
   showCloudStatus('error', '☁ Key needed');
@@ -3588,7 +3685,7 @@ function renderAll() {
 
 function checkLocalDataMigration() {
   // Only show if: cloud IS configured, user is owner/manager, and local data exists
-  if (!JSONBIN_BIN_ID || !JSONBIN_READ_KEY || !JSONBIN_MASTER_KEY) return;
+  if (!_getBinId() || !_getReadKey() || !_getMasterKey()) return;
   if (!CURRENT_USER || CURRENT_USER.role !== 'owner') return;
   if (document.getElementById('migration-banner')) return; // already shown
 
@@ -6097,11 +6194,11 @@ enforceViewOnly();
 (async function initApp() {
   if (checkSession()) return;
   // Load access list from cloud (public read — no master key needed) before showing gate
-  if (JSONBIN_BIN_ID && JSONBIN_READ_KEY) {
+  if (_getBinId() && (_getReadKey() || _getMasterKey())) {
     try {
       const headers = {};
-      if (JSONBIN_READ_KEY) headers['X-Access-Key'] = JSONBIN_READ_KEY;
-      else if (JSONBIN_MASTER_KEY) headers['X-Master-Key'] = JSONBIN_MASTER_KEY;
+      if (_getReadKey()) headers['X-Access-Key'] = _getReadKey();
+      else if (_getMasterKey()) headers['X-Master-Key'] = _getMasterKey();
       const res = await fetch(JSONBIN_URL()+'/latest', { headers });
       if (res.ok) {
         const json = await res.json();
