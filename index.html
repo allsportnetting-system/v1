@@ -2639,8 +2639,8 @@ const _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
 // entered via the ☁ Cloud Setup modal.
 const JSONBIN_BIN_ID     = _EMBEDDED_BIN_ID; // kept for legacy references; real value read below
 function _getBinId()     { return localStorage.getItem('asn_bin_id')     || _EMBEDDED_BIN_ID; }
-function _getReadKey()   { return localStorage.getItem('asn_read_key')   || ''; }
-function _getMasterKey() { return localStorage.getItem('asn_master_key') || ''; }
+function _getReadKey()   { return localStorage.getItem('asn_read_key')   || '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa'; }
+function _getMasterKey() { return localStorage.getItem('asn_master_key') || '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC'; }
 // Shim legacy const references so existing code still compiles
 Object.defineProperty(window, 'JSONBIN_READ_KEY',   { get: _getReadKey   });
 Object.defineProperty(window, 'JSONBIN_MASTER_KEY', { get: _getMasterKey });
