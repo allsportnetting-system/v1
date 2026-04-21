@@ -2637,12 +2637,14 @@
 // localStorage always wins so the modal can override without redeployment.
 // To hard-code keys: replace the empty strings below with your actual values.
 var _EMBEDDED_BIN_ID    = '69d6fc0236566621a891fddf';
-var _EMBEDDED_READ_KEY  = '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';   // ← JSONBin → API Keys → ACCESS KEY (starts with $2a$10$)
-var _EMBEDDED_WRITE_KEY = '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC';   // ← JSONBin → API Keys → MASTER KEY (starts with $2a$10$)
+var _EMBEDDED_READ_KEY  = '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';   // ← PASTE YOUR ACCESS KEY HERE (from JSONBin → API Keys → ACCESS KEY, starts with $2a$10$)
+var _EMBEDDED_WRITE_KEY = '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC';   // ← PASTE YOUR MASTER KEY HERE (from JSONBin → API Keys → MASTER KEY, starts with $2a$10$)
 
-function _getBinId()     { return localStorage.getItem('asn_bin_id')     || _EMBEDDED_BIN_ID;    }
-function _getReadKey()   { return localStorage.getItem('asn_read_key')   || _EMBEDDED_READ_KEY;  }
-function _getMasterKey() { return localStorage.getItem('asn_master_key') || _EMBEDDED_WRITE_KEY; }
+// Embedded keys always win when set — localStorage is only a fallback for keys NOT in the file.
+// This prevents a stale localStorage key from overriding what's hardcoded here.
+function _getBinId()     { return _EMBEDDED_BIN_ID    || localStorage.getItem('asn_bin_id')     || ''; }
+function _getReadKey()   { return _EMBEDDED_READ_KEY  || localStorage.getItem('asn_read_key')   || ''; }
+function _getMasterKey() { return _EMBEDDED_WRITE_KEY || localStorage.getItem('asn_master_key') || ''; }
 
 // Debug helper — call _cloudKeyStatus() in browser console to see exactly what keys are active
 window._cloudKeyStatus = function() {
