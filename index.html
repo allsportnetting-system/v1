@@ -2633,15 +2633,27 @@
 </div>
 <script>
 // ===== CLOUD STORAGE CONFIG =====
-// Use var (NOT const) — const variables are non-configurable and cannot be shimmed.
-// Every fetch call reads keys fresh via the getter functions below so keys entered
-// in the ☁ Cloud Setup modal work immediately without any page reload.
-var _EMBEDDED_BIN_ID = '69d6fc0236566621a891fddf';
-function _getBinId()     { return localStorage.getItem('asn_bin_id')     || _EMBEDDED_BIN_ID; }
-function _getReadKey()   { return localStorage.getItem('asn_read_key')   || '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa'; }
-function _getMasterKey() { return localStorage.getItem('asn_master_key') || '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC'; }
-// These vars exist only for legacy guard checks (if !JSONBIN_BIN_ID etc.)
-// All actual fetch calls use the getter functions above directly.
+// Keys are embedded directly here AND readable from localStorage (set via ☁ Cloud modal).
+// localStorage always wins so the modal can override without redeployment.
+// To hard-code keys: replace the empty strings below with your actual values.
+var _EMBEDDED_BIN_ID    = '69d6fc0236566621a891fddf';
+var _EMBEDDED_READ_KEY  = '$2a$10$y3FipprDsyc.m9H1LCXLp.nbsbIGNqALHKGNVzAOKtysruBmGVdYa';   // ← paste your JSONBin ACCESS KEY  here if you want it hardcoded
+var _EMBEDDED_WRITE_KEY = '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/vQF9jTC';   // ← paste your JSONBin MASTER KEY  here if you want it hardcoded
+
+function _getBinId()     { return localStorage.getItem('asn_bin_id')     || _EMBEDDED_BIN_ID;    }
+function _getReadKey()   { return localStorage.getItem('asn_read_key')   || _EMBEDDED_READ_KEY;  }
+function _getMasterKey() { return localStorage.getItem('asn_master_key') || _EMBEDDED_WRITE_KEY; }
+
+// Debug helper — call _cloudKeyStatus() in browser console to see exactly what keys are active
+window._cloudKeyStatus = function() {
+  console.group('☁ Cloud Key Status');
+  console.log('Bin ID      :', _getBinId());
+  console.log('Read Key    :', _getReadKey()   ? _getReadKey().slice(0,12)+'…'   : '❌ EMPTY');
+  console.log('Master Key  :', _getMasterKey() ? _getMasterKey().slice(0,12)+'…' : '❌ EMPTY — this causes 403');
+  console.log('Source      :', localStorage.getItem('asn_master_key') ? 'localStorage' : (_EMBEDDED_WRITE_KEY ? 'embedded' : '❌ nowhere'));
+  console.groupEnd();
+};
+
 var JSONBIN_BIN_ID     = _EMBEDDED_BIN_ID;
 var JSONBIN_READ_KEY   = '';
 var JSONBIN_MASTER_KEY = '';
@@ -3423,76 +3435,117 @@ function openCloudSetup() {
   const savedBinId   = localStorage.getItem('asn_bin_id')    || '';
   const savedReadKey = localStorage.getItem('asn_read_key')  || '';
   const savedMaster  = localStorage.getItem('asn_master_key')|| '';
+  const appPwd       = localStorage.getItem(APP_PASSWORD_KEY)|| '';
 
-  const allSaved = savedBinId && savedReadKey && savedMaster;
+  // What will actually be used when saving
+  const activeBin    = _getBinId();
+  const activeRead   = _getReadKey();
+  const activeMaster = _getMasterKey();
+
+  const keyHint = (k) => k ? k.slice(0,12)+'…' : '(not set)';
+  const allActive = activeBin && activeRead && activeMaster;
+  const masterSource = savedMaster ? 'localStorage' : (_EMBEDDED_WRITE_KEY ? 'embedded in file' : null);
+  const isOwner = CURRENT_USER && (CURRENT_USER.role === 'owner' || CURRENT_USER.role === 'manager');
 
   modal.innerHTML = `
-    <div style="background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;max-width:540px;width:100%;padding:32px;box-shadow:0 32px 80px rgba(0,0,0,0.6)">
+    <div style="background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;max-width:560px;width:100%;padding:32px;box-shadow:0 32px 80px rgba(0,0,0,0.6);max-height:92vh;overflow-y:auto">
 
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <div style="font-size:17px;font-weight:700">☁ Cloud Storage Setup</div>
         <button onclick="document.getElementById('cloud-setup-modal').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;line-height:1">✕</button>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:24px">Paste your 3 JSONBin values below — no file editing, no redeployment needed.</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Paste your 3 JSONBin values. All keys are stored only in <b>this browser</b>.</div>
 
-      ${allSaved ? `<div style="background:var(--green-dim);border:1px solid rgba(22,163,74,0.35);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);margin-bottom:18px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:16px">✅</span> Cloud is connected! All 3 values are saved in this browser.
-      </div>` : `<div style="background:var(--amber-dim);border:1px solid rgba(217,119,6,0.35);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:18px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:16px">⚠</span> Not connected yet — paste your JSONBin values below and click Save All.
-      </div>`}
+      <!-- STATUS BANNER -->
+      <div style="background:${allActive?'var(--green-dim)':'var(--red-dim)'};border:1px solid ${allActive?'rgba(22,163,74,0.35)':'rgba(220,38,38,0.3)'};border-radius:8px;padding:10px 14px;font-size:12px;color:${allActive?'var(--green)':'var(--red)'};margin-bottom:16px">
+        ${allActive
+          ? `✅ Active keys (what is being sent right now):<br>
+             <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted)">
+               Bin: ${activeBin} &nbsp;|&nbsp; Read: ${keyHint(activeRead)} &nbsp;|&nbsp; Write: ${keyHint(activeMaster)}
+             </span><br>
+             <span style="font-size:10px;color:var(--text-dim)">
+               Write key source: <b>${masterSource||'unknown'}</b>
+               ${masterSource==='localStorage'?'— stored in this browser':'— hardcoded in the HTML file'}
+             </span><br>
+             <span style="font-size:10px;color:var(--amber)">If you get 403, your Write/Master key is wrong — copy it fresh from JSONBin → API Keys → MASTER KEY</span>`
+          : `❌ ${!activeMaster?'Write key (Master Key) is MISSING — this is what causes HTTP 403':!activeRead?'Read key is missing':'Bin ID is missing'}. Paste all 3 values below.`}
+      </div>
+
+      <!-- HOW TO GET KEYS (collapsible) -->
+      <details style="margin-bottom:16px;font-size:11px;color:var(--text-muted)">
+        <summary style="cursor:pointer;font-weight:600;color:var(--text)">📋 Where to find your JSONBin keys</summary>
+        <div style="margin-top:8px;line-height:1.7;padding:10px;background:var(--navy-light);border-radius:6px">
+          1. Go to <b>jsonbin.io</b> → log in → click <b>Bins</b> → open your bin<br>
+          2. <b>Bin ID</b> = the ID in the URL after /b/ (e.g. <code>69d6fc02…</code>)<br>
+          3. <b>Read Key &amp; Write Key</b> → click <b>API Keys</b> in the left sidebar<br>
+          &nbsp;&nbsp;&nbsp;• <b>ACCESS KEY</b> (read-only) → paste in field 2<br>
+          &nbsp;&nbsp;&nbsp;• <b>MASTER KEY</b> (read+write) → paste in field 3 ← <b>this is the one causing 403 if wrong</b><br>
+          4. Make sure you copy the <b>full key including the $2a$10$ prefix</b>
+        </div>
+      </details>
 
       <!-- FIELD 1: BIN ID -->
-      <div style="margin-bottom:16px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
           <div style="background:var(--accent);color:white;font-size:11px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
           <label style="font-size:12px;font-weight:600;color:var(--text)">Bin ID</label>
           <span style="font-size:11px;color:var(--text-dim)">— from the JSONBin URL after /b/</span>
         </div>
-        <input id="cs-bin-id" type="text" placeholder="64a1b2c3d4e5f6a7b8c9d0e1" value="${savedBinId}"
-          style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1.5px solid ${savedBinId?'var(--green)':'var(--border)'};border-radius:8px;padding:10px 14px;color:var(--text);width:100%;outline:none;box-sizing:border-box"
+        <input id="cs-bin-id" type="text" placeholder="64a1b2c3d4e5f6a7b8c9d0e1" value="${activeBin}"
+          style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1.5px solid ${activeBin?'var(--green)':'var(--border)'};border-radius:8px;padding:10px 14px;color:var(--text);width:100%;outline:none;box-sizing:border-box"
           oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'">
-        ${savedBinId ? `<div style="font-size:10px;color:var(--green);margin-top:4px">✓ Saved</div>` : ''}
       </div>
 
       <!-- FIELD 2: READ KEY -->
-      <div style="margin-bottom:16px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
           <div style="background:var(--accent);color:white;font-size:11px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-          <label style="font-size:12px;font-weight:600;color:var(--text)">Read-Only Key</label>
-          <span style="font-size:11px;color:var(--text-dim)">— READ permission only</span>
+          <label style="font-size:12px;font-weight:600;color:var(--text)">Access Key</label>
+          <span style="font-size:11px;color:var(--text-dim)">— read-only (starts with $2a$10$)</span>
         </div>
-        <input id="cs-read-key" type="password" placeholder="$2a$10$..." value="${savedReadKey}"
-          style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1.5px solid ${savedReadKey?'var(--green)':'var(--border)'};border-radius:8px;padding:10px 14px;color:var(--text);width:100%;outline:none;box-sizing:border-box"
+        <input id="cs-read-key" type="text" placeholder="$2a$10$..." value="${activeRead}"
+          style="font-family:'DM Mono',monospace;font-size:12px;background:var(--input-bg);border:1.5px solid ${activeRead?'var(--green)':'var(--border)'};border-radius:8px;padding:10px 14px;color:var(--text);width:100%;outline:none;box-sizing:border-box"
           oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'">
-        ${savedReadKey ? `<div style="font-size:10px;color:var(--green);margin-top:4px">✓ Saved</div>` : ''}
       </div>
 
-      <!-- FIELD 3: WRITE KEY -->
-      <div style="margin-bottom:24px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <div style="background:var(--accent);color:white;font-size:11px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
-          <label style="font-size:12px;font-weight:600;color:var(--text)">Read &amp; Write Key</label>
-          <span style="font-size:11px;color:var(--text-dim)">— owner &amp; manager only</span>
+      <!-- FIELD 3: MASTER/WRITE KEY -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <div style="background:var(--green);color:white;font-size:11px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+          <label style="font-size:12px;font-weight:600;color:var(--text)">Master Key</label>
+          <span style="font-size:11px;color:var(--red);font-weight:600">← this causes 403 if wrong</span>
         </div>
-        <input id="cs-master-key" type="password" placeholder="$2a$10$..." value="${savedMaster}"
-          style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1.5px solid ${savedMaster?'var(--green)':'var(--border)'};border-radius:8px;padding:10px 14px;color:var(--text);width:100%;outline:none;box-sizing:border-box"
+        <input id="cs-master-key" type="text" placeholder="$2a$10$..." value="${activeMaster}"
+          style="font-family:'DM Mono',monospace;font-size:12px;background:var(--input-bg);border:1.5px solid ${activeMaster?'var(--green)':'var(--border)'};border-radius:8px;padding:10px 14px;color:var(--text);width:100%;outline:none;box-sizing:border-box"
           oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'">
-        ${savedMaster ? `<div style="font-size:10px;color:var(--green);margin-top:4px">✓ Saved — you can save/write data</div>` : '<div style="font-size:10px;color:var(--text-dim);margin-top:4px">🔒 Stored only in your browser — never shared. Share this key privately with your Manager.</div>'}
+        <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Copy the full key from JSONBin → API Keys → MASTER KEY. Stored only in this browser.</div>
       </div>
 
-      <!-- SAVE BUTTON -->
-      <button onclick="saveAllCloudConfig()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:12px 0;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;width:100%;margin-bottom:8px">
-        💾 Save All &amp; Connect
-      </button>
+      <!-- SAVE + TEST -->
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button onclick="saveAllCloudConfig()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:11px 0;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer;flex:2">
+          💾 Save All &amp; Connect
+        </button>
+        <button onclick="testCloudConnection()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:11px 0;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;flex:1">
+          🔌 Test
+        </button>
+      </div>
+      <div id="cloud-test-result" style="display:none;font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:10px;text-align:center"></div>
 
-      <!-- TEST BUTTON -->
-      <button onclick="testCloudConnection()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px 0;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;width:100%;margin-bottom:8px">
-        🔌 Test Connection
-      </button>
-      <div id="cloud-test-result" style="display:none;font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;text-align:center"></div>
+      <!-- OWNER/MANAGER APP PASSWORD -->
+      ${isOwner ? `
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">🔑 App Login Password <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(owner &amp; managers)</span></div>
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">This is the password used on the login screen. Change it here any time.</div>
+        <div style="display:flex;gap:8px">
+          <input id="cs-app-pwd" type="password" placeholder="New password…" value="${appPwd}"
+            style="font-family:'DM Mono',monospace;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);flex:1;outline:none;box-sizing:border-box">
+          <button onclick="saveAppPassword()" style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:9px 14px;border-radius:8px;border:none;background:var(--green);color:white;cursor:pointer;white-space:nowrap">Update</button>
+        </div>
+      </div>` : ''}
 
-      <!-- PUSH DATA BUTTON -->
-      <button onclick="document.getElementById('cloud-setup-modal').remove();pushLocalToCloud()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 0;border-radius:8px;border:1.5px solid rgba(45,126,247,0.4);background:var(--accent-glow);color:var(--accent);cursor:pointer;width:100%;margin-bottom:16px">
+      <!-- PUSH DATA -->
+      <button onclick="document.getElementById('cloud-setup-modal').remove();pushLocalToCloud()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px 0;border-radius:8px;border:1.5px solid rgba(45,126,247,0.4);background:var(--accent-glow);color:var(--accent);cursor:pointer;width:100%;margin-bottom:10px">
         📤 Push My Existing Data → Cloud
       </button>
 
@@ -3504,6 +3557,16 @@ function openCloudSetup() {
 
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  // Auto-run test if keys are already saved so owner sees status immediately
+  if (allSaved) setTimeout(testCloudConnection, 300);
+}
+
+function saveAppPassword() {
+  const val = (document.getElementById('cs-app-pwd')?.value || '').trim();
+  if (!val) { toast('Password cannot be empty', 'error'); return; }
+  localStorage.setItem(APP_PASSWORD_KEY, val);
+  toast('App login password updated ✓', 'success');
 }
 
 function saveAllCloudConfig() {
@@ -3512,23 +3575,44 @@ function saveAllCloudConfig() {
   const masterKey= (document.getElementById('cs-master-key')?.value|| '').trim().replace(/\s+/g,'');
 
   if (!binId)     { toast('Please paste your Bin ID (field 1)','error'); return; }
-  if (!readKey)   { toast('Please paste your Read-Only Key (field 2)','error'); return; }
-  if (!masterKey) { toast('Please paste your Read & Write Key (field 3)','error'); return; }
+  if (!readKey)   { toast('Please paste your Access Key (field 2)','error'); return; }
+  if (!masterKey) { toast('Please paste your Master Key (field 3)','error'); return; }
 
+  // Save to localStorage
   localStorage.setItem('asn_bin_id',    binId);
   localStorage.setItem('asn_read_key',  readKey);
   localStorage.setItem('asn_master_key',masterKey);
+
+  // ALSO update the embedded runtime vars immediately so current session uses new keys
+  // without waiting for a reload
+  _EMBEDDED_BIN_ID    = binId;
+  _EMBEDDED_READ_KEY  = readKey;
+  _EMBEDDED_WRITE_KEY = masterKey;
 
   document.getElementById('cloud-setup-modal').remove();
   const banner = document.getElementById('cloud-setup-banner');
   if (banner) banner.remove();
 
-  // Reset the no-key warning flag so save works immediately
   window._warnedNoKey = false;
 
-  toast('✅ Cloud connected! Loading data now…', 'success', 3000);
-  // Re-load cloud data immediately using the new keys (no page reload needed)
-  cloudLoad();
+  toast('✅ Keys saved! Testing connection…', 'success', 2000);
+  setTimeout(async () => {
+    // Quick verify before reloading
+    try {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
+        headers: { 'X-Master-Key': masterKey }
+      });
+      if (res.ok) {
+        toast('✅ Connection confirmed — loading cloud data now', 'success', 3000);
+        cloudLoad();
+      } else {
+        toast('⚠ Saved but got HTTP ' + res.status + ' — check your Master Key in JSONBin dashboard', 'error', 8000);
+      }
+    } catch(e) {
+      toast('Keys saved — network error during test: ' + e.message, 'error', 5000);
+      cloudLoad();
+    }
+  }, 400);
 }
 
 // Keep saveMasterKey as alias for backwards compat
