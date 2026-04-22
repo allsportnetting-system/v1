@@ -2820,7 +2820,7 @@ function grantAccess() {
   if (IS_VIEW_ONLY) enforceViewOnly();
   applyTabRestrictions();
   autoSelectAssignedTo(CURRENT_USER.name);
-  const hasMasterKey = !!localStorage.getItem('asn_master_key');
+  const hasMasterKey = !!_getMasterKey();
   if (!IS_VIEW_ONLY && !hasMasterKey && CURRENT_USER.role !== 'owner') {
     showEditorKeyPrompt();
   } else {
@@ -3437,9 +3437,9 @@ function openCloudSetup() {
   modal.id = 'cloud-setup-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
 
-  const savedBinId   = localStorage.getItem('asn_bin_id')    || '';
-  const savedReadKey = localStorage.getItem('asn_read_key')  || '';
-  const savedMaster  = localStorage.getItem('asn_master_key')|| '';
+  const savedBinId   = _getBinId();
+  const savedReadKey = _getReadKey();
+  const savedMaster  = _getMasterKey();
   const appPwd       = localStorage.getItem(APP_PASSWORD_KEY)|| '';
 
   // What will actually be used when saving
