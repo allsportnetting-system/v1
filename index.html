@@ -2642,6 +2642,13 @@ var _EMBEDDED_WRITE_KEY = '$2a$10$eeRhnGhP0OxRn5ApAMnB3eGKNcrRjKQhk4LHtwTFlD06w/
 
 // Embedded keys always win when set — localStorage is only a fallback for keys NOT in the file.
 // This prevents a stale localStorage key from overriding what's hardcoded here.
+// If keys are hardcoded in the file, forcibly overwrite localStorage so stale
+// browser-saved keys can NEVER override what is embedded here.
+(function() {
+  if (_EMBEDDED_BIN_ID)    localStorage.setItem('asn_bin_id',     _EMBEDDED_BIN_ID);
+  if (_EMBEDDED_READ_KEY)  localStorage.setItem('asn_read_key',   _EMBEDDED_READ_KEY);
+  if (_EMBEDDED_WRITE_KEY) localStorage.setItem('asn_master_key', _EMBEDDED_WRITE_KEY);
+})();
 function _getBinId()     { return _EMBEDDED_BIN_ID    || localStorage.getItem('asn_bin_id')     || ''; }
 function _getReadKey()   { return _EMBEDDED_READ_KEY  || localStorage.getItem('asn_read_key')   || ''; }
 function _getMasterKey() { return _EMBEDDED_WRITE_KEY || localStorage.getItem('asn_master_key') || ''; }
