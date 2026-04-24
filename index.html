@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3168,31 +3167,7 @@ async function cloudSaveAccessUsers() {
   }
 }
 
-// REPLACED_CSAU_PLACEHOLDER
-  if (!_getBinId() || !_getMasterKey()) {
-    localStorage.setItem('asn_access_users', JSON.stringify(accessUsers));
-    return;
-  }
-  showCloudStatus('saving', '☁ Saving…');
-  try {
-    const data = {
-      leads, estimates, invoices, baseSales, wsOrders,
-      polesInventory, extPoles, installRows, polesShipOverlay, ptsHidden,
-      accessUsers, apVendors,
-      _lastSaved: new Date().toISOString()
-    };
-    const res = await fetch(JSONBIN_URL(), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': _getMasterKey() },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    showCloudStatus('ok', '☁ Saved');
-  } catch(e) {
-    showCloudStatus('error', '☁ Save failed');
-    localStorage.setItem('asn_access_users', JSON.stringify(accessUsers));
-  }
-}
+// (orphaned placeholder block removed)
 
 // ===== STATE =====
 let leads = [];
